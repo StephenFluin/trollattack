@@ -1,0 +1,159 @@
+import java.io.File;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+/*
+ * Created on May 5, 2005
+ *
+ * TODO To change the template for this generated file go to
+ * Window - Preferences - Java - Code Style - Code Templates
+ */
+
+/**
+ * @author PeEll
+ *
+ * TODO To change the template for this generated type comment go to
+ * Window - Preferences - Java - Code Style - Code Templates
+ */
+public class Mobile {
+	int vnum, hp, maxhp;
+	String  shortDesc = "", longDesc = "", name = "";
+	static String dataFile = "mobiles.xml";
+	
+	public Mobile(int v, String n, int h, int mh, String s, String l) {
+	 vnum = v;
+	 name = n;
+	 hp = h;
+	 maxhp = mh;
+	 shortDesc = s;
+	 longDesc = l;
+	 TrollAttack.print("Creating mobile #" + v);
+	}
+	
+	public String toString() {
+		return vnum + ":" +
+		name + "," +
+		hp + "/" + maxhp + "," +
+		shortDesc + "," +
+		longDesc;
+					
+	}
+	public String getLong() {
+		return longDesc;
+	}
+	public String getShort() {
+		return shortDesc;
+	}
+	public String getname() {
+		return name;
+	}
+	
+
+	public static Mobile[] readData() {
+		File xmlFile = new File( dataFile );
+        try {
+        
+            // Get Document Builder Factory
+            DocumentBuilderFactory factory = 
+                    DocumentBuilderFactory.newInstance();
+
+            // Turn on validation, and turn off namespaces
+            factory.setValidating( false );
+            factory.setNamespaceAware(false);
+            factory.setIgnoringComments( true ) ;
+            
+            // Why doesn't this work?
+            factory.setIgnoringElementContentWhitespace( true );
+
+            // Obtain a document builder object
+            DocumentBuilder builder = factory.newDocumentBuilder();
+
+            // Parse the document
+            Document doc = builder.parse(xmlFile);
+            // Print the document from the DOM tree and feed it an initial 
+            // indentation of nothing
+
+			Node node = doc;
+			// @TODO: Stop hardcoding of max items limit.
+			final Mobile[] mobileList = new Mobile[255];
+			int vnum = 0, hp = 0, maxhp = 0;
+			String shortDesc = "", longDesc = "", mobileName = "";
+			NodeList kids = node.getChildNodes();
+		
+	//		 first child of this list is TrollAttack
+			Node Kid = kids.item(0);
+			// Roomlist must go before other rooms, @TODO!:
+			kids = Kid.getChildNodes();
+			Node kid = kids.item(1);		
+			kids = kid.getChildNodes();
+			//Cycle through this for each room
+			for(int j = 1; j < kids.getLength(); j += 2) {
+				kid = kids.item(j);
+				hp = maxhp = 0;
+				shortDesc = longDesc = mobileName = "";
+				
+				if( kid.getNodeType() != Node.TEXT_NODE ) {
+					NodeList children = kid.getChildNodes();
+					
+					for (int i = 1; i < children.getLength(); i += 2) {
+						
+						Node child = children.item(i);
+						if( child.getNodeType() != Node.TEXT_NODE ) {
+							//printNode(child, "");
+							String name = child.getNodeName();
+							String nvalue = child.getChildNodes().item(0) + "";
+							//System.out.println("\"" + name + "->" + nvalue + "\"");
+						 	int nodeValue;
+						 	if(name.compareTo("short") == 0 || name.compareTo("long") == 0 || name.compareTo("name") == 0) {
+						 		nodeValue = 0;
+						 	} else {
+								if(nvalue.compareTo("null") == 0 ) {
+							 		nodeValue = 0;
+							 	} else {
+							 		Integer myInteger = new Integer(nvalue);
+							 		nodeValue = myInteger.intValue();
+							 	}
+						 	}
+						 	
+						 	
+						 	if( name.compareTo("vnum")== 0) {
+						 		vnum =  nodeValue;
+						 	} else if( name.compareTo("short")==0) {
+						 		shortDesc = nvalue;
+						 	} else if( name.compareTo("long")==0 ) {
+						 		longDesc = nvalue;
+						 	} else if( name.compareTo("hp")== 0) {
+						 		hp = nodeValue;
+						 	} else if( name.compareTo("maxhp") == 0 ) {
+						 		maxhp = nodeValue;
+					 		} else if( name.compareTo("name") == 0) {
+					 			mobileName = nvalue;
+					 		}
+				        }
+					 }
+				}
+			 mobileList[vnum] = new Mobile(vnum, mobileName, hp, maxhp, shortDesc, longDesc);
+			 //System.out.println("Created: " + itemList[vnum].toString());
+			}
+			return mobileList;
+		} catch (ParserConfigurationException e) {
+	        System.out.println("The underlying parser does not support " +
+	                           "the requested features.");
+	        e.printStackTrace();
+		} catch (FactoryConfigurationError e) {
+		    System.out.println("Error occurred obtaining Document Builder " +
+		                       "Factory.");
+		    e.printStackTrace();
+		} catch (Exception e) {
+		    e.printStackTrace();
+		}
+		return null ;
+	}
+}

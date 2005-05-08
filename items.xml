@@ -1,0 +1,13 @@
+<TrollAttack>
+	<itemList>
+		<item>
+			<vnum>1</vnum>
+			<name>sword</name>
+			<short>a sword</short>
+			<long>A long and rusty sword lies here.</long>
+			<weight>40</weight>
+
+		</item>
+	</itemList>
+</TrollAttack>
+			

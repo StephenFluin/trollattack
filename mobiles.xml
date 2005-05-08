@@ -1,0 +1,13 @@
+<TrollAttack>
+	<mobileList>
+		<mobile>
+			<vnum>1</vnum>
+			<name>troll</name>
+			<short>a troll</short>
+			<long>A giant troll is here.</long>
+			<hp>40</hp>
+			<maxhp>40</maxhp>
+		</mobile>
+	</mobileList>
+</TrollAttack>
+			
