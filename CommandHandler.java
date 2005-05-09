@@ -30,6 +30,7 @@ public class CommandHandler {
 		registerCommand(new CommandMove("se", CommandMove.SOUTHEAST));
 		registerCommand(new CommandMove("southwest", CommandMove.SOUTHWEST));
 		registerCommand(new CommandMove("sw", CommandMove.SOUTHWEST));
+		registerCommand(new Kill("kill"));
 		registerCommand(new Get("get"));
 		registerCommand(new Drop("drop"));
 		registerCommand(new Look("look"));
@@ -61,13 +62,28 @@ public class CommandHandler {
 		
 	}
 	// Commands
-	class Get extends Command {
-		public Get(String s) {
-			name = s;	
+	class Kill extends Command {
+		public Kill(String s) { name = s; }
+		public void execute() { TrollAttack.print("Kill what?"); }
+		public void execute(String s) {
+			Mobile mob = TrollAttack.gameRooms[ TrollAttack.player.getCurrentRoom()].getMobile( s );
+			if( mob == null) {
+				TrollAttack.print("You don't see that here.");
+			} else {
+				Fight myFight = new Fight(TrollAttack.player, mob );
+				boolean win = myFight.runFight();
+				if(win) {
+					TrollAttack.gameRooms[ TrollAttack.player.getCurrentRoom()].removeMobile( s );
+				}
+			}
 		}
-		public void execute() {}
+		
+	}
+	class Get extends Command {
+		public Get(String s) { name = s;}
+		public void execute() { TrollAttack.print("Get what?"); }
 		public void execute(String command) {
-			Item item = TrollAttack.gameRooms[	TrollAttack.player.getCurrentRoom()].getItem(	command		);
+			Item item = TrollAttack.gameRooms[	TrollAttack.player.getCurrentRoom()].removeItem(	command		);
 			if(item == null) {
 				TrollAttack.print("You can't find that here!");
 			} else {
@@ -134,7 +150,7 @@ public class CommandHandler {
 	class Quit extends Command {
 		public Quit(String s) { name = s; }
 		public void execute() {
-			TrollAttack.winGame = true;
+			TrollAttack.gameOver = true;
 		}
 		public void execute( String s ) { this.execute(); }
 	}
