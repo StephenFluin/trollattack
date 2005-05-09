@@ -5,8 +5,10 @@
 			<name>troll</name>
 			<short>a troll</short>
 			<long>A giant troll is here.</long>
-			<hp>40</hp>
-			<maxhp>40</maxhp>
+			<hp>20</hp>
+			<maxhp>20</maxhp>
+			<hitskill>100</hitskill>
+			<hitdamage>2</hitdamage>
 		</mobile>
 	</mobileList>
 </TrollAttack>

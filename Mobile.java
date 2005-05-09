@@ -22,34 +22,33 @@ import org.w3c.dom.NodeList;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class Mobile {
+public class Mobile extends Being {
 	int vnum, hp, maxhp;
-	String  shortDesc = "", longDesc = "", name = "";
+	String  longDesc = "", name = "";
 	static String dataFile = "mobiles.xml";
 	
-	public Mobile(int v, String n, int h, int mh, String s, String l) {
+	public Mobile(int v, String n, int h, int mh, int hSkill, int hDamage, String s, String l) {
 	 vnum = v;
 	 name = n;
-	 hp = h;
-	 maxhp = mh;
-	 shortDesc = s;
+	 hitPoints = h;
+	 maxHitPoints = mh;
+	 hitSkill = hSkill;
+	 hitDamage = hDamage;
+	 shortDescription = s;
 	 longDesc = l;
-	 TrollAttack.print("Creating mobile #" + v);
+	 //TrollAttack.print("Creating mobile #" + v);
 	}
 	
 	public String toString() {
 		return vnum + ":" +
 		name + "," +
 		hp + "/" + maxhp + "," +
-		shortDesc + "," +
+		super.getShort() + "," +
 		longDesc;
 					
 	}
 	public String getLong() {
 		return longDesc;
-	}
-	public String getShort() {
-		return shortDesc;
 	}
 	public String getname() {
 		return name;
@@ -83,7 +82,7 @@ public class Mobile {
 			Node node = doc;
 			// @TODO: Stop hardcoding of max items limit.
 			final Mobile[] mobileList = new Mobile[255];
-			int vnum = 0, hp = 0, maxhp = 0;
+			int vnum = 0, hp = 0, maxhp = 0, hitskill = 0, hitdamage = 0;
 			String shortDesc = "", longDesc = "", mobileName = "";
 			NodeList kids = node.getChildNodes();
 		
@@ -96,7 +95,7 @@ public class Mobile {
 			//Cycle through this for each room
 			for(int j = 1; j < kids.getLength(); j += 2) {
 				kid = kids.item(j);
-				hp = maxhp = 0;
+				hp = maxhp = hitskill = hitdamage = 0;
 				shortDesc = longDesc = mobileName = "";
 				
 				if( kid.getNodeType() != Node.TEXT_NODE ) {
@@ -133,13 +132,17 @@ public class Mobile {
 						 		hp = nodeValue;
 						 	} else if( name.compareTo("maxhp") == 0 ) {
 						 		maxhp = nodeValue;
+					 		} else if( name.compareTo("hitskill") == 0 ) {
+					 			hitskill = nodeValue;
+					 		} else if( name.compareTo("hitdamage") == 0 ) {
+					 			hitdamage = nodeValue;
 					 		} else if( name.compareTo("name") == 0) {
 					 			mobileName = nvalue;
 					 		}
 				        }
 					 }
 				}
-			 mobileList[vnum] = new Mobile(vnum, mobileName, hp, maxhp, shortDesc, longDesc);
+			 mobileList[vnum] = new Mobile(vnum, mobileName, hp, maxhp, hitskill, hitdamage, shortDesc, longDesc);
 			 //System.out.println("Created: " + itemList[vnum].toString());
 			}
 			return mobileList;

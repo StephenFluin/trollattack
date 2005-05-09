@@ -1,6 +1,4 @@
 import java.io.File;
-import java.util.LinkedList;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -264,36 +262,53 @@ public class Room {
 		}
 	}
 	public int followLink (int direction) {
-		if(direction == Dirs.EAST) {
+		if(direction == CommandMove.EAST) {
 			return east;
-		} else if (direction == Dirs.NORTH ) {
+		} else if (direction == CommandMove.NORTH ) {
 			return north;
-		} else if (direction == Dirs.WEST) {
+		} else if (direction == CommandMove.WEST) {
 			return west;
-		} else if (direction == Dirs.SOUTH) {
+		} else if (direction == CommandMove.SOUTH) {
 			return south;
 		} else {
 			return 0;
 		}
 		
 	}
-	public Item getItem(String name) {
+	public Item removeItem(String name) {
 		Item newItem;
 		for(int i = 0; i < roomItems.length; i++) {
 			if(TrollAttack.gameItems[roomItems[i]] != null) {
-				//TrollAttack.print(roomItems[i] + TrollAttack.gameItems[roomItems[i]].name);
-				
 				if(TrollAttack.gameItems[roomItems[i]].name.compareToIgnoreCase(name) == 0) {
 					newItem = TrollAttack.gameItems[roomItems[i]];
 					roomItems[i] = 0;
 					return newItem;
-					
-				} else {
-					//TrollAttack.print("looking at object i in room " + TrollAttack.player.getCurrentRoom());
 				}
 			}
 		}
 		return null; 
+	}
+	public Mobile getMobile(String name, boolean remove) {
+		Mobile newMobile;
+		for(int i = 0; i < roomMobiles.length; i++) {
+			if(TrollAttack.gameMobiles[roomMobiles[i]] != null) {
+				if(TrollAttack.gameMobiles[roomMobiles[i]].name.compareToIgnoreCase(name) == 0) {
+					newMobile = TrollAttack.gameMobiles[roomMobiles[i]];
+					if(remove == true) {
+						roomMobiles[i] = 0;
+					}
+					return newMobile;
+				}
+				
+			}
+		}
+		return null;
+	}
+	public Mobile getMobile(String name) {
+		return this.getMobile(name, false);
+	}
+	public Mobile removeMobile(String name) {
+		return this.getMobile(name, true);
 	}
 	public void addItem(Item i) {
 		for(int j = 0;j < roomItems.length;j++) {

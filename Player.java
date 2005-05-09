@@ -11,9 +11,9 @@
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class Player {
+public class Player extends Being {
 	String prompt = "&G<&R%h&G/&R%H&G-&z%x&G> %T";
-	int hitPoints = 60, maxHitPoints = 60, experience = 1, currentRoom = 0;
+	int experience = 1, currentRoom = 0;
 	
 	// HARDCODED MAX ITEMS - FIX THIS! @TODO!
 	private Item[] playerItems = new Item[50];
@@ -27,7 +27,12 @@ public class Player {
 		currentRoom = r;
 	}
 	public Player() {
+		hitPoints = 60;
+		maxHitPoints = 60;
+		hitSkill = 50;
+		hitDamage = 3;
 		currentRoom = 1;
+		shortDescription = "you";
 	}
 	public void addItem(Item i) {
 		for(int j = 0;j < playerItems.length; j++ ) {

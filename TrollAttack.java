@@ -14,11 +14,9 @@
 import org.w3c.dom.Document;
 
 
-
-
 public class TrollAttack {
 	static Document document;
-	static boolean winGame = false;
+	static boolean gameOver = false;
 	static Room[] gameRooms;
 	static Item[] gameItems;
 	static Mobile[] gameMobiles;
@@ -26,7 +24,7 @@ public class TrollAttack {
 	static CommandHandler ch;
 	static Player player = new Player();
 	public static void main(String[] args) {
-		print("starting program...");
+		//print("starting program...");
 		int a = 0;
 		int direction;
 		ch = new CommandHandler();
@@ -38,13 +36,13 @@ public class TrollAttack {
         // Done reading rooms data.
         
         look();
-        while(winGame == false) {
+        while(gameOver == false) {
         	command = stdin.stringInputLine();
         	// Gets a command (south, east, west, north)
         	ch.handleCommand( command );
         	
         	if(player.getCurrentRoom() == 5) {
-        		winGame = true;
+        		gameOver = true;
         	}
         }
         System.out.println("\n");
