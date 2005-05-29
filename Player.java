@@ -12,7 +12,7 @@
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Player extends Being {
-	String prompt = "&G<&R%h&G/&R%H&G-&z%x&G> %T";
+	//String prompt = "&G<&R%h&G/&R%H&G-&z%x&G> %T";
 	int experience = 1, currentRoom = 0;
 	
 	// HARDCODED MAX ITEMS - FIX THIS! @TODO!
@@ -27,12 +27,32 @@ public class Player extends Being {
 		currentRoom = r;
 	}
 	public Player() {
-		hitPoints = 60;
-		maxHitPoints = 60;
+		// Set the default player values here.
+	    hitPoints = 50;
+		maxHitPoints = 50;
+		manaPoints = 40;
+		maxManaPoints = 40;
+		movePoints = 30;
+		maxMovePoints = 30;
 		hitSkill = 50;
 		hitDamage = 3;
+		level = 1;
 		currentRoom = 1;
 		shortDescription = "you";
+	}
+	public int getHitDamage() {
+	    //TrollAttack.print("Reading player hit damage.");
+	    int hd = hitDamage;
+	    for(int j = 0;j < playerItems.length; j++ ) {
+	        if(playerItems[j] != null) {
+	            hd += playerItems[j].hitDamage;
+	            //TrollAttack.print("Adding to player damage by " + playerItems[j].hitDamage);
+	        }
+	    }
+	    return hd;
+	}
+	public boolean isFighting() {
+	    return isFighting;
 	}
 	public void addItem(Item i) {
 		for(int j = 0;j < playerItems.length; j++ ) {
@@ -97,6 +117,8 @@ public class Player extends Being {
 			return null; 
 		
 	}
+	
+
 	
 	public String wieldItem(String name) {
 		if(TrollAttack.player.weapon == null) {

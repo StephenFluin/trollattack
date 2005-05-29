@@ -11,16 +11,17 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class Item {
-	int vnum, weight;
+	int vnum, weight, hitDamage;
 	String  shortDesc = "", longDesc = "", name = "";
 	static String dataFile = "items.xml";
 	
-	public Item(int v, String n, int w, String s, String l) {
+	public Item(int v, String n, int w, String s, String l, int hd) {
 	 vnum = v;
 	 name = n;
 	 weight = w;
 	 shortDesc = s;
 	 longDesc = l;
+	 hitDamage = hd;
 	 //TrollAttack.print("Creating item");
 	}
 	
@@ -49,10 +50,9 @@ public class Item {
             
             // Why doesn't this work?
             factory.setIgnoringElementContentWhitespace( true );
-
+            //factory.
             // Obtain a document builder object
             DocumentBuilder builder = factory.newDocumentBuilder();
-
            // System.out.println();
             //          System.out.println("DataFile : " + xmlFile);
            //System.out.println("Parser Implementation  : " + builder.getClass());
@@ -62,27 +62,30 @@ public class Item {
             Document doc = builder.parse(xmlFile);
             // Print the document from the DOM tree and feed it an initial 
             // indentation of nothing
-
+            
 			Node node = doc;
 			// @TODO: Stop hardcoding of max items limit.
 			final Item[] itemList = new Item[255];
-			int vnum = 0, weight = 0;
+			int vnum = 0, weight = 0, hd;
 			String shortDesc = "", longDesc = "", itemName = "";
 			NodeList kids = node.getChildNodes();
 		
 	//		 first child of this list is TrollAttack
 			Node Kid = kids.item(0);
+			
 			// Roomlist must go before other rooms, @TODO!:
 			kids = Kid.getChildNodes();
-			Node kid = kids.item(1);		
+			Node kid = kids.item(1);	
+			
 			kids = kid.getChildNodes();
 			//Cycle through this for each room
 			for(int j = 1; j < kids.getLength(); j += 2) {
 				kid = kids.item(j);
+				
 				//System.out.println("+");
 				//printNode( kid , "" );
 				//System.out.println("+" + "has length of " + kid.getChildNodes().getLength());
-				weight = 0;
+				weight = hd = 0;
 				shortDesc = longDesc = itemName = "";
 				
 				if( kid.getNodeType() != Node.TEXT_NODE ) {
@@ -91,10 +94,11 @@ public class Item {
 					for (int i = 1; i < children.getLength(); i += 2) {
 						
 						Node child = children.item(i);
+						//TrollAttack.print(child.toString() + " and " + child.getChildNodes() + " and " + child.getChildNodes().item(0).getNodeValue());
 						if( child.getNodeType() != Node.TEXT_NODE ) {
 							//printNode(child, "");
 							String name = child.getNodeName();
-							String nvalue = child.getChildNodes().item(0) + "";
+							String nvalue = child.getChildNodes().item(0).getNodeValue() + "";
 							//System.out.println("\"" + name + "->" + nvalue + "\"");
 						 	int nodeValue;
 						 	if(name.compareTo("short") == 0 || name.compareTo("long") == 0 || name.compareTo("name") == 0) {
@@ -120,12 +124,14 @@ public class Item {
 						 		weight = nodeValue;
 					 		} else if( name.compareTo("name") == 0) {
 					 			itemName = nvalue;
+					 		} else if( name.compareTo("hitDamage") == 0) {
+					 		    hd = nodeValue;
 					 		}
 				        }
 					 }
 				}
 			//TrollAttack.print("vnum:" + vnum + ", south: " + south );
-			 itemList[vnum] = new Item(vnum, itemName, weight, shortDesc, longDesc);
+			 itemList[vnum] = new Item(vnum, itemName, weight, shortDesc, longDesc, hd);
 			 //System.out.println("Created: " + itemList[vnum].toString());
 			}
 			return itemList;

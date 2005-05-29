@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
 <TrollAttack>
 	<itemList>
 		<item>
@@ -6,7 +7,7 @@
 			<short>a sword</short>
 			<long>A long and rusty sword lies here.</long>
 			<weight>40</weight>
-
+			<hitDamage>4</hitDamage>
 		</item>
 	</itemList>
 </TrollAttack>

@@ -23,12 +23,14 @@ import org.w3c.dom.NodeList;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Mobile extends Being {
-	int vnum, hp, maxhp;
-	String  longDesc = "", name = "";
+	int vnum, reSpawn;
+	String  longDesc = "";
 	static String dataFile = "mobiles.xml";
 	
-	public Mobile(int v, String n, int h, int mh, int hSkill, int hDamage, String s, String l) {
+	public Mobile(int v, int leve, String n, int h, int mh, int hSkill, int hDamage, int rSpawn, String s, String l) {
 	 vnum = v;
+	 level = leve;
+	 isPlayer = false;
 	 name = n;
 	 hitPoints = h;
 	 maxHitPoints = mh;
@@ -36,13 +38,30 @@ public class Mobile extends Being {
 	 hitDamage = hDamage;
 	 shortDescription = s;
 	 longDesc = l;
+	 reSpawn = rSpawn;
 	 //TrollAttack.print("Creating mobile #" + v);
+	 this.setPrompt("<%h>");
+	}
+	// Is there a better way to duplicate a mobile?
+	public Mobile( Mobile m ) {
+	    vnum = m.vnum;
+	    name = m.name;
+	    hitPoints = m.hitPoints;
+	    maxHitPoints = m.maxHitPoints;
+	    hitSkill = m.hitSkill;
+	    hitDamage = m.hitDamage;
+	    shortDescription = m.shortDescription;
+	    longDesc = m.longDesc;
+	    reSpawn = m.reSpawn;
+	    setPrompt("<%h>");
+	    isPlayer = m.isPlayer;
+	    level = m.level;
 	}
 	
 	public String toString() {
 		return vnum + ":" +
 		name + "," +
-		hp + "/" + maxhp + "," +
+		hitPoints + "/" + maxHitPoints + "," +
 		super.getShort() + "," +
 		longDesc;
 					
@@ -52,6 +71,9 @@ public class Mobile extends Being {
 	}
 	public String getname() {
 		return name;
+	}
+	public int getRespawnTime() {
+		return reSpawn;
 	}
 	
 
@@ -69,7 +91,7 @@ public class Mobile extends Being {
             factory.setIgnoringComments( true ) ;
             
             // Why doesn't this work?
-            factory.setIgnoringElementContentWhitespace( true );
+            factory.setIgnoringElementContentWhitespace( false );
 
             // Obtain a document builder object
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -82,7 +104,7 @@ public class Mobile extends Being {
 			Node node = doc;
 			// @TODO: Stop hardcoding of max items limit.
 			final Mobile[] mobileList = new Mobile[255];
-			int vnum = 0, hp = 0, maxhp = 0, hitskill = 0, hitdamage = 0;
+			int vnum = 0, hp = 0, maxhp = 0, hitskill = 0, hitdamage = 0, rSpawn = 0, leve = 0;
 			String shortDesc = "", longDesc = "", mobileName = "";
 			NodeList kids = node.getChildNodes();
 		
@@ -95,7 +117,7 @@ public class Mobile extends Being {
 			//Cycle through this for each room
 			for(int j = 1; j < kids.getLength(); j += 2) {
 				kid = kids.item(j);
-				hp = maxhp = hitskill = hitdamage = 0;
+				hp = maxhp = hitskill = hitdamage = rSpawn = leve = 0;
 				shortDesc = longDesc = mobileName = "";
 				
 				if( kid.getNodeType() != Node.TEXT_NODE ) {
@@ -107,7 +129,7 @@ public class Mobile extends Being {
 						if( child.getNodeType() != Node.TEXT_NODE ) {
 							//printNode(child, "");
 							String name = child.getNodeName();
-							String nvalue = child.getChildNodes().item(0) + "";
+							String nvalue = child.getChildNodes().item(0).getNodeValue() + "";
 							//System.out.println("\"" + name + "->" + nvalue + "\"");
 						 	int nodeValue;
 						 	if(name.compareTo("short") == 0 || name.compareTo("long") == 0 || name.compareTo("name") == 0) {
@@ -124,6 +146,8 @@ public class Mobile extends Being {
 						 	
 						 	if( name.compareTo("vnum")== 0) {
 						 		vnum =  nodeValue;
+						 	} else if( name.compareTo("level") == 0 ) {
+						 	    leve = nodeValue;
 						 	} else if( name.compareTo("short")==0) {
 						 		shortDesc = nvalue;
 						 	} else if( name.compareTo("long")==0 ) {
@@ -138,11 +162,13 @@ public class Mobile extends Being {
 					 			hitdamage = nodeValue;
 					 		} else if( name.compareTo("name") == 0) {
 					 			mobileName = nvalue;
+					 		} else if( name.compareTo("respawn") == 0 ) {
+					 			rSpawn = nodeValue;
 					 		}
 				        }
 					 }
 				}
-			 mobileList[vnum] = new Mobile(vnum, mobileName, hp, maxhp, hitskill, hitdamage, shortDesc, longDesc);
+			 mobileList[vnum] = new Mobile(vnum, leve, mobileName, hp, maxhp, hitskill, hitdamage, rSpawn, shortDesc, longDesc);
 			 //System.out.println("Created: " + itemList[vnum].toString());
 			}
 			return mobileList;
@@ -159,4 +185,6 @@ public class Mobile extends Being {
 		}
 		return null ;
 	}
+	
+	
 }

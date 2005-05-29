@@ -17,9 +17,17 @@ import org.w3c.dom.Document;
 public class TrollAttack {
 	static Document document;
 	static boolean gameOver = false;
-	static Room[] gameRooms;
-	static Item[] gameItems;
+
+	/**
+	 *  You need to load the game mobiles before you can load
+	 *  the game rooms because the rooms contain Mobile objects and item objects.
+	 */
 	static Mobile[] gameMobiles;
+	static Item[] gameItems;
+	static Room[] gameRooms;
+	
+	static DeadMobiles deadies = new DeadMobiles();
+	
 	static int wrapLength = 79;
 	static CommandHandler ch;
 	static Player player = new Player();
@@ -28,24 +36,28 @@ public class TrollAttack {
 		int a = 0;
 		int direction;
 		ch = new CommandHandler();
+		
 		String command;
 		EasyReader stdin = new EasyReader(System.in);
-        gameRooms =  Room.readData();
-        gameItems = Item.readData();
+		gameItems = Item.readData();
         gameMobiles = Mobile.readData();
-        // Done reading rooms data.
+		gameRooms =  Room.readData();
         
+        // Done reading data files.
+        Background backGround = new Background();
+		backGround.start();
         look();
         while(gameOver == false) {
+        	print( player.prompt() );
         	command = stdin.stringInputLine();
         	// Gets a command (south, east, west, north)
         	ch.handleCommand( command );
         	
-        	if(player.getCurrentRoom() == 5) {
+        	if(player.getCurrentRoom() == 40) {
         		gameOver = true;
         	}
         }
-        System.out.println("\n");
+        backGround.stop();
 
 
 	}
@@ -58,16 +70,32 @@ public class TrollAttack {
 	 */
 	static public void print(String string) {
 		int wrap = wrapLength;	
-		while(string.length() > 0 ) {
-			if(wrapLength > string.length()) {
-					wrap = string.length();
+		if(string == null) {
+		    print("Contents of current room");
+		    for( int i = 0; i < gameRooms[player.currentRoom].roomMobiles.length; i++ ) {
+		        if(gameRooms[player.currentRoom].roomMobiles[i] != null ) {
+		            print(gameRooms[player.currentRoom].roomMobiles[i].getLong());
+		            throw( new Error("bad"));
+		        }
+		    }
+		} else {
+			while(string.length() > 0 ) {
+				if(wrapLength > string.length()) {
+						wrap = string.length();
+				}
+				System.out.println(string.substring(0,wrap));
+				string = string.substring(wrap);
 			}
-					System.out.println(string.substring(0,wrap));
-					string = string.substring(wrap);
-			}
+		}
 	}
 	static public void look() {
 		gameRooms[player.getCurrentRoom()].pLook();
 	}
-	
+	static public void healMobiles() {
+	    for(int i = 0; i < gameRooms.length;i++) {
+	        if(gameRooms[i] != null) {
+	            gameRooms[i].healMobiles();
+	        }
+	    }
+	}
 }

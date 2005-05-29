@@ -218,6 +218,11 @@ public class LinkedList {
     	
     	while(current.getPointer() != tail) {
     		current = current.getPointer();
+    		/*TrollAttack.print(current.toString());
+    		TrollAttack.print(current.getData().toString());
+    		if(current.getData().toString() == null) {
+    		    //TrollAttack.print("No current!!! HELP!");
+    		}*/
     		if(current.getData().toString().startsWith(s)) {
     			return current.getData();
     		}

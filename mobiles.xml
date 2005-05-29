@@ -1,14 +1,41 @@
+<?xml version="1.0" ?> 
 <TrollAttack>
 	<mobileList>
 		<mobile>
 			<vnum>1</vnum>
+			<level>2</level>
 			<name>troll</name>
 			<short>a troll</short>
 			<long>A giant troll is here.</long>
 			<hp>20</hp>
 			<maxhp>20</maxhp>
 			<hitskill>100</hitskill>
-			<hitdamage>2</hitdamage>
+			<hitdamage>3</hitdamage>
+			<respawn>1</respawn>
+		</mobile>
+		<mobile>
+			<vnum>2</vnum>
+			<level>2</level>
+			<name>Troll Citizen</name>
+			<short>a troll</short>
+			<long>A troll citizen goes about his business.</long>
+			<hp>30</hp>
+			<maxhp>30</maxhp>
+			<hitskill>300</hitskill>
+			<hitdamage>1</hitdamage>
+			<respawn>2</respawn>
+		</mobile>
+		<mobile>
+			<vnum>3</vnum>
+			<level>10</level>
+			<name>Tim</name>
+			<short>tim</short>
+			<long>Tim the enchanter stands here.</long>
+			<hp>300</hp>
+			<maxhp>420</maxhp>
+			<hitskill>50</hitskill>
+			<hitdamage>15</hitdamage>
+			<respawn>5</respawn>
 		</mobile>
 	</mobileList>
 </TrollAttack>
