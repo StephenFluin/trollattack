@@ -48,6 +48,7 @@ public class TrollAttack {
 		gameItems = Util.readItemData();
         gameMobiles = Mobile.readData();
 		gameRooms =  Room.readData();
+		gamePlayers = new Player[50];
         
         // Done reading data files.
         backGround = new Background();

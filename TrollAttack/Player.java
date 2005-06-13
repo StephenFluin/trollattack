@@ -35,7 +35,11 @@ public class Player extends Being implements Serializable {
 	private CommandHandler ch = null;
 
 	public void look() {
+	    if(TrollAttack.gameRooms[this.getCurrentRoom()] == null) {
+	        tell(this.getCurrentRoom() + "'s null!");
+	    }
 	    TrollAttack.gameRooms[this.getCurrentRoom()].pLook();
+	   
 	}
 	public Player(Communication com) {
 		// Set the default player values here.
@@ -52,6 +56,7 @@ public class Player extends Being implements Serializable {
 		shortDescription = "you";
 		ch = new CommandHandler(this);
 		communication = com;
+		super.setCurrentRoom( 1  );
 	}
 	public void tell(String s) {
 	    communication.print(s);

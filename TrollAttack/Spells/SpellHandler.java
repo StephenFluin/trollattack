@@ -20,7 +20,7 @@ public class SpellHandler {
 		spellList = new LinkedList(false, 0);
 		player = play;
 		
-		//TrollAttack.print("Starting spell registration...");
+		//player.tell("Starting spell registration...");
 		registerSpell(new Heal("heal"));
 		registerSpell(new MagicMissile("magic missile"));
 
@@ -51,28 +51,28 @@ public class SpellHandler {
 		boolean results = false;
 		if(spellString.length() > 0 && spell != null) {
 		    if(spell.isPeaceful() && player.isFighting()) {
-		        TrollAttack.print("You can't cast that while fighting!");
+		        player.tell("You can't cast that while fighting!");
 		    } else {
 			    if(spell.getCost() > player.getManaPoints()) {
-			        TrollAttack.print("You don't have enough mana for that !");
+			        player.tell("You don't have enough mana for that !");
 			        
 			    } else {
 			        if(spellParts.length > 1) {
 			            results = spell.execute(spellParameter);
 						
 					} else {
-					   // TrollAttack.print("casting the single spell");
+					   // player.tell("casting the single spell");
 						results = spell.execute();
 					}
 			    }
 			    if(results) {
 			        player.decreaseManaPoints( spell.getCost() );
-			        //TrollAttack.print("You feel drained by " + spell.cost);
+			        //player.tell("You feel drained by " + spell.cost);
 			    }
 			    
 		    }
 		} else {
-			TrollAttack.print("Cast what spell?");
+			player.tell("Cast what spell?");
 		}
 		
 	}
@@ -82,17 +82,17 @@ public class SpellHandler {
 	    int strength = 5;
 	    public MagicMissile(String s) { super(s, 5, false); }
 	    public boolean execute() {
-	        TrollAttack.print("You can't do this to yourself!");
+	        player.tell("You can't do this to yourself!");
 	        return false;
 	    }
 	    public boolean run(String s) {
 	        Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
 			if( mob == null) {
-				TrollAttack.print("You don't see that here.");
+				player.tell("You don't see that here.");
 				return false;
 			} else {
 
-				TrollAttack.print("You manifest a ball of violent light, rocketing towards " + mob.getShort() + ".");
+				player.tell("You manifest a ball of violent light, rocketing towards " + mob.getShort() + ".");
 				mob.increaseHitPoints(-strength);
 				if(player.isFighting()) {
 				    
@@ -110,7 +110,7 @@ public class SpellHandler {
 	    
 	    public Heal(String s) { super(s, 6, false); }
 		public boolean run() {
-	        TrollAttack.print("You pass a healing hand over yourself.");
+	        player.tell("You pass a healing hand over yourself.");
 	        player.increaseHitPoints( strength );
 		    return true;
 		}
@@ -120,11 +120,11 @@ public class SpellHandler {
 		   	}
 			Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
 			if( mob == null) {
-				TrollAttack.print("You don't see that here.");
+				player.tell("You don't see that here.");
 				return false;
 			} else {
 
-				TrollAttack.print("You pass a healing hand over " + mob.getShort() + ".");
+				player.tell("You pass a healing hand over " + mob.getShort() + ".");
 				mob.increaseHitPoints( strength );
 				return true;
 			   

@@ -22,11 +22,17 @@ public class Communication extends Thread {
     static int wrapLength = 400;
     DataInputStream in;
     DataOutputStream out;
-    
+    ServerSocket serverSocket;
+    Socket adminSocket;
      EasyReader stdin = new EasyReader(System.in);
     public void killConnections() {
         try { 
             out.close();
+            in.close();
+            adminSocket.shutdownInput();
+            adminSocket.shutdownOutput();
+            adminSocket.close();
+            serverSocket.close();
         
         } catch(Exception e) {
             
@@ -41,8 +47,8 @@ public class Communication extends Thread {
         TrollAttack.endGame();
         */
         int port = 4000;
-        ServerSocket serverSocket = null;
-        Socket adminSocket = null;
+        serverSocket = null;
+        adminSocket = null;
         in = null;
         out = null;
         String inputLine = "";
@@ -56,6 +62,8 @@ public class Communication extends Thread {
                  in = new DataInputStream(adminSocket.getInputStream());
                  out = new DataOutputStream(adminSocket.getOutputStream());
                  System.out.println("Connection started.");
+                 //Communication newConnection = new Communication();
+                // newConnection.run();
                  Player player = new Player(this);
                  player.look();
                  TrollAttack.print( player.prompt() );
@@ -69,6 +77,7 @@ public class Communication extends Thread {
             adminSocket.close();
         } catch(Exception e) {
                 System.out.println("Exception in Server: "+e.toString());
+                e.printStackTrace();
         }
     }
     public void print(String string) {
@@ -85,7 +94,7 @@ public class Communication extends Thread {
 					wrap = string.length();
 			}
 			try {
-			    out.writeBytes(string.substring(0,wrap) + "\n");
+			    out.writeBytes(string.substring(0,wrap) + "\n\r");
 			} catch( IOException e) {
 			    TrollAttack.error("IO exception...");
 			} catch( Exception e ) {

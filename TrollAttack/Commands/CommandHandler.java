@@ -25,7 +25,7 @@ public class CommandHandler {
 		player = p;
 		sh = new SpellHandler(player);
 		
-		//TrollAttack.print("Starting command registration...");
+		//player.tell("Starting command registration...");
 		registerCommand(new CommandMove(player, "north", CommandMove.NORTH));
 		registerCommand(new CommandMove(player, "south", CommandMove.SOUTH));
 		registerCommand(new CommandMove(player, "east", CommandMove.EAST));
@@ -71,9 +71,9 @@ public class CommandHandler {
 	public void registerCommand( Command c) {
 		/*
 		 if(c == null) {
-		    TrollAttack.print("c is null!");
+		    player.tell("c is null!");
 		} else {
-		    TrollAttack.print("registering " + c.name);
+		    player.tell("registering " + c.name);
 		}*/
 	    commandList.add(c);
 		 
@@ -98,9 +98,9 @@ public class CommandHandler {
 		
 		Command command = (Command)commandList.getClosest(commandString);
 		if(commandString.length() > 0 && command != null) {
-		    //TrollAttack.print("command peace was " + command.isPeaceful() + " and player peace was " + player.isFighting());
+		    //player.tell("command peace was " + command.isPeaceful() + " and player peace was " + player.isFighting());
 		    if(command.isPeaceful() && !player.isReady()) {
-		        TrollAttack.print("You can't do that while " + player.getDoing() + "!");
+		        player.tell("You can't do that while " + player.getDoing() + "!");
 		    } else {
 			    if(commandParts.length > 1) {
 	
@@ -112,32 +112,32 @@ public class CommandHandler {
 		    }
 		} else {
 			if(commandString.length() != 0) {
-			    TrollAttack.print("Huh?");
+			    player.tell("Huh?");
 			}
 			
 		}
-		TrollAttack.print( player.prompt() );
+		player.tell( player.prompt() );
 	}
 	// Commands
 	class Consider extends Command {
 	    public Consider( String s ) { super(s, false); }
-	    public void execute() { TrollAttack.print("Consider whom?"); }
+	    public void execute() { player.tell("Consider whom?"); }
 	    public void execute( String s ) {
 	        Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
 	        if( mob == null) {
-	            TrollAttack.print("You don't see that here.");
+	            player.tell("You don't see that here.");
 	        } else {
-	            TrollAttack.print(mob.getShort() + ": " + mob.prompt());
+	            player.tell(mob.getShort() + ": " + mob.prompt());
 	        }
 	    }
 	}
 	class Kill extends Command {
 		public Kill(String s) { super(s); }
-		public void execute() { TrollAttack.print("Kill what?"); }
+		public void execute() { player.tell("Kill what?"); }
 		public void execute(String s) {
 			Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
 			if( mob == null) {
-				TrollAttack.print("You don't see that here.");
+				player.tell("You don't see that here.");
 			} else {
 				Fight myFight = new Fight(player, mob );
 				myFight.start();
@@ -150,26 +150,26 @@ public class CommandHandler {
 	}
 	class Get extends Command {
 		public Get(String s) { super(s, false);}
-		public void execute() { TrollAttack.print("Get what?"); }
+		public void execute() { player.tell("Get what?"); }
 		public void execute(String command) {
 			Item item = TrollAttack.gameRooms[	player.getCurrentRoom()].removeItem(	command		);
 			if(item == null) {
-				TrollAttack.print("You can't find that here!");
+				player.tell("You can't find that here!");
 			} else {
-				TrollAttack.print("You get " + item.getShort() + ".");
+				player.tell("You get " + item.getShort() + ".");
 				player.addItem(item);
 			}
 		}
 	}
 	class Sacrafice extends Command {
 	    public Sacrafice(String s) { super(s, false);}
-	    public void execute() { TrollAttack.print("Sacrafice what?"); }
+	    public void execute() { player.tell("Sacrafice what?"); }
 	    public void execute(String command) {
 	      Item i = TrollAttack.gameRooms[ player.getCurrentRoom()].removeItem( command );
            if(i == null) {
-               TrollAttack.print("You can't find that here.");
+               player.tell("You can't find that here.");
            } else {
-               TrollAttack.print("You sacrafice " + i.getShort() + " to your deity.");
+               player.tell("You sacrafice " + i.getShort() + " to your deity.");
                player.increaseFavor((int)(Math.random() * 3 + 2));
            }
 	    }
@@ -182,14 +182,14 @@ public class CommandHandler {
 	    }
 	    public void execute() {
 	        if(player.isFighting()) {
-	            TrollAttack.print("You can't do that while fighting!");
+	            player.tell("You can't do that while fighting!");
 	        } else {
 		        if(player.getState() == newState) {
-		            TrollAttack.print("You are already " + player.getDoing() + "!");
+		            player.tell("You are already " + player.getDoing() + "!");
 		        } else {
 		            
 		            player.setState( newState );
-		            TrollAttack.print("You are now " + player.getDoing() + ".");
+		            player.tell("You are now " + player.getDoing() + ".");
 		        }
 	        }
 	    }
@@ -197,7 +197,7 @@ public class CommandHandler {
 	class Favor extends Command {
 	    public Favor(String s) { super(s, false); }
 	    public void execute() {
-	        TrollAttack.print("Your current favor: " + player.getFavor());
+	        player.tell("Your current favor: " + player.getFavor());
 	    }
 	    public void execute(String command) {
 	        this.execute();
@@ -205,7 +205,7 @@ public class CommandHandler {
 	}
 	class Prompt extends Command {
 	    public Prompt(String s) { super(s, false); }
-	    public void execute() { TrollAttack.print("Current Prompt: " + player.getPrompt()); }
+	    public void execute() { player.tell("Current Prompt: " + player.getPrompt()); }
 	    public void execute(String command) {
 	        player.setPrompt(command);
 	    }
@@ -216,16 +216,16 @@ public class CommandHandler {
 		public void execute(String command) {
 			Item item = player.dropItem( command );
 			if(item == null) {
-				TrollAttack.print("You don't have that!");
+				player.tell("You don't have that!");
 			} else {
-				TrollAttack.print("You drop " + item.getShort() + ".");
+				player.tell("You drop " + item.getShort() + ".");
 				TrollAttack.gameRooms[ player.getCurrentRoom()].addItem( item );
 			}
 		}
 	}
 	class Cast extends Command {
 	    public Cast(String s) {super(s, false);}
-	    public void execute() { TrollAttack.print("Cast what?"); }
+	    public void execute() { player.tell("Cast what?"); }
 	    public void execute(String s) {
 	        sh.handleSpell( s );
 	    }
@@ -253,12 +253,12 @@ public class CommandHandler {
 	class Trance extends Command {
 	    public Trance(String s) { super(s, true); }
 	    public void execute() {
-	        TrollAttack.print("You enter a trance.");
+	        player.tell("You enter a trance.");
 	        player.increaseManaPoints ( 5 );
 	        try {
 	            Thread.sleep(4000);
 	        } catch(Exception e) {
-	            TrollAttack.print("You suck.");
+	            player.tell("You suck.");
 	        }
 	    }
 	    public void execute(String command) {
@@ -267,9 +267,9 @@ public class CommandHandler {
 	}
 	class Wear extends Command {
 		public Wear(String s) { super(s, false); }
-		public void execute() {TrollAttack.print("Wear what?");}
+		public void execute() {player.tell("Wear what?");}
 		public void execute(String command) {
-			TrollAttack.print( player.wearItem( command ) );
+			player.tell( player.wearItem( command ) );
 			
 		}
 	}
@@ -277,9 +277,9 @@ public class CommandHandler {
 	    public Remove(String s) {
 	        super( s, false ); 
 	    }
-	    public void execute() {TrollAttack.print("Remove what?");}
+	    public void execute() {player.tell("Remove what?");}
 	    public void execute(String command) {
-	        TrollAttack.print( player.removeItem( command ) );
+	        player.tell( player.removeItem( command ) );
 	    }
 	}
 	class Level extends Command {
@@ -287,9 +287,9 @@ public class CommandHandler {
 	        super( s, false );
 	    }
 	    public void execute() {
-	        TrollAttack.print("Current Level: " + player.getLevel());
+	        player.tell("Current Level: " + player.getLevel());
 	        for(int i = player.getLevel() + 1; i < player.getLevel() + 7; i++ ) {
-	            TrollAttack.print("Level " + i + ": " + Util.experienceLevel(i));
+	            player.tell("Level " + i + ": " + Util.experienceLevel(i));
 	        }
 	    }
 	    public void execute( String s) {
@@ -305,7 +305,7 @@ public class CommandHandler {
 	        for(int i = 1;i <= commandList.length();i++) {
 	            list += commandList.find(i) + " ";
 	        }
-	        TrollAttack.print( list ); 
+	        player.tell( list ); 
 	    }
 	    public void execute(String command) {
 	        this.execute();
@@ -333,14 +333,14 @@ public class CommandHandler {
 	class Help extends Command {
 		public Help(String s) { super(s, false); }
 		public void execute() {
-			TrollAttack.print("Direction Commands:");
-			TrollAttack.print("east, west, north, south, up, down");
-			TrollAttack.print("Player Commands:");
-			TrollAttack.print("kill, cast, get, drop, prompt, trance");
-			TrollAttack.print("stand, sit, rest, sleep");
-			TrollAttack.print("consider, inventory, equiptment, wear, remove");
-			TrollAttack.print("Game Commands");
-			TrollAttack.print("look, quit, exit, help");
+			player.tell("Direction Commands:");
+			player.tell("east, west, north, south, up, down");
+			player.tell("Player Commands:");
+			player.tell("kill, cast, get, drop, prompt, trance");
+			player.tell("stand, sit, rest, sleep");
+			player.tell("consider, inventory, equiptment, wear, remove");
+			player.tell("Game Commands");
+			player.tell("look, quit, exit, help");
 		}
 		public void execute(String s) { this.execute(); }
 	}
