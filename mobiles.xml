@@ -37,6 +37,30 @@
 			<hitdamage>15</hitdamage>
 			<respawn>5</respawn>
 		</mobile>
+		<mobile>
+			<vnum>4</vnum>
+			<level>3</level>
+			<name>candlestick maker</name>
+			<short>the candlestick maker</short>
+			<long>A fat man rests here, looking at you strangely.</long>
+			<hp>100</hp>
+			<maxhp>100</maxhp>
+			<hitskill>100</hitskill>
+			<hitdamage>7</hitdamage>
+			<respawn>2</respawn>
+		</mobile>
+		<mobile>
+			<vnum>5</vnum>
+			<level>3</level>
+			<name>baker</name>
+			<short>the baker</short>
+			<long>A lanky man looks furivively around him.</long>
+			<hp>100</hp>
+			<maxhp>100</maxhp>
+			<hitskill>100</hitskill>
+			<hitdamage>7</hitdamage>
+			<respawn>2</respawn>
+		</mobile>
 	</mobileList>
 </TrollAttack>
 			

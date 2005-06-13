@@ -1,0 +1,13 @@
+Todo List / Ideas:
+
+1.Saving
+2.Remove hardcoding of maxes via arrays.
+3.Building System.
+Pets and Mountable Mobiles
+Food and Drink System
+Swimming and Water
+
+
+Guilds and Orders
+Better Item Handling
+Speech and Emotives

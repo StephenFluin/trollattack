@@ -4,6 +4,7 @@
 		<item>
 			<vnum>1</vnum>
 			<name>sword</name>
+			<type>sword</type>
 			<short>a sword</short>
 			<long>A long and rusty sword lies here.</long>
 			<weight>40</weight>

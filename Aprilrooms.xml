@@ -1,0 +1,10 @@
+<?xml version="1.0" ?> 
+<TrollAttack>
+	<roomList><!-- 300-500 -->
+		<room>
+			<vnum>300</vnum>
+			<description></description>
+			<title>Entrance To City</title>
+		</room>
+	</roomList>
+</TrollAttack>

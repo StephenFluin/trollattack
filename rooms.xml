@@ -4,15 +4,16 @@
 		<room>
 			<vnum>1</vnum>
 			<east>2</east>
-			<description>Tapestries are everywhere in this large room.   The scent of newly forged metal wafts through the air in what appears to be an entrace to a new world.</description>
+			<description>Tapestries are everywhere in this large room.   The scent of newly forged metal wafts through the air in what appears to be an entrace to a new world. The world of Lythia awaits. Type "?" or "help" to find out some of the basic commands.  When you are ready, type "east" to begin your adventure.</description>
 			<title>Main Room</title>
 		</room>
 		<room>
 			<vnum>2</vnum>
 			<west>1</west>
 			<east>3</east>
-			<title>Second Room</title>
-			<description>The second room, this room is not as decorative as the first room, but in its lack of elegance comes efficiency.  To the east wall there is a bookcase.  In the middle of the room there is a wide table covered in weapons.</description>
+			<title>Second Room</title> 
+			<description>The second room, this room is not as decorative as the first room, but in its lack of elegance comes efficiency.  To the east wall there is a bookcase.  In the middle of the room there is a wide table covered in weapons. A large man wearing battle regalia stands at attention, holding a large sword in his hand. He states: "Here, this may be needed on the journey ahead."  You can get the sword by typing "get sword".    </description>
+			<item>1</item>
 			<item>1</item>
 		</room>
 		<room>
@@ -119,11 +120,13 @@
 			<vnum>17</vnum>
 			<title>The Baker's Emporium</title>
 			<north>16</north>
+			<mobile>5</mobile>
 		</room>
 		<room>
 			<vnum>18</vnum>
 			<title>The Candle Stick Maker's Emporium</title>
 			<north>15</north>
+			<mobile>4</mobile>
 		</room>
 		<room>
 			<vnum>19</vnum>
