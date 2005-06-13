@@ -1,4 +1,5 @@
 package TrollAttack;
+import TrollAttack.Commands.*;
 import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -168,11 +169,17 @@ public class Room {
 						 		    //TrollAttack.print("Attempting to load mobile # " + nodeValue );
 						 		    // I need to make sure that this is instatiating the mobile, not just referencing it.
 						 		    Mobile m = new Mobile(TrollAttack.gameMobiles[nodeValue]);
+						 		   
 						 			tmpMobiles[n] = m;
 						 		}
 						 	}
 				        }
 					 }
+				}
+				for(int i = 0;i < tmpMobiles.length; i++) {
+				    if(tmpMobiles[i] != null) {
+				        tmpMobiles[i].setCurrentRoom(vnum);
+				    }
 				}
 			//TrollAttack.print("vnum:" + vnum + ", south: " + south );
 			 Roomlist[vnum] = new Room(vnum, title, description, east, west, north, south, northEast, northWest, southEast, southWest, tmpItems, tmpMobiles);

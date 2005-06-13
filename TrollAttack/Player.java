@@ -1,5 +1,6 @@
 package TrollAttack;
 import java.io.Serializable;
+import TrollAttack.Commands.*;
 
 /*
  * Created on Mar 7, 2005
@@ -30,13 +31,13 @@ public class Player extends Being implements Serializable {
 	private Item helm = null;
 	private Item boots = null;
 	private Item greaves =  null;
-	public int getCurrentRoom() {
-		return currentRoom;
+	private Communication communication = null;
+	private CommandHandler ch = null;
+
+	public void look() {
+	    TrollAttack.gameRooms[this.getCurrentRoom()].pLook();
 	}
-	public void setCurrentRoom(int r) {
-		currentRoom = r;
-	}
-	public Player() {
+	public Player(Communication com) {
 		// Set the default player values here.
 	    hitPoints = 50;
 		maxHitPoints = 50;
@@ -49,6 +50,11 @@ public class Player extends Being implements Serializable {
 		level = 1;
 		currentRoom = 1;
 		shortDescription = "you";
+		ch = new CommandHandler(this);
+		communication = com;
+	}
+	public void tell(String s) {
+	    communication.print(s);
 	}
 	public String toString() {
 	    String r = "";
@@ -60,6 +66,12 @@ public class Player extends Being implements Serializable {
 	}
 	public int getState() {
 	    return state;
+	}
+	public void setState( int newState ) {
+	    state = newState;
+	}
+	public void handleCommand(String command) {
+	    ch.handleCommand(command);
 	}
 	public int getHitDamage() {
 	    //TrollAttack.print("Reading player hit damage.");
@@ -139,16 +151,16 @@ public class Player extends Being implements Serializable {
 	
 	public Item dropItem(String name) {
 			Item newItem;
-			for(int i = 0; i < TrollAttack.player.playerItems.length; i++) {
-				if(TrollAttack.player.playerItems[i] != null) {
+			for(int i = 0; i < playerItems.length; i++) {
+				if(playerItems[i] != null) {
 					
-					if(TrollAttack.player.playerItems[i].name.compareToIgnoreCase(name) == 0) {
-						newItem = TrollAttack.player.playerItems[i];
-						TrollAttack.player.playerItems[i] = null;
+					if(playerItems[i].name.compareToIgnoreCase(name) == 0) {
+						newItem = playerItems[i];
+						playerItems[i] = null;
 						return newItem;
 						
 					} else {
-						//TrollAttack.print("looking at object i in room " + TrollAttack.player.getCurrentRoom());
+						//TrollAttack.print("looking at object i in room " + .getCurrentRoom());
 					}
 				}
 			}
@@ -160,39 +172,39 @@ public class Player extends Being implements Serializable {
 	
 	public String wearItem(String name) {
 	    boolean success = false;
-		for(int i = 0; i < TrollAttack.player.playerItems.length; i++) {
-			if(TrollAttack.player.playerItems[i] != null) {
-			    if(TrollAttack.player.playerItems[i].getName().compareToIgnoreCase(name) == 0) {
-			        Item newWear = TrollAttack.player.playerItems[i];
+		for(int i = 0; i < playerItems.length; i++) {
+			if(playerItems[i] != null) {
+			    if(playerItems[i].getName().compareToIgnoreCase(name) == 0) {
+			        Item newWear = playerItems[i];
 			       // TrollAttack.print("newWear would go on your " + newWear.type);
 			        switch(newWear.type) {
 			            case Item.SWORD:
-			                if(TrollAttack.player.weapon == null) {
-			                    TrollAttack.player.weapon = newWear;
+			                if(weapon == null) {
+			                    weapon = newWear;
 						        success = true;
 			                }
 			                break;
 			            case Item.HELM:
-			                if(TrollAttack.player.helm == null) {
-			                    TrollAttack.player.helm = newWear;
+			                if(helm == null) {
+			                    helm = newWear;
 			                    success = true;
 			                }
 			                break;
 			            case Item.BOOTS:
-			                if(TrollAttack.player.boots == null) {
-			                    TrollAttack.player.boots = newWear;
+			                if(boots == null) {
+			                    boots = newWear;
 			                    success = true;
 			                }
 			                break;
 			            case Item.GREAVES:
-			                if(TrollAttack.player.greaves == null) {
-			                    TrollAttack.player.greaves = newWear;
+			                if(greaves == null) {
+			                    greaves = newWear;
 			                    success = true;
 			                }
 			                break;
 			        }
 			        if(success) {
-			            TrollAttack.player.playerItems[i] = null;
+			            playerItems[i] = null;
 			            return "You wear " + newWear.getShort();
 			        } else {
 			            return "You are already wearing something where this would go!";
@@ -207,25 +219,25 @@ public class Player extends Being implements Serializable {
 	}
 	public String removeItem(String name) {
 	    Item inHand = null;
-	    if(TrollAttack.player.weapon != null && Util.contains(TrollAttack.player.weapon.getName(), name)) {
-	        inHand = TrollAttack.player.weapon;
-	        TrollAttack.player.weapon = null;
-	    } else if(TrollAttack.player.helm != null && Util.contains(TrollAttack.player.helm.getName(), name)) {
-	        inHand = TrollAttack.player.helm;
-	        TrollAttack.player.helm = null;
-	    } else if(TrollAttack.player.boots != null && Util.contains(TrollAttack.player.boots.getName(), name)) {
-	        inHand = TrollAttack.player.boots;
-	        TrollAttack.player.boots = null;
-	    } else if(TrollAttack.player.greaves != null && Util.contains(TrollAttack.player.greaves.getName(), name)) {
-	        inHand = TrollAttack.player.greaves;
-	        TrollAttack.player.helm = null;
+	    if(weapon != null && Util.contains(weapon.getName(), name)) {
+	        inHand = weapon;
+	        weapon = null;
+	    } else if(helm != null && Util.contains(helm.getName(), name)) {
+	        inHand = helm;
+	        helm = null;
+	    } else if(boots != null && Util.contains(boots.getName(), name)) {
+	        inHand = boots;
+	        boots = null;
+	    } else if(greaves != null && Util.contains(greaves.getName(), name)) {
+	        inHand = greaves;
+	        helm = null;
 	    }
 	    if(inHand != null) {
 	        int i = 0;
-            while(TrollAttack.player.playerItems[i] != null) {
+            while(playerItems[i] != null) {
                 i++;
             }
-            TrollAttack.player.playerItems[i] = inHand;
+            playerItems[i] = inHand;
             return "You remove " + inHand.shortDesc;
 	    } else {
 	        return "You aren't wearing that!";

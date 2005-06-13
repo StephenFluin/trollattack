@@ -39,25 +39,9 @@ public class Background extends Thread {
 				
 			}
 			
-			// Make person better every 10 seconds.
+			// Make all persons better every 10 seconds.
 			if(time % 10 == 0) {
-			    TrollAttack.player.hitPoints++;
-			    TrollAttack.player.manaPoints++;
-			    TrollAttack.player.movePoints++;
-			    TrollAttack.player.hitPoints += TrollAttack.player.state;
-			    TrollAttack.player.manaPoints += TrollAttack.player.state;
-			    TrollAttack.player.movePoints += TrollAttack.player.state;
-			    
-			    
-			    if( TrollAttack.player.hitPoints > TrollAttack.player.maxHitPoints ) {
-					TrollAttack.player.hitPoints = TrollAttack.player.maxHitPoints;
-				}
-				if( TrollAttack.player.movePoints > TrollAttack.player.maxMovePoints ) {
-					TrollAttack.player.movePoints = TrollAttack.player.maxMovePoints;
-				}
-				if( TrollAttack.player.manaPoints > TrollAttack.player.maxManaPoints ) {
-					TrollAttack.player.manaPoints = TrollAttack.player.maxManaPoints;
-				}
+			   TrollAttack.healAllPlayers(1);
 			}
 			try{
 			    Thread.sleep(1000);

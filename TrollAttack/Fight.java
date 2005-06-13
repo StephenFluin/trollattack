@@ -43,13 +43,13 @@ public class Fight extends Thread {
 				
 			}
 			damage = Math.floor( Math.floor(Math.random()*100 + 1)/first.hitSkill * first.getHitDamage());
-			TrollAttack.player.increaseExperience((int)((second.level - first.level + 5)*damage));
+			first.increaseExperience((int)((second.level - first.level + 5)*damage));
 			TrollAttack.print(first.getShort().substring(0,1).toUpperCase() + first.getShort().substring(1) + " rend[" + (int)damage + "] " + second.getShort() + ".");
 			second.hitPoints = second.hitPoints - (int)damage;
 			damage = Math.floor( Math.floor(Math.random()*100 + 1)/second.hitSkill * second.getHitDamage());
 			TrollAttack.print(second.getShort().substring(0,1).toUpperCase() + second.getShort().substring(1) + " rends[" + (int)damage + "] " + first.getShort() + ".");
 			first.hitPoints = first.hitPoints - (int)damage;
-			TrollAttack.print(TrollAttack.player.prompt());
+			TrollAttack.print(first.prompt());
 
 		}
 		if(first.hitPoints > 0) {
@@ -59,11 +59,11 @@ public class Fight extends Thread {
 		}
 		boolean win = this.results().booleanValue();
 		if(win) {
-			TrollAttack.gameRooms[ TrollAttack.player.getCurrentRoom()].removeMobile( second.name );
+			TrollAttack.gameRooms[ first.getCurrentRoom()].removeMobile( second.name );
 			TrollAttack.print("You killed " + second.getShort());
-			TrollAttack.deadies.add( (Mobile)second, TrollAttack.player.getCurrentRoom() );
-			int exp = TrollAttack.player.getExperience();
-			TrollAttack.player.increaseExperience((int)(second.level * second.getHitDamage() * second.maxHitPoints * 100 / second.hitSkill));
+			TrollAttack.deadies.add( (Mobile)second, first.getCurrentRoom() );
+			int exp = first.getExperience();
+			first.increaseExperience((int)(second.level * second.getHitDamage() * second.maxHitPoints * 100 / second.hitSkill));
 			//TrollAttack.print("Experience was " + exp + " and became " + TrollAttack.player.getExperience());
 			
 		} else {

@@ -19,24 +19,27 @@ import TrollAttack.Spells.*;
 public class CommandHandler {
 	LinkedList commandList;
 	SpellHandler sh;
-	public CommandHandler() {
+	Player player;
+	public CommandHandler(Player p) {
 		commandList = new LinkedList(false, 0);
-		sh = new SpellHandler();
+		player = p;
+		sh = new SpellHandler(player);
+		
 		//TrollAttack.print("Starting command registration...");
-		registerCommand(new CommandMove("north", CommandMove.NORTH));
-		registerCommand(new CommandMove("south", CommandMove.SOUTH));
-		registerCommand(new CommandMove("east", CommandMove.EAST));
-		registerCommand(new CommandMove("west", CommandMove.WEST));
-		registerCommand(new CommandMove("up", CommandMove.UP));
-		registerCommand(new CommandMove("down", CommandMove.DOWN));
-		registerCommand(new CommandMove("northeast", CommandMove.NORTHEAST));
-		registerCommand(new CommandMove("ne", CommandMove.NORTHEAST));
-		registerCommand(new CommandMove("northwest", CommandMove.NORTHWEST));
-		registerCommand(new CommandMove("nw", CommandMove.NORTHWEST));
-		registerCommand(new CommandMove("southeast", CommandMove.SOUTHEAST));
-		registerCommand(new CommandMove("se", CommandMove.SOUTHEAST));
-		registerCommand(new CommandMove("southwest", CommandMove.SOUTHWEST));
-		registerCommand(new CommandMove("sw", CommandMove.SOUTHWEST));
+		registerCommand(new CommandMove(player, "north", CommandMove.NORTH));
+		registerCommand(new CommandMove(player, "south", CommandMove.SOUTH));
+		registerCommand(new CommandMove(player, "east", CommandMove.EAST));
+		registerCommand(new CommandMove(player, "west", CommandMove.WEST));
+		registerCommand(new CommandMove(player, "up", CommandMove.UP));
+		registerCommand(new CommandMove(player, "down", CommandMove.DOWN));
+		registerCommand(new CommandMove(player, "northeast", CommandMove.NORTHEAST));
+		registerCommand(new CommandMove(player, "ne", CommandMove.NORTHEAST));
+		registerCommand(new CommandMove(player, "northwest", CommandMove.NORTHWEST));
+		registerCommand(new CommandMove(player, "nw", CommandMove.NORTHWEST));
+		registerCommand(new CommandMove(player, "southeast", CommandMove.SOUTHEAST));
+		registerCommand(new CommandMove(player, "se", CommandMove.SOUTHEAST));
+		registerCommand(new CommandMove(player, "southwest", CommandMove.SOUTHWEST));
+		registerCommand(new CommandMove(player, "sw", CommandMove.SOUTHWEST));
 		registerCommand(new Kill("kill"));
 		registerCommand(new Get("get"));
 		registerCommand(new Drop("drop"));
@@ -95,9 +98,9 @@ public class CommandHandler {
 		
 		Command command = (Command)commandList.getClosest(commandString);
 		if(commandString.length() > 0 && command != null) {
-		    //TrollAttack.print("command peace was " + command.isPeaceful() + " and player peace was " + TrollAttack.player.isFighting());
-		    if(command.isPeaceful() && !TrollAttack.player.isReady()) {
-		        TrollAttack.print("You can't do that while " + TrollAttack.player.getDoing() + "!");
+		    //TrollAttack.print("command peace was " + command.isPeaceful() + " and player peace was " + player.isFighting());
+		    if(command.isPeaceful() && !player.isReady()) {
+		        TrollAttack.print("You can't do that while " + player.getDoing() + "!");
 		    } else {
 			    if(commandParts.length > 1) {
 	
@@ -113,14 +116,14 @@ public class CommandHandler {
 			}
 			
 		}
-		TrollAttack.print( TrollAttack.player.prompt() );
+		TrollAttack.print( player.prompt() );
 	}
 	// Commands
 	class Consider extends Command {
 	    public Consider( String s ) { super(s, false); }
 	    public void execute() { TrollAttack.print("Consider whom?"); }
 	    public void execute( String s ) {
-	        Mobile mob = TrollAttack.gameRooms[ TrollAttack.player.getCurrentRoom()].getMobile( s );
+	        Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
 	        if( mob == null) {
 	            TrollAttack.print("You don't see that here.");
 	        } else {
@@ -132,11 +135,11 @@ public class CommandHandler {
 		public Kill(String s) { super(s); }
 		public void execute() { TrollAttack.print("Kill what?"); }
 		public void execute(String s) {
-			Mobile mob = TrollAttack.gameRooms[ TrollAttack.player.getCurrentRoom()].getMobile( s );
+			Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
 			if( mob == null) {
 				TrollAttack.print("You don't see that here.");
 			} else {
-				Fight myFight = new Fight(TrollAttack.player, mob );
+				Fight myFight = new Fight(player, mob );
 				myFight.start();
 				if(TrollAttack.isGameOver()) {
 				    
@@ -149,12 +152,12 @@ public class CommandHandler {
 		public Get(String s) { super(s, false);}
 		public void execute() { TrollAttack.print("Get what?"); }
 		public void execute(String command) {
-			Item item = TrollAttack.gameRooms[	TrollAttack.player.getCurrentRoom()].removeItem(	command		);
+			Item item = TrollAttack.gameRooms[	player.getCurrentRoom()].removeItem(	command		);
 			if(item == null) {
 				TrollAttack.print("You can't find that here!");
 			} else {
 				TrollAttack.print("You get " + item.getShort() + ".");
-				TrollAttack.player.addItem(item);
+				player.addItem(item);
 			}
 		}
 	}
@@ -162,12 +165,12 @@ public class CommandHandler {
 	    public Sacrafice(String s) { super(s, false);}
 	    public void execute() { TrollAttack.print("Sacrafice what?"); }
 	    public void execute(String command) {
-	      Item i = TrollAttack.gameRooms[ TrollAttack.player.getCurrentRoom()].removeItem( command );
+	      Item i = TrollAttack.gameRooms[ player.getCurrentRoom()].removeItem( command );
            if(i == null) {
                TrollAttack.print("You can't find that here.");
            } else {
                TrollAttack.print("You sacrafice " + i.getShort() + " to your deity.");
-               TrollAttack.player.increaseFavor((int)(Math.random() * 3 + 2));
+               player.increaseFavor((int)(Math.random() * 3 + 2));
            }
 	    }
 	}
@@ -178,15 +181,15 @@ public class CommandHandler {
 	        newState = state;
 	    }
 	    public void execute() {
-	        if(TrollAttack.player.isFighting()) {
+	        if(player.isFighting()) {
 	            TrollAttack.print("You can't do that while fighting!");
 	        } else {
-		        if(TrollAttack.getPlayer().getState() == newState) {
-		            TrollAttack.print("You are already " + TrollAttack.player.getDoing() + "!");
+		        if(player.getState() == newState) {
+		            TrollAttack.print("You are already " + player.getDoing() + "!");
 		        } else {
 		            
-		            TrollAttack.getPlayer().getState() = newState;
-		            TrollAttack.print("You are now " + TrollAttack.player.getDoing() + ".");
+		            player.setState( newState );
+		            TrollAttack.print("You are now " + player.getDoing() + ".");
 		        }
 	        }
 	    }
@@ -194,7 +197,7 @@ public class CommandHandler {
 	class Favor extends Command {
 	    public Favor(String s) { super(s, false); }
 	    public void execute() {
-	        TrollAttack.print("Your current favor: " + TrollAttack.player.getFavor());
+	        TrollAttack.print("Your current favor: " + player.getFavor());
 	    }
 	    public void execute(String command) {
 	        this.execute();
@@ -202,21 +205,21 @@ public class CommandHandler {
 	}
 	class Prompt extends Command {
 	    public Prompt(String s) { super(s, false); }
-	    public void execute() { TrollAttack.print("Current Prompt: " + TrollAttack.player.getPrompt()); }
+	    public void execute() { TrollAttack.print("Current Prompt: " + player.getPrompt()); }
 	    public void execute(String command) {
-	        TrollAttack.player.setPrompt(command);
+	        player.setPrompt(command);
 	    }
 	}
 	class Drop extends Command {
 		public Drop(String s) {super(s, false);}
 		public void execute() {}
 		public void execute(String command) {
-			Item item = TrollAttack.player.dropItem( command );
+			Item item = player.dropItem( command );
 			if(item == null) {
 				TrollAttack.print("You don't have that!");
 			} else {
 				TrollAttack.print("You drop " + item.getShort() + ".");
-				TrollAttack.gameRooms[ TrollAttack.player.getCurrentRoom()].addItem( item );
+				TrollAttack.gameRooms[ player.getCurrentRoom()].addItem( item );
 			}
 		}
 	}
@@ -230,7 +233,7 @@ public class CommandHandler {
 	class Look extends Command {
 		public Look(String s) {super(s, false);}
 		public void execute() {
-			TrollAttack.look();
+			player.look();
 			
 		}
 		public void execute(String s) {
@@ -239,22 +242,19 @@ public class CommandHandler {
 	}
 	class Inventory extends Command {
 		public Inventory(String s) { super(s, false); }
-		public void execute() { TrollAttack.player.pInventory(); }
+		public void execute() { player.pInventory(); }
 		public void execute(String s) { this.execute(); }
 	}
 	class Equipment extends Command {
 		public Equipment(String s) { super(s, false); }
-		public void execute() { TrollAttack.player.pEquipment(); }
+		public void execute() { player.pEquipment(); }
 		public void execute(String s) { this.execute(); }
 	}
 	class Trance extends Command {
 	    public Trance(String s) { super(s, true); }
 	    public void execute() {
 	        TrollAttack.print("You enter a trance.");
-	        TrollAttack.player.manaPoints += 5;
-	        if(TrollAttack.player.manaPoints > TrollAttack.player.maxManaPoints) {
-	            TrollAttack.player.manaPoints = TrollAttack.player.maxManaPoints;
-	        }
+	        player.increaseManaPoints ( 5 );
 	        try {
 	            Thread.sleep(4000);
 	        } catch(Exception e) {
@@ -269,7 +269,7 @@ public class CommandHandler {
 		public Wear(String s) { super(s, false); }
 		public void execute() {TrollAttack.print("Wear what?");}
 		public void execute(String command) {
-			TrollAttack.print( TrollAttack.player.wearItem( command ) );
+			TrollAttack.print( player.wearItem( command ) );
 			
 		}
 	}
@@ -279,7 +279,7 @@ public class CommandHandler {
 	    }
 	    public void execute() {TrollAttack.print("Remove what?");}
 	    public void execute(String command) {
-	        TrollAttack.print( TrollAttack.player.removeItem( command ) );
+	        TrollAttack.print( player.removeItem( command ) );
 	    }
 	}
 	class Level extends Command {
@@ -287,8 +287,8 @@ public class CommandHandler {
 	        super( s, false );
 	    }
 	    public void execute() {
-	        TrollAttack.print("Current Level: " + TrollAttack.player.level);
-	        for(int i = TrollAttack.player.level + 1; i < TrollAttack.player.level + 7; i++ ) {
+	        TrollAttack.print("Current Level: " + player.getLevel());
+	        for(int i = player.getLevel() + 1; i < player.getLevel() + 7; i++ ) {
 	            TrollAttack.print("Level " + i + ": " + Util.experienceLevel(i));
 	        }
 	    }
@@ -314,7 +314,7 @@ public class CommandHandler {
 	class Save extends Command {
 	    public Save(String s) { super(s, true); }
 	    public void execute() {
-	        Util.save(TrollAttack.player);
+	        Util.save(player);
 	    }
 	    public void Execute(String s) {
 	        this.execute();
@@ -323,7 +323,7 @@ public class CommandHandler {
 	class Load extends Command {
 	    public Load(String s) { super(s, false); }
 	    public void execute() {
-	        TrollAttack.player = Util.load();
+	        player = Util.load();
 	    }
 	    public void Execute(String s) {
 	        this.execute();
@@ -347,7 +347,7 @@ public class CommandHandler {
 	class Quit extends Command {
 		public Quit(String s) { super(s); }
 		public void execute() {
-			TrollAttack.gameOver = true;
+			TrollAttack.endGame();
 		}
 		public void execute( String s ) { this.execute(); }
 	}

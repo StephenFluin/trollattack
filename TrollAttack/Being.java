@@ -14,11 +14,17 @@ package TrollAttack;
  */
 public class Being {
 	int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, hitSkill, hitDamage, experience, level, favor;
-	
+	int currentRoom;
 	String shortDescription, name;
 	boolean isPlayer = false;
 	Being beingFighting = null;
 	private Prompt myPrompt = new Prompt();
+	public int getCurrentRoom() {
+		return currentRoom;
+	}
+	public void setCurrentRoom(int r) {
+		currentRoom = r;
+	}
 	public String getShort() {
 		return shortDescription;
 	}
@@ -62,7 +68,30 @@ public class Being {
 	public void decreaseFavor(int decrease) {
 	    this.favor -= decrease;
 	}
-	
+	public int getManaPoints() {
+	    return manaPoints;
+	}
+	public void increaseManaPoints(int increase) {
+	    manaPoints += increase;
+	    if(manaPoints > maxManaPoints) {
+	        manaPoints = maxManaPoints;
+	    }
+	}
+	public void decreaseManaPoints(int decrease) {
+	    manaPoints -= decrease;
+	}
+	public void increaseHitPoints(int increase) {
+	    hitPoints += increase;
+	    if(hitPoints > maxHitPoints) {
+	        hitPoints = maxHitPoints;
+	    }
+	}
+	public void increaseMovePoints(int increase) {
+	    movePoints += increase;
+	    if(movePoints > maxMovePoints) {
+	        movePoints = maxMovePoints;
+	    }
+	}
 	/**
 	 * Level Calculation
 	 * The leveling is cacluated as such:

@@ -18,7 +18,7 @@ import java.net.Socket;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class InputOutput extends Thread {
+public class Communication extends Thread {
     static int wrapLength = 400;
     DataInputStream in;
     DataOutputStream out;
@@ -55,12 +55,13 @@ public class InputOutput extends Thread {
 
                  in = new DataInputStream(adminSocket.getInputStream());
                  out = new DataOutputStream(adminSocket.getOutputStream());
-                 System.out.println("Connection started.");	
-                 TrollAttack.look();
-                 TrollAttack.print( TrollAttack.player.prompt() );
+                 System.out.println("Connection started.");
+                 Player player = new Player(this);
+                 player.look();
+                 TrollAttack.print( player.prompt() );
                 while (!TrollAttack.gameOver) {
                     inputLine = in.readLine();
-                    TrollAttack.ch.handleCommand(inputLine);
+                    player.handleCommand(inputLine);
                 }
                 
              }
@@ -70,11 +71,14 @@ public class InputOutput extends Thread {
                 System.out.println("Exception in Server: "+e.toString());
         }
     }
+    public void print(String string) {
+        this.print(string, true);
+    }
     public void print(String string, boolean shouldWrap) {
         int wrap = wrapLength;	
 		if(Util.contains(string, "Exits") && false) {
-		    print("Contents of current room", true);
-		    print(TrollAttack.gameRooms[TrollAttack.player.currentRoom].toString(), true);;
+		   // print("Contents of current room", true);
+		    //print(TrollAttack.gameRooms[TrollAttack.player.currentRoom].toString(), true);;
 		}
         while(string.length() > 0 ) {
 			if(wrapLength > string.length() || !shouldWrap ) {

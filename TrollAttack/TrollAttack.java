@@ -21,12 +21,13 @@ public class TrollAttack {
 	static Document document;
 	static boolean gameOver = false;
 	static Background backGround;
-	static InputOutput io;
+	static Communication io;
 	/**
 	 *  You need to load the game mobiles before you can load
 	 *  the game rooms because the rooms contain Mobile objects and item objects.
 	 */
 	public static Mobile[] gameMobiles;
+	public static Player[] gamePlayers;
 	public static Item[] gameItems;
 	public static Room[] gameRooms;
 	public static boolean isGameOver() {
@@ -34,20 +35,15 @@ public class TrollAttack {
 	}
 	static DeadMobiles deadies = new DeadMobiles();
 	
-
+	
 	public static CommandHandler ch;
-	public static Player player = new Player();
-	public static Player getPlayer() {
-	    return player;
-	}
 	public static void main(String[] args) {
 		//print("starting program...");
 		int a = 0;
 		int direction;
-		ch = new CommandHandler();
 		
 		String command;
-		io = new InputOutput();
+		io = new Communication();
 		
 		gameItems = Util.readItemData();
         gameMobiles = Mobile.readData();
@@ -58,13 +54,6 @@ public class TrollAttack {
 		backGround.start();
     
     	io.run();
-    	
-    	if(player.getCurrentRoom() == 40) {
-    		gameOver = true;
-    	}
-        backGround.stop();
-        io.stop();
-
 
 	}
 	
@@ -77,14 +66,29 @@ public class TrollAttack {
 	static public void print(String string) {
 	    print(string, true);
 	}
+	public static void addPlayer(Player player) {
+	    for(int i = 0;i < gamePlayers.length; i++) {
+	        if(gamePlayers[i] != null ) {
+	            gamePlayers[i] = player;
+	        }
+	    }
+	}
+	public static void healAllPlayers(int health) {
+	    Player player;
+	    for(int i = 0;i < gamePlayers.length; i++) {
+	        if(gamePlayers[i] != null ) {
+	            player = gamePlayers[i];
+	            player.increaseHitPoints(health + player.getState());
+	            player.increaseManaPoints(health + player.getState());
+	            player.increaseMovePoints(health + player.getState());
+	        }
+	    }
+	}
 	static public void print(String string, boolean shouldWrap) {
 	    io.print(string, shouldWrap);
 	}
 	static public void error(String string) {
 	    System.out.print(string);
-	}
-	static public void look() {
-		gameRooms[player.getCurrentRoom()].pLook();
 	}
 	static public void healMobiles() {
 	    for(int i = 0; i < gameRooms.length;i++) {
@@ -94,6 +98,7 @@ public class TrollAttack {
 	    }
 	}
 	static public void endGame() {
+	    gameOver = true;
         backGround.stop();
         io.killConnections();
         io.stop();

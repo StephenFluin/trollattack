@@ -1,4 +1,5 @@
 package TrollAttack.Commands;
+import TrollAttack.*;
 /*
  * Created on May 7, 2005
  *
@@ -15,10 +16,12 @@ package TrollAttack.Commands;
  */
 public class CommandMove extends Command {
 	int Direction;
+	Player player;
 	public CommandMove() {}
-	public CommandMove(String n, int d) {
+	public CommandMove(Player play, String n, int d) {
 		Direction = d;
 		name = n;
+		player = play;
 	}
 	public static int 	EAST = 		1,
 	NORTHEAST = 2,
@@ -36,10 +39,10 @@ public class CommandMove extends Command {
 	}
 	public void execute() {
 		int results = 0;
-		results = TrollAttack.gameRooms[TrollAttack.player.getCurrentRoom()].followLink(Direction);
+		results = TrollAttack.gameRooms[player.getCurrentRoom()].followLink(Direction);
 		if(results != 0) {
-			TrollAttack.player.setCurrentRoom(results);
-			TrollAttack.look();
+			player.setCurrentRoom(results);
+			player.look();
 		} else {
 			TrollAttack.print("Alas, you cannot go that way.");
 		}

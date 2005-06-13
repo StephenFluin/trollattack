@@ -43,6 +43,7 @@ public class Mobile extends Being {
 	 //TrollAttack.print("Creating mobile #" + v);
 	 this.setPrompt("<%h>");
 	}
+	
 	// Is there a better way to duplicate a mobile?
 	public Mobile( Mobile m ) {
 	    vnum = m.vnum;
