@@ -24,7 +24,9 @@ public class LinkedList {
 	 *  Sort type of -1 indicates descending sort.
 	 */
 	private int sortType = 0;
-	
+	public LinkedList() {
+	    this(true, 0);
+	}
 	public LinkedList(boolean dupes, int sorty) {
 		allowDuplicates = dupes;
 		sortType = sorty;
@@ -219,10 +221,10 @@ public class LinkedList {
     	
     	while(current.getPointer() != tail) {
     		current = current.getPointer();
-    		/*TrollAttack.print(current.toString());
-    		TrollAttack.print(current.getData().toString());
+    		/*TrollAttack.error(current.toString());
+    		TrollAttack.error(current.getData().toString());
     		if(current.getData().toString() == null) {
-    		    //TrollAttack.print("No current!!! HELP!");
+    		    //TrollAttack.error("No current!!! HELP!");
     		}*/
     		if(current.getData().toString().startsWith(s)) {
     			return current.getData();

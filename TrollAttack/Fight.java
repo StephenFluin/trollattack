@@ -21,9 +21,10 @@ package TrollAttack;
  * damager's level + 5)* Damage
  */
 public class Fight extends Thread {
-    private Being first, second;
+    private Player first;
+    private Being second;
 	private Boolean results = null;
-	public Fight(Being a, Being b) {
+	public Fight(Player a, Being b) {
 		first = a;
 		second = b;
 	}
@@ -34,8 +35,8 @@ public class Fight extends Thread {
 	    first.setBeingFighting(second);
 	    second.setBeingFighting(first);
 		double damage;
-		//TrollAttack.print("First Data: " + first.getHitDamage() + ", " + first.hitSkill);
-		//TrollAttack.print("Second Data: " + second.getHitDamage() + ", " + second.hitSkill);
+		//TrollAttack.error("First Data: " + first.getHitDamage() + ", " + first.hitSkill);
+		//TrollAttack.error("Second Data: " + second.getHitDamage() + ", " + second.hitSkill);
 		while(first.hitPoints > 0 && second.hitPoints > 0) {
 			try {
 				Thread.sleep(1000);
@@ -44,12 +45,12 @@ public class Fight extends Thread {
 			}
 			damage = Math.floor( Math.floor(Math.random()*100 + 1)/first.hitSkill * first.getHitDamage());
 			first.increaseExperience((int)((second.level - first.level + 5)*damage));
-			TrollAttack.print(first.getShort().substring(0,1).toUpperCase() + first.getShort().substring(1) + " rend[" + (int)damage + "] " + second.getShort() + ".");
+			first.tell(Util.uppercaseFirst(first.getShort(first)) + " rend[" + (int)damage + "] " + second.getShort() + ".");
 			second.hitPoints = second.hitPoints - (int)damage;
 			damage = Math.floor( Math.floor(Math.random()*100 + 1)/second.hitSkill * second.getHitDamage());
-			TrollAttack.print(second.getShort().substring(0,1).toUpperCase() + second.getShort().substring(1) + " rends[" + (int)damage + "] " + first.getShort() + ".");
+			first.tell(Util.uppercaseFirst(second.getShort()) + " rends[" + (int)damage + "] " + first.getShort(first) + ".");
 			first.hitPoints = first.hitPoints - (int)damage;
-			TrollAttack.print(first.prompt());
+			first.tell(first.prompt());
 
 		}
 		if(first.hitPoints > 0) {
@@ -60,14 +61,14 @@ public class Fight extends Thread {
 		boolean win = this.results().booleanValue();
 		if(win) {
 			TrollAttack.gameRooms[ first.getCurrentRoom()].removeMobile( second.name );
-			TrollAttack.print("You killed " + second.getShort());
+			first.tell("You killed " + second.getShort());
 			TrollAttack.deadies.add( (Mobile)second, first.getCurrentRoom() );
 			int exp = first.getExperience();
 			first.increaseExperience((int)(second.level * second.getHitDamage() * second.maxHitPoints * 100 / second.hitSkill));
-			//TrollAttack.print("Experience was " + exp + " and became " + TrollAttack.player.getExperience());
+			//TrollAttack.error("Experience was " + exp + " and became " + TrollAttack.player.getExperience());
 			
 		} else {
-			TrollAttack.print( second.getShort() + " kills you!");
+		    first.tell( second.getShort() + " kills you!");
 			TrollAttack.gameOver = true;
 			TrollAttack.endGame();
 			//Is there any way to stop the entire program? Oh well....

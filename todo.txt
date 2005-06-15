@@ -1,13 +1,14 @@
 Todo List / Ideas:
 
 1.Saving
+.Word Wrapping
 2.Remove hardcoding of maxes via arrays.
 3.Building System.
-Pets and Mountable Mobiles
-Food and Drink System
-Swimming and Water
+4. Food and Drink System
+5. Pets and Mountable Mobiles
+6. Swimming and Water
 
 
-Guilds and Orders
-Better Item Handling
-Speech and Emotives
+7. Guilds and Orders
+8. Better Item Handling
+9. Speech and Emotives

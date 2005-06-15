@@ -25,12 +25,12 @@ public class DeadMobiles {
 		for(i = 0; mobs[i] != null; i++) {
 		}
 		if(i > 254) {
-			TrollAttack.print( "ARRAY OVERFLOW!!!" );
+			TrollAttack.error( "ARRAY OVERFLOW!!!" );
 		}
 		mobs[i] = m;
 		roms[i] = r;
 		refs[i] = m.getRespawnTime();
-		//TrollAttack.print(m.getShort() + " joins the netherworld.");
+		//TrollAttack.error(m.getShort() + " joins the netherworld.");
 	}
 	public void handleResurrection() {
 		for(int i = 0;i < mobs.length; i++ ) {
@@ -40,7 +40,7 @@ public class DeadMobiles {
 				    mobs[i].manaPoints = mobs[i].maxManaPoints;
 				    mobs[i].movePoints = mobs[i].maxMovePoints;
 					TrollAttack.gameRooms[roms[i]].addMobile( mobs[i] );
-					//TrollAttack.print("A mobile returns from the netherworld");
+					//TrollAttack.error("A mobile returns from the netherworld");
 					mobs[i] = null;
 				}
 			}

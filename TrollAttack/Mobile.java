@@ -40,7 +40,7 @@ public class Mobile extends Being {
 	 shortDescription = s;
 	 longDesc = l;
 	 reSpawn = rSpawn;
-	 //TrollAttack.print("Creating mobile #" + v);
+	 //TrollAttack.error("Creating mobile #" + v);
 	 this.setPrompt("<%h>");
 	}
 	

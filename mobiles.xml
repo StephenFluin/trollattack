@@ -54,7 +54,7 @@
 			<level>3</level>
 			<name>baker</name>
 			<short>the baker</short>
-			<long>A lanky man looks furivively around him.</long>
+			<long>A lanky man looks furtively around him.</long>
 			<hp>100</hp>
 			<maxhp>100</maxhp>
 			<hitskill>100</hitskill>

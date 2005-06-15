@@ -26,7 +26,14 @@ public class Being {
 		currentRoom = r;
 	}
 	public String getShort() {
-		return shortDescription;
+		return getShort(null);
+	}
+	public String getShort(Being whoAmI) {
+	    if(whoAmI == this) {
+	        return "you";
+	    } else {
+	        return shortDescription;
+	    }
 	}
 	public String getName() {
 	    return name;
@@ -71,6 +78,9 @@ public class Being {
 	public int getManaPoints() {
 	    return manaPoints;
 	}
+	public void tell(String s) {
+	    
+	}
 	public void increaseManaPoints(int increase) {
 	    manaPoints += increase;
 	    if(manaPoints > maxManaPoints) {
@@ -100,7 +110,7 @@ public class Being {
 	public void increaseExperience(int e) {
 	    experience += e;
 	    if(experience > Util.experienceLevel(level) ) {
-	        TrollAttack.print("You have attained level " + ++level + ".");
+	        tell("You have attained level " + ++level + ".");
 	        int healthIncrease = (int)(Math.random() * 10) + 10;
 	        int manaIncrease = (int)(Math.random() * 10) + 10;
 	        int moveIncrease = (int)(Math.random() * 10) + 10;

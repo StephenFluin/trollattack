@@ -24,7 +24,7 @@ public class Item {
 	 longDesc = l;
 	 hitDamage = hd;
 	 type = t;
-	 //TrollAttack.print("Creating item of type " + t);
+	 //TrollAttack.error("Creating item of type " + t);
 	}
 	public Item(Item i) {
 	    this(i.vnum, i.name, i.weight, i.shortDesc, i.longDesc, i.hitDamage, i.type);

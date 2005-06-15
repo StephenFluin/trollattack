@@ -17,7 +17,7 @@ import TrollAttack.Commands.*;
  */
 public class Player extends Being implements Serializable {
 	//String prompt = "&G<&R%h&G/&R%H&G-&z%x&G> %T";
-	int experience = 1, currentRoom = 0, state = 0;
+	int experience = 1, state = 0;
 	/**
 	 * States:
 	 * 0 Awake/Alert
@@ -35,12 +35,12 @@ public class Player extends Being implements Serializable {
 	private CommandHandler ch = null;
 
 	public void look() {
-	    if(TrollAttack.gameRooms[this.getCurrentRoom()] == null) {
-	        tell(this.getCurrentRoom() + "'s null!");
+	    String[] looks = TrollAttack.gameRooms[getCurrentRoom()].look(this);
+	    for(int i = 0; i < looks.length; i++ ) {
+			tell( looks[i] + "" );
 	    }
-	    TrollAttack.gameRooms[this.getCurrentRoom()].pLook();
-	   
 	}
+	   
 	public Player(Communication com) {
 		// Set the default player values here.
 	    hitPoints = 50;
@@ -53,13 +53,18 @@ public class Player extends Being implements Serializable {
 		hitDamage = 3;
 		level = 1;
 		currentRoom = 1;
-		shortDescription = "you";
-		ch = new CommandHandler(this);
+		shortDescription = "a player";
 		communication = com;
-		super.setCurrentRoom( 1  );
+		setCurrentRoom( 1  );
+		ch = new CommandHandler(this);
+		
+		
 	}
 	public void tell(String s) {
 	    communication.print(s);
+	}
+	public void name(String newName) {
+	    shortDescription = newName;
 	}
 	public String toString() {
 	    String r = "";
@@ -72,6 +77,9 @@ public class Player extends Being implements Serializable {
 	public int getState() {
 	    return state;
 	}
+	public void closeConnection() {
+	    communication.close();
+	}
 	public void setState( int newState ) {
 	    state = newState;
 	}
@@ -79,12 +87,12 @@ public class Player extends Being implements Serializable {
 	    ch.handleCommand(command);
 	}
 	public int getHitDamage() {
-	    //TrollAttack.print("Reading player hit damage.");
+	    //TrollAttack.error("Reading player hit damage.");
 	    int hd = hitDamage;
 	    for(int j = 0;j < playerItems.length; j++ ) {
 	        if(playerItems[j] != null) {
 	            hd += playerItems[j].hitDamage;
-	            //TrollAttack.print("Adding to player damage by " + playerItems[j].hitDamage);
+	            //TrollAttack.error("Adding to player damage by " + playerItems[j].hitDamage);
 	        }
 	    }
 	    return hd;
@@ -96,7 +104,7 @@ public class Player extends Being implements Serializable {
 	    if(isFighting()) {
 	        return "fighting";
 	    } else if(state == 0) {
-	        return "doing nothing";
+	        return "standing";
 	    } else if(state == 1) {
 	        return "sitting";
 	    } else if(state == 2) {
@@ -118,6 +126,7 @@ public class Player extends Being implements Serializable {
 	private String[] inventory() {
 		String[] items = new String[255];
 		int n = 0;
+		
 		for(int i = 0;i < playerItems.length; i++ ) {
 			if(playerItems[i] != null) {
 				items[n] = playerItems[i].getShort();
@@ -133,24 +142,24 @@ public class Player extends Being implements Serializable {
 	}
 	public void pInventory() {
 			String[] inv = inventory();
-			TrollAttack.print("Your Inventory:");
+			tell("Your Inventory:");
 			for(int i = 0; i < inv.length; i++ ) {
-					TrollAttack.print( inv[i] );
+					tell( inv[i] );
 			}
 	}
 	public void pEquipment() {
-		TrollAttack.print("Your Equiptment:");
+		tell("Your Equipment:");
 		if(weapon != null) {
-			TrollAttack.print("Weapon: " + weapon.getShort());
+			tell("Weapon: " + weapon.getShort());
 		}
 		if(helm != null) {
-			TrollAttack.print("Helm: " + helm.getShort());
+		    tell("Helm: " + helm.getShort());
 		}
 		if(boots != null) {
-		    TrollAttack.print("Boots: " + boots.getShort());
+		    tell("Boots: " + boots.getShort());
 		}
 		if(greaves != null) {
-			TrollAttack.print("Greaves: " + greaves.getShort());
+		    tell("Greaves: " + greaves.getShort());
 		}
 	}
 	
@@ -165,7 +174,7 @@ public class Player extends Being implements Serializable {
 						return newItem;
 						
 					} else {
-						//TrollAttack.print("looking at object i in room " + .getCurrentRoom());
+						//TrollAttack.error("looking at object i in room " + .getCurrentRoom());
 					}
 				}
 			}
@@ -181,7 +190,7 @@ public class Player extends Being implements Serializable {
 			if(playerItems[i] != null) {
 			    if(playerItems[i].getName().compareToIgnoreCase(name) == 0) {
 			        Item newWear = playerItems[i];
-			       // TrollAttack.print("newWear would go on your " + newWear.type);
+			       // TrollAttack.error("newWear would go on your " + newWear.type);
 			        switch(newWear.type) {
 			            case Item.SWORD:
 			                if(weapon == null) {

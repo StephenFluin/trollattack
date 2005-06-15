@@ -23,6 +23,7 @@ public class CommandHandler {
 	public CommandHandler(Player p) {
 		commandList = new LinkedList(false, 0);
 		player = p;
+		//player.tell("Starting command handler.");
 		sh = new SpellHandler(player);
 		
 		//player.tell("Starting command registration...");
@@ -47,6 +48,7 @@ public class CommandHandler {
 		registerCommand(new Favor("favor"));
 		registerCommand(new Look("look"));
 		registerCommand(new Cast("cast"));
+		registerCommand(new Name("name"));
 		registerCommand(new Prompt("prompt"));
 		registerCommand(new Trance("trance"));
 		registerCommand(new Consider("consider"));
@@ -55,6 +57,7 @@ public class CommandHandler {
 		registerCommand(new Wear("wear"));
 		registerCommand(new Level("level"));
 		registerCommand(new Remove("remove"));
+		registerCommand(new Say("say"));
 		registerCommand(new ChangeState("stand", 0));
 		registerCommand(new ChangeState("sit", 1));
 		registerCommand(new ChangeState("rest", 2));
@@ -311,6 +314,26 @@ public class CommandHandler {
 	        this.execute();
 	    }
 	}
+	class Say extends Command {
+	    public Say(String s) { super(s, true); }
+	    public void execute() {
+	        player.tell("Say what?");
+	    }
+	    public void execute(String phrase) {
+	        player.tell("You say, \"" + phrase + "\".");
+	        TrollAttack.gameRooms[player.getCurrentRoom()].say(Util.uppercaseFirst(player.getShort()) + " says, \"" + phrase + "\".", player);
+	    }
+	}
+	class Name extends Command {
+	    public Name(String s) { super(s, true); }
+	    public void execute() {
+	        player.tell("Name yourself what?");
+	    }
+	    public void execute(String phrase) {
+	        player.tell("You name yourself " + phrase + ".");
+	        player.name(phrase);
+	    }
+	}
 	class Save extends Command {
 	    public Save(String s) { super(s, true); }
 	    public void execute() {
@@ -347,7 +370,8 @@ public class CommandHandler {
 	class Quit extends Command {
 		public Quit(String s) { super(s); }
 		public void execute() {
-			TrollAttack.endGame();
+			TrollAttack.gameRooms[player.getCurrentRoom()].removePlayer(player);
+		    player.closeConnection();
 		}
 		public void execute( String s ) { this.execute(); }
 	}

@@ -1,6 +1,4 @@
 package TrollAttack;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -52,9 +50,9 @@ public class Util {
 			    serializer.writeObject(player);
 			    serializer.flush();
 		    } catch(FileNotFoundException e) {
-		        TrollAttack.print("Couldn't find the file.");
+		        TrollAttack.error("Couldn't find the file.");
 		    } catch(IOException e) {
-		        TrollAttack.print("Couldn't open stream.");
+		        TrollAttack.error("Couldn't open stream.");
 		    }
 
 		}
@@ -67,19 +65,19 @@ public class Util {
 		         {
 		         	// Cast object to a Vector
 		         	Player pla = (Player) newPlayer;
-		         	TrollAttack.print("You found a player!");
-		         	TrollAttack.print(pla.toString());
+		         	TrollAttack.error("You found a player!");
+		         	TrollAttack.error(pla.toString());
 		         	// Do something with vector....
 		         } else {
-		             TrollAttack.print("this isn't a player!");
+		             TrollAttack.error("this isn't a player!");
 		         }
 		         return (Player)newPlayer;
 		    } catch(FileNotFoundException e) {
-		        TrollAttack.print("Couldn't find the file.");
+		        TrollAttack.error("Couldn't find the file.");
 		    } catch(IOException e) {
-		        TrollAttack.print("Couldn't open stream.");
+		        TrollAttack.error("Couldn't open stream.");
 		    } catch(ClassNotFoundException e) {
-		        TrollAttack.print("Class not found.");
+		        TrollAttack.error("Class not found.");
 		    }
 		    return null;
 		}
@@ -147,7 +145,7 @@ public class Util {
 					for (int i = 1; i < children.getLength(); i += 2) {
 						
 						Node child = children.item(i);
-						//TrollAttack.print(child.toString() + " and " + child.getChildNodes() + " and " + child.getChildNodes().item(0).getNodeValue());
+						//TrollAttack.error(child.toString() + " and " + child.getChildNodes() + " and " + child.getChildNodes().item(0).getNodeValue());
 						if( child.getNodeType() != Node.TEXT_NODE ) {
 							//printNode(child, "");
 							String name = child.getNodeName();
@@ -195,7 +193,7 @@ public class Util {
 				        }
 					 }
 				}
-			//TrollAttack.print("vnum:" + vnum + ", south: " + south );
+			//TrollAttack.error("vnum:" + vnum + ", south: " + south );
 			 itemList[vnum] = new Item(vnum, itemName, weight, shortDesc, longDesc, t, hd);
 			 //System.out.println("Created: " + itemList[vnum].toString());
 			}
@@ -214,4 +212,7 @@ public class Util {
 		return null ;
 	}
 
+	static public String uppercaseFirst(String string) {
+	    return string.substring(0,1).toUpperCase() + string.substring(1);
+	}
 }

@@ -15,6 +15,9 @@ package TrollAttack;
 
  
 import org.w3c.dom.Document;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 import TrollAttack.Commands.CommandHandler;
 
 public class TrollAttack {
@@ -22,12 +25,13 @@ public class TrollAttack {
 	static boolean gameOver = false;
 	static Background backGround;
 	static Communication io;
+	static Calendar cal = new GregorianCalendar();
 	/**
 	 *  You need to load the game mobiles before you can load
 	 *  the game rooms because the rooms contain Mobile objects and item objects.
 	 */
 	public static Mobile[] gameMobiles;
-	public static Player[] gamePlayers;
+	public static LinkedList gamePlayers;
 	public static Item[] gameItems;
 	public static Room[] gameRooms;
 	public static boolean isGameOver() {
@@ -48,7 +52,7 @@ public class TrollAttack {
 		gameItems = Util.readItemData();
         gameMobiles = Mobile.readData();
 		gameRooms =  Room.readData();
-		gamePlayers = new Player[50];
+		gamePlayers = new LinkedList();
         
         // Done reading data files.
         backGround = new Background();
@@ -68,28 +72,33 @@ public class TrollAttack {
 	    print(string, true);
 	}
 	public static void addPlayer(Player player) {
-	    for(int i = 0;i < gamePlayers.length; i++) {
-	        if(gamePlayers[i] != null ) {
-	            gamePlayers[i] = player;
-	        }
-	    }
+	    	gamePlayers.add(player);
 	}
 	public static void healAllPlayers(int health) {
 	    Player player;
-	    for(int i = 0;i < gamePlayers.length; i++) {
-	        if(gamePlayers[i] != null ) {
-	            player = gamePlayers[i];
+	    for(int i = 1;i <= gamePlayers.length(); i++) {
+	        if(gamePlayers.find(i) != null ) {
+	            player = (Player)gamePlayers.find(i);
 	            player.increaseHitPoints(health + player.getState());
 	            player.increaseManaPoints(health + player.getState());
 	            player.increaseMovePoints(health + player.getState());
 	        }
 	    }
 	}
+	public static void broadcast(String message) {
+	    for(int i = 1;i <= gamePlayers.length(); i++) {
+	        ((Player)gamePlayers.find(i)).tell(message);
+	    }
+	}
 	static public void print(String string, boolean shouldWrap) {
-	    io.print(string, shouldWrap);
+	    //io.print(string, shouldWrap);
 	}
 	static public void error(String string) {
-	    System.out.print(string);
+	    System.out.println(string);
+	}
+	static public void message(String string) {
+	   // System.out.println(cal.MONTH + "/" + cal.DAY_OF_MONTH + "/" + cal.YEAR + " " + cal.HOUR + ":" + cal.MINUTE + ((cal.AM == 0) ? "PM" : "AM") + " " + string);
+	    error(string);
 	}
 	static public void healMobiles() {
 	    for(int i = 0; i < gameRooms.length;i++) {

@@ -31,7 +31,6 @@ public class Background extends Thread {
 			}
 			if(time % 10 == 0) {
 			    TrollAttack.healMobiles();
-			   // TrollAttack.print("A healing wind sweeps through your enemies.");
 			}
 		
 			// Who cares what happens in rooms

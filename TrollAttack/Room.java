@@ -16,6 +16,7 @@ public class Room {
 	String description = "", title = "";
 	private Item[] roomItems;
 	public Mobile[] roomMobiles;
+	public LinkedList roomPlayers;
 	static String dataFile = "rooms.xml";
 	
 	public Room(int vnum, String title, String description, int east , int west, int north, int south, int  northEast, int  northWest, int  southEast, int  southWest, Item[] items, Mobile[] mobiles) {
@@ -26,7 +27,8 @@ public class Room {
 	 
 	 roomItems = items;
 	 roomMobiles = mobiles;
-	 //TrollAttack.print("Creating room with vnum value of " + vnum );
+	 roomPlayers = new LinkedList();
+	 //TrollAttack.error("Creating room with vnum value of " + vnum );
 	}
 	
 	public String toString() {
@@ -166,7 +168,7 @@ public class Room {
 						 		if(n >= tmpMobiles.length) {
 						 			throw( new Error("ITEM LOAD OVERLOAD!!! (255 ITEMS PER ROOM MAX!"));
 						 		} else {
-						 		    //TrollAttack.print("Attempting to load mobile # " + nodeValue );
+						 		    //TrollAttack.error("Attempting to load mobile # " + nodeValue );
 						 		    // I need to make sure that this is instatiating the mobile, not just referencing it.
 						 		    Mobile m = new Mobile(TrollAttack.gameMobiles[nodeValue]);
 						 		   
@@ -181,7 +183,7 @@ public class Room {
 				        tmpMobiles[i].setCurrentRoom(vnum);
 				    }
 				}
-			//TrollAttack.print("vnum:" + vnum + ", south: " + south );
+			//TrollAttack.error("vnum:" + vnum + ", south: " + south );
 			 Roomlist[vnum] = new Room(vnum, title, description, east, west, north, south, northEast, northWest, southEast, southWest, tmpItems, tmpMobiles);
 			 //System.out.println("Created: " + Roomlist[vnum].toString());
 			}
@@ -200,6 +202,9 @@ public class Room {
 		return null ;
 	}
 	public String[] look() {
+	    return look(null);
+	}
+	public String[] look(Player player) {
 		String exits = "Exits: ";
 		if(east != 0 ) {
 			exits += "East";
@@ -236,46 +241,66 @@ public class Room {
 		String[] objects = new String[roomItems.length];
 		int n = 0;
 		for(int i = 0; i < roomItems.length; i++) {
-			//TrollAttack.print("About to get room " + i + " of " + roomItems[i]);
+			//TrollAttack.error("About to get room " + i + " of " + roomItems[i]);
 			if(roomItems[i] != null) {
-				objects[n] = roomItems[i].getLong();
+				objects[n] = Communication.GREEN + roomItems[i].getLong();
 				n++;
 			}
 		}
 		
 		/**
 		 * Show Mobs
-		 * get all mobs from the room, and write their longdesc.
+		 * get all mobs from the room, and write their longdesc (as well as any players).
 		 */
-		String[] mobiles = new String[roomMobiles.length];
-		// TrollAttack.print("Printing mobiles...");
+		String[] mobiles = new String[roomMobiles.length + roomPlayers.length() - 1 ];
+		// TrollAttack.error("Printing mobiles...");
 		int m = 0;
 		for(int i = 0; i < roomMobiles.length; i++) {
 			if(roomMobiles[i] != null) {
-			    //TrollAttack.print("Found mobile " + roomMobiles[i].vnum + " at position " + m + ", also known as " + roomMobiles[i].getLong());
-				mobiles[m] = roomMobiles[i].getLong();
-				//TrollAttack.print("Adding "+ mobiles[i] + " to print queue.");
+			    //TrollAttack.error("Found mobile " + roomMobiles[i].vnum + " at position " + m + ", also known as " + roomMobiles[i].getLong());
+				mobiles[m] = Communication.PURPLE + roomMobiles[i].getLong();
+				//TrollAttack.error("Adding "+ mobiles[i] + " to print queue.");
 				m++;
 			}
 		}
-		String[] firsts = { title , description , exits };
-		//TrollAttack.print("3 firsts, " + i + " objects.");
+		for(int i = 1;i <= roomPlayers.length();i++) {
+		    Player foundPlayer = (Player)roomPlayers.find(i);
+		    if( foundPlayer != player) {
+		        mobiles[m] = Communication.PURPLE + Util.uppercaseFirst(foundPlayer.getShort()) + " is " + foundPlayer.getDoing() + " here";
+		        m++;
+		    }
+		}
+		String[] firsts = { Communication.WHITE + title , Communication.YELLOW + description , Communication.WHITE + exits };
+		//TrollAttack.error("3 firsts, " + i + " objects.");
 		String[] myReturn = new String[n + m + firsts.length];
-		//TrollAttack.print(firsts.length + " title + desc lines, " + n + " item lines, " + m + " mob lines.");
+		//TrollAttack.error(firsts.length + " title + desc lines, " + n + " item lines, " + m + " mob lines.");
 		System.arraycopy(firsts, 0, myReturn, 0, firsts.length);
 		System.arraycopy(objects, 0, myReturn, firsts.length, n);
 		System.arraycopy(mobiles, 0, myReturn, firsts.length + n, m);
 		return myReturn;
 	}
-	public void pLook() {
-		String[] looks = look();
-		for(int i = 0; i < looks.length; i++ ) {
-				/*TrollAttack.print( i + "!!!" );
-				if(looks[i] == null) {
-					TrollAttack.print( "IS GOING TO CRASH< IS NULL!");
-				}*/
-				TrollAttack.print( looks[i] + "" );
-		}
+	public void addPlayer(Player player) {
+	    roomPlayers.add(player);
+	}
+	public void removePlayer(Player player) {
+	    roomPlayers.delete(player);
+	}
+	public void say(String s) {
+	    say(s, null);
+	}
+	public void say(String s, Player ignorePlayer) {
+	    Player player;
+	    try{
+	        for(int i = 1;i <= roomPlayers.length(); i++ ) {
+	    
+		        player = (Player)roomPlayers.find(i);
+		        if(player != ignorePlayer) {
+		            player.tell(s);
+		        }
+	        }
+	    } catch(Exception e) {
+	        e.printStackTrace();
+	    }
 	}
 	public int followLink (int direction) {
 		if(direction == CommandMove.EAST) {
@@ -289,7 +314,6 @@ public class Room {
 		} else {
 			return 0;
 		}
-		
 	}
 	public Item removeItem(String name) {
 		Item newItem;
@@ -347,16 +371,16 @@ public class Room {
 	    for( int i = 0 ; i < roomMobiles.length ; i++ ) {
 	        m = roomMobiles[i];
 	        if(m != null) {
-	           // TrollAttack.print("A healing wind sweeps through " + m.getShort() + " at pos (" + i + ".");
-	            //TrollAttack.print("m HP was " + m.hitPoints);
+	           // TrollAttack.error("A healing wind sweeps through " + m.getShort() + " at pos (" + i + ".");
+	            //TrollAttack.error("m HP was " + m.hitPoints);
 	            m.hitPoints++;
-	            //TrollAttack.print("m HP is " + m.hitPoints);
+	            //TrollAttack.error("m HP is " + m.hitPoints);
 	            m.movePoints++;
 	            m.manaPoints++;
 	            if( m.hitPoints > m.maxHitPoints ) {
 	                m.hitPoints = m.maxHitPoints;
 	            }
-	            //TrollAttack.print("m HP will be " + m.hitPoints);
+	            //TrollAttack.error("m HP will be " + m.hitPoints);
 	            if( m.movePoints > m.movePoints ) {
 	                m.movePoints = m.maxMovePoints;
 	            }
