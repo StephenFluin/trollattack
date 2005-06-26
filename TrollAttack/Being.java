@@ -14,7 +14,16 @@ package TrollAttack;
  */
 public class Being {
 	int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, hitSkill, hitDamage, experience, level, favor;
-	int currentRoom;
+	int currentRoom, state = 0;
+	/**
+	 * States:
+	 * 0 Awake/Alert
+	 * 1 Sitting
+	 * 2 Lying down
+	 * 3 Sleeping
+	 */
+	
+	
 	String shortDescription, name;
 	boolean isPlayer = false;
 	Being beingFighting = null;
@@ -22,8 +31,36 @@ public class Being {
 	public int getCurrentRoom() {
 		return currentRoom;
 	}
+	public Room getActualRoom() {
+	    return TrollAttack.gameRooms[currentRoom];
+	}
+
 	public void setCurrentRoom(int r) {
 		currentRoom = r;
+	}
+	
+	public int getState() {
+	    return state;
+	}
+	public void setState( int newState ) {
+	    state = newState;
+	}
+	public String getDoing() {
+	    if(isFighting()) {
+	        return "fighting";
+	    } else if(state == 0) {
+	        return "standing";
+	    } else if(state == 1) {
+	        return "sitting";
+	    } else if(state == 2) {
+	        return "lying down";
+	    } else {
+	        return "something secret";
+	    }
+	    
+	}
+	public boolean isPlayer() {
+	    return isPlayer;
 	}
 	public String getShort() {
 		return getShort(null);
@@ -34,6 +71,9 @@ public class Being {
 	    } else {
 	        return shortDescription;
 	    }
+	}
+	public String getLong() {
+	    return Communication.PURPLE + Util.uppercaseFirst(getShort()) + " is " + getDoing() + " here";
 	}
 	public String getName() {
 	    return name;

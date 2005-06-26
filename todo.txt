@@ -12,3 +12,6 @@ Todo List / Ideas:
 7. Guilds and Orders
 8. Better Item Handling
 9. Speech and Emotives
+
+Bugs:
+Attempting to kill something that doesn't exist kills game.

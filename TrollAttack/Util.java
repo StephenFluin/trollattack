@@ -1,16 +1,21 @@
 package TrollAttack;
+import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.util.Hashtable;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -32,8 +37,13 @@ import org.w3c.dom.NodeList;
  */
 public class Util {
 	static public boolean contains(String s, String d) {
-	    if( s.length() < d.length() ) {
-	        return false;
+	    try {
+		    if( s.length() < d.length() ) {
+		        return false;
+		    }
+	    } catch( NullPointerException e ) {
+	        TrollAttack.print("Attempting to see if  '" + s + "' contains '" + d + "'.");
+	        throw(new NullPointerException());
 	    }
 	    if( s.toLowerCase().startsWith( d.toLowerCase() ) ) {
 	        return true;
@@ -41,163 +51,97 @@ public class Util {
 	        return contains( s.substring( 1 , s.length()), d );
 	    }
 	}
-	static public void save(Player player) {
-		
-		    try {
-		        FileOutputStream underlyingStream = new FileOutputStream("tmp.txt");
-		        ObjectOutputStream serializer = new ObjectOutputStream(underlyingStream);
-
-			    serializer.writeObject(player);
-			    serializer.flush();
-		    } catch(FileNotFoundException e) {
-		        TrollAttack.error("Couldn't find the file.");
-		    } catch(IOException e) {
-		        TrollAttack.error("Couldn't open stream.");
-		    }
-
+    //How to write a file (easy):
+    // FileOutputStream underlyingStream = new FileOutputStream("Players/" + player.getShort() + ".txt");
+    // DataOutputStream fileOut = new DataOutputStream(underlyingStream);
+	// fileOut.writeBytes( player.getDocument() );
+	static public void savePlayer(Player player) {
+		try{
+		    XMLPrint(player.toDocument(), "Players/" + player.getShort() + ".txt");
+		} catch(Exception e) {
+		    TrollAttack.error("There was a problem writing the player's file, or create the player's file.");
 		}
-		static public Player load() {
-		  try {    
-		        FileInputStream underlyingStream = new FileInputStream("tmp.txt");
-		        ObjectInputStream deserializer = new ObjectInputStream(underlyingStream);
-		         Object newPlayer = deserializer.readObject();
-		         if (newPlayer instanceof Player)
-		         {
-		         	// Cast object to a Vector
-		         	Player pla = (Player) newPlayer;
-		         	TrollAttack.error("You found a player!");
-		         	TrollAttack.error(pla.toString());
-		         	// Do something with vector....
-		         } else {
-		             TrollAttack.error("this isn't a player!");
-		         }
-		         return (Player)newPlayer;
-		    } catch(FileNotFoundException e) {
-		        TrollAttack.error("Couldn't find the file.");
-		    } catch(IOException e) {
-		        TrollAttack.error("Couldn't open stream.");
-		    } catch(ClassNotFoundException e) {
-		        TrollAttack.error("Class not found.");
-		    }
-		    return null;
-		}
-	
+	}
 	static public int experienceLevel(int level) {
 	    return (int)Math.pow(Math.log(level)/Math.log(2), level - 2) * 2000;
 	}
-	public static Item[] readItemData() {
-	   String dataFile = "items.xml";
-		File xmlFile = new File( dataFile );
-        try {
+	public static Player readPlayerData(String playerName) {
+	    Document doc = xmlize("Players/" + playerName + ".txt");
+	    XMLHandler handler = new XMLHandler(doc, false);
+	    Hashtable hash = (Hashtable)handler.sections.getNext();
+	    Player p = new Player(
+	            new Integer((String)hash.get("hitPoints")).intValue(),
+	            new Integer((String)hash.get("maxHitPoints")).intValue(),
+	            new Integer((String)hash.get("manaPoints")).intValue(),
+	            new Integer((String)hash.get("maxManaPoints")).intValue(),
+	            new Integer((String)hash.get("movePoints")).intValue(),
+	            new Integer((String)hash.get("maxMovePoints")).intValue(),
+	            new Integer((String)hash.get("hitSkill")).intValue(),
+	            new Integer((String)hash.get("hitDamage")).intValue(),
+	            new Integer((String)hash.get("level")).intValue(),
+	            new Integer((String)hash.get("room")).intValue(),
+	            new Integer((String)hash.get("experience")).intValue(),
+	            playerName
+	            );
+	    return p;
+	    
+	}
+	public static LinkedList readItemData() {
+	    int vnum = 0, weight = 0, hd, t = 0;
+		String shortDesc = "", longDesc = "", itemName = "", type = "";
+        Document doc = xmlize("items.xml");
+        XMLHandler handler = new XMLHandler(doc);
+        LinkedList items = new LinkedList();
         
-            // Get Document Builder Factory
-            DocumentBuilderFactory factory = 
-                    DocumentBuilderFactory.newInstance();
-
-            // Turn on validation, and turn off namespaces
-            factory.setValidating( false );
-            factory.setNamespaceAware(false);
-            factory.setIgnoringComments( true ) ;
-            
-            // Why doesn't this work?
-            factory.setIgnoringElementContentWhitespace( true );
-            //factory.
-            // Obtain a document builder object
-            DocumentBuilder builder = factory.newDocumentBuilder();
-           // System.out.println();
-            //          System.out.println("DataFile : " + xmlFile);
-           //System.out.println("Parser Implementation  : " + builder.getClass());
-            //System.out.println();
-
-            // Parse the document
-            Document doc = builder.parse(xmlFile);
-            // Print the document from the DOM tree and feed it an initial 
-            // indentation of nothing
-            
-			Node node = doc;
-			// @TODO: Stop hardcoding of max items limit.
-			final Item[] itemList = new Item[255];
-			int vnum = 0, weight = 0, hd, t = 0;
-			String shortDesc = "", longDesc = "", itemName = "";
-			NodeList kids = node.getChildNodes();
-		
-	//		 first child of this list is TrollAttack
-			Node Kid = kids.item(0);
+        for(int i = 0;i < handler.sections.length(); i++) {
+            Hashtable item = (Hashtable)handler.sections.getNext();
+            Hashtable hash = (Hashtable)((LinkedList)item.get("item")).getNext();	
+            vnum = new Integer((String)hash.get("vnum")).intValue();
+            shortDesc = (String)hash.get("short");
+            longDesc = (String)hash.get("long");
+            weight = new Integer((String)hash.get("weight")).intValue();
+            itemName = (String)hash.get("name");
+            hd = new Integer((String)hash.get("hitDamage")).intValue();
+            type = (String)hash.get("type");
+ 		    if(type.compareToIgnoreCase("sword") == 0) {
+ 		        t = Item.SWORD;
+ 		    } else if(type.compareToIgnoreCase("helm") == 0) {
+ 		        t = Item.HELM;
+ 		    } else if(type.compareToIgnoreCase("boots") == 0) {
+ 		        t = Item.BOOTS;
+ 		    } else if(type.compareToIgnoreCase("greaves") == 0) {
+ 		        t = Item.GREAVES;
+ 		    } else if(type.compareToIgnoreCase("ring") == 0) {
+ 		        t = Item.RING;
+ 		    }
 			
-			// Roomlist must go before other rooms, @TODO!:
-			kids = Kid.getChildNodes();
-			Node kid = kids.item(1);	
-			
-			kids = kid.getChildNodes();
-			//Cycle through this for each room
-			for(int j = 1; j < kids.getLength(); j += 2) {
-				kid = kids.item(j);
-				
-				//System.out.println("+");
-				//printNode( kid , "" );
-				//System.out.println("+" + "has length of " + kid.getChildNodes().getLength());
-				weight = hd = t = 0;
-				shortDesc = longDesc = itemName = "";
-				
-				if( kid.getNodeType() != Node.TEXT_NODE ) {
-					NodeList children = kid.getChildNodes();
-					
-					for (int i = 1; i < children.getLength(); i += 2) {
-						
-						Node child = children.item(i);
-						//TrollAttack.error(child.toString() + " and " + child.getChildNodes() + " and " + child.getChildNodes().item(0).getNodeValue());
-						if( child.getNodeType() != Node.TEXT_NODE ) {
-							//printNode(child, "");
-							String name = child.getNodeName();
-							String nvalue = child.getChildNodes().item(0).getNodeValue() + "";
-							//System.out.println("\"" + name + "->" + nvalue + "\"");
-						 	int nodeValue;
-						 	if(name.compareTo("short") == 0 || name.compareTo("long") == 0 || name.compareTo("name") == 0 || name.compareTo("type") == 0) {
-						 		nodeValue = 0;
-						 	} else {
-								if(nvalue.compareTo("null") == 0 ) {
-							 		nodeValue = 0;
-							 	} else {
-							 		//System.out.println("Trying to int " + nvalue );
-							 		Integer myInteger = new Integer(nvalue);
-							 		nodeValue = myInteger.intValue();
-							 	}
-						 	}
-						 	
-						 	
-						 	if( name.compareTo("vnum")== 0) {
-						 		vnum =  nodeValue;
-						 	} else if( name.compareTo("short")==0) {
-						 		shortDesc = nvalue;
-						 	} else if( name.compareTo("long")==0 ) {
-						 		longDesc = nvalue;
-						 	} else if( name.compareTo("weight")== 0) {
-						 		weight = nodeValue;
-					 		} else if( name.compareTo("name") == 0) {
-					 			itemName = nvalue;
-					 		} else if( name.compareTo("hitDamage") == 0) {
-					 		    hd = nodeValue;
-					 		} else if( name.compareTo("type") == 0 ) {
-					 		    if(nvalue.compareToIgnoreCase("sword") == 0) {
-					 		        t = Item.SWORD;
-					 		    } else if(nvalue.compareToIgnoreCase("helm") == 0) {
-					 		        t = Item.HELM;
-					 		    } else if(nvalue.compareToIgnoreCase("boots") == 0) {
-					 		        t = Item.BOOTS;
-					 		    } else if(nvalue.compareToIgnoreCase("greaves") == 0) {
-					 		        t = Item.GREAVES;
-					 		    } else if(nvalue.compareToIgnoreCase("ring") == 0) {
-					 		        t = Item.RING;
-					 		    }
-					 		}
-				        }
-					 }
-				}
-			//TrollAttack.error("vnum:" + vnum + ", south: " + south );
-			 itemList[vnum] = new Item(vnum, itemName, weight, shortDesc, longDesc, t, hd);
-			 //System.out.println("Created: " + itemList[vnum].toString());
-			}
-			return itemList;
+		//TrollAttack.error("vnum:" + vnum + ", south: " + south );
+		 items.add( new Item(vnum, itemName, weight, shortDesc, longDesc, t, hd) );
+		 //System.out.println("Created: " + itemList[vnum].toString());
+		}
+		return items;
+	}
+	
+
+	static public String uppercaseFirst(String string) {
+	    return string.substring(0,1).toUpperCase() + string.substring(1);
+	}
+	static public Document xmlize(String dataFile) {
+	    try {
+		    File xmlFile = new File( dataFile );
+	        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	
+	        factory.setValidating( false );
+	        factory.setNamespaceAware(false);
+	        factory.setIgnoringComments( true ) ;
+	        
+	        factory.setIgnoringElementContentWhitespace( true );
+	        DocumentBuilder builder = factory.newDocumentBuilder();
+	        return builder.parse(xmlFile);
+	        
+	        
+		} catch(FileNotFoundException e) {
+		    
 		} catch (ParserConfigurationException e) {
 	        System.out.println("The underlying parser does not support " +
 	                           "the requested features.");
@@ -209,10 +153,23 @@ public class Util {
 		} catch (Exception e) {
 		    e.printStackTrace();
 		}
-		return null ;
+        // Parse the document
+       
+       return null;
 	}
-
-	static public String uppercaseFirst(String string) {
-	    return string.substring(0,1).toUpperCase() + string.substring(1);
+	static public void XMLPrint(Document doc, String filename) {
+	    try {  
+	            Source source = new DOMSource(doc);
+	            File file = new File(filename);
+	            Result result = new StreamResult(file);
+	            
+	            Transformer trox = TransformerFactory.newInstance().newTransformer();
+	            trox.transform(source,result);
+	            
+	            
+	            
+	         } catch(Exception e) {
+	             
+	         }
 	}
 }

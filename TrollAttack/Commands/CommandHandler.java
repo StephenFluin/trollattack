@@ -58,6 +58,7 @@ public class CommandHandler {
 		registerCommand(new Level("level"));
 		registerCommand(new Remove("remove"));
 		registerCommand(new Say("say"));
+		registerCommand(new Emote("emote"));
 		registerCommand(new ChangeState("stand", 0));
 		registerCommand(new ChangeState("sit", 1));
 		registerCommand(new ChangeState("rest", 2));
@@ -160,6 +161,7 @@ public class CommandHandler {
 				player.tell("You can't find that here!");
 			} else {
 				player.tell("You get " + item.getShort() + ".");
+				player.roomSay(player.getShort() + " gets " + item.getShort() + ".");
 				player.addItem(item);
 			}
 		}
@@ -173,6 +175,7 @@ public class CommandHandler {
                player.tell("You can't find that here.");
            } else {
                player.tell("You sacrafice " + i.getShort() + " to your deity.");
+               player.roomSay(i.getShort() + " is sacrificed to " + player.getShort() + "'s deity.");
                player.increaseFavor((int)(Math.random() * 3 + 2));
            }
 	    }
@@ -193,7 +196,7 @@ public class CommandHandler {
 		            
 		            player.setState( newState );
 		            player.tell("You are now " + player.getDoing() + ".");
-		        }
+		            player.roomSay(player.getShort() + " is now " + player.getDoing() + ".");		        }
 	        }
 	    }
 	}
@@ -220,8 +223,10 @@ public class CommandHandler {
 			Item item = player.dropItem( command );
 			if(item == null) {
 				player.tell("You don't have that!");
+				
 			} else {
 				player.tell("You drop " + item.getShort() + ".");
+				player.roomSay(player.getShort() + " drops " + item.getShort() + ".");
 				TrollAttack.gameRooms[ player.getCurrentRoom()].addItem( item );
 			}
 		}
@@ -230,7 +235,11 @@ public class CommandHandler {
 	    public Cast(String s) {super(s, false);}
 	    public void execute() { player.tell("Cast what?"); }
 	    public void execute(String s) {
-	        sh.handleSpell( s );
+	        try {
+	            sh.handleSpell( s );
+	        } catch(Exception e) {
+	            e.printStackTrace();
+	        }
 	    }
 	}
 	class Look extends Command {
@@ -321,13 +330,20 @@ public class CommandHandler {
 	    }
 	    public void execute(String phrase) {
 	        player.tell("You say, \"" + phrase + "\".");
-	        TrollAttack.gameRooms[player.getCurrentRoom()].say(Util.uppercaseFirst(player.getShort()) + " says, \"" + phrase + "\".", player);
+	        player.roomSay(player.getShort() + " says, \"" + phrase + "\".");
+	    }
+	}
+	class Emote extends Command {
+	    public Emote(String s) { super(s, true); }
+	    public void execute() { player.tell("Emote what?"); }
+	    public void execute(String message) {
+	        player.getActualRoom().say(player.getShort() + " " + message);
 	    }
 	}
 	class Name extends Command {
 	    public Name(String s) { super(s, true); }
 	    public void execute() {
-	        player.tell("Name yourself what?");
+	        player.tell("Your name is " + player.getName() + ".");
 	    }
 	    public void execute(String phrase) {
 	        player.tell("You name yourself " + phrase + ".");
@@ -337,7 +353,8 @@ public class CommandHandler {
 	class Save extends Command {
 	    public Save(String s) { super(s, true); }
 	    public void execute() {
-	        Util.save(player);
+	        Util.savePlayer(player);
+	        player.tell("You save your progress.");
 	    }
 	    public void Execute(String s) {
 	        this.execute();
@@ -346,10 +363,14 @@ public class CommandHandler {
 	class Load extends Command {
 	    public Load(String s) { super(s, false); }
 	    public void execute() {
-	        player = Util.load();
+	        //player = Util.readPlayerData();
+	        player.tell("Load which player?");
 	    }
 	    public void Execute(String s) {
-	        this.execute();
+	        Communication tmp = player.getCommunication();
+	        player.tell("You can't switch players!");
+	        
+	        
 	    }
 	}
 		

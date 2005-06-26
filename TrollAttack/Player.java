@@ -1,5 +1,13 @@
 package TrollAttack;
 import java.io.Serializable;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 import TrollAttack.Commands.*;
 
 /*
@@ -17,21 +25,13 @@ import TrollAttack.Commands.*;
  */
 public class Player extends Being implements Serializable {
 	//String prompt = "&G<&R%h&G/&R%H&G-&z%x&G> %T";
-	int experience = 1, state = 0;
-	/**
-	 * States:
-	 * 0 Awake/Alert
-	 * 1 Sitting
-	 * 2 Lying down
-	 * 3 Sleeping
-	 */
 	// HARDCODED MAX ITEMS - FIX THIS! @TODO!
 	private Item[] playerItems = new Item[50];
 	private Item weapon = null;
 	private Item helm = null;
 	private Item boots = null;
 	private Item greaves =  null;
-	private Communication communication = null;
+	Communication communication = null;
 	private CommandHandler ch = null;
 
 	public void look() {
@@ -60,11 +60,52 @@ public class Player extends Being implements Serializable {
 		
 		
 	}
+	public Player(int hp, int mhp, int mp, int mmp, int vp, int mvp, 
+	        int hs, int hd, int lev, int room, int exp, String shortd) {
+	    hitPoints = hp;
+	    maxHitPoints = mhp;
+	    manaPoints = mp;
+	    maxManaPoints = mmp;
+	    movePoints = vp;
+	    maxMovePoints = mvp;
+	    hitSkill = hs;
+	    hitDamage = hd;
+	    level = lev;
+	    setCurrentRoom( room );
+	    experience = exp;
+	    shortDescription = shortd;
+	    ch = new CommandHandler(this);
+	    
+	}
+	public Player(Player p) {
+	    hitPoints = p.hitPoints;
+	    maxHitPoints = p.maxHitPoints;
+	    manaPoints = p.manaPoints;
+	    maxManaPoints = p.maxManaPoints;
+	    movePoints = p.movePoints;
+	    maxMovePoints = p.maxMovePoints;
+	    hitSkill = p.hitSkill;
+	    hitDamage = p.hitDamage;
+	    level = p.level;
+	    setCurrentRoom( p.getCurrentRoom() );
+	    experience = p.experience;
+	    shortDescription = p.shortDescription;
+	    ch = p.ch;
+	}
+	public void setCommunication(Communication com) {
+	    communication = com;
+	}
+	public Communication getCommunication() {
+	    return communication;
+	}
 	public void tell(String s) {
 	    communication.print(s);
 	}
 	public void name(String newName) {
 	    shortDescription = newName;
+	}
+	public String getName() {
+	    return shortDescription;
 	}
 	public String toString() {
 	    String r = "";
@@ -74,14 +115,70 @@ public class Player extends Being implements Serializable {
 	    "MP: " + maxManaPoints + "\n";
 	    return r;
 	}
-	public int getState() {
-	    return state;
+	public Document toDocument() throws ParserConfigurationException {
+	    DocumentBuilderFactory factory = 
+            DocumentBuilderFactory.newInstance();
+
+	    // Turn on validation, and turn off namespaces
+	    factory.setValidating( false );
+	    factory.setNamespaceAware(false);
+	    factory.setIgnoringComments( true ) ;
+	    
+	    // Why doesn't this work?
+	    factory.setIgnoringElementContentWhitespace( true );
+	    //factory.
+	    // Obtain a document builder object
+	    DocumentBuilder builder = factory.newDocumentBuilder();
+	   // System.out.println();
+	    //          System.out.println("DataFile : " + xmlFile);
+	   //System.out.println("Parser Implementation  : " + builder.getClass());
+	    //System.out.println();
+	
+	    // Parse the document
+	    Document doc = builder.newDocument();
+	    // Print the document from the DOM tree and feed it an initial 
+	    // indentation of nothing
+	    Node n = doc.createElement("TrollAttack");
+	    doc.appendChild(n);
+	    Node m = doc.createElement("player");
+	    n.appendChild(m);
+	    LinkedList attribs = new LinkedList();
+	    attribs.add(nCreate(doc, "hitPoints", hitPoints + ""));
+	    attribs.add(nCreate(doc, "maxHitPoints", maxHitPoints + ""));
+	    attribs.add(nCreate(doc, "manaPoints", manaPoints + ""));
+	    attribs.add(nCreate(doc, "maxManaPoints", maxManaPoints + ""));
+	    attribs.add(nCreate(doc, "movePoints", movePoints + ""));
+	    attribs.add(nCreate(doc, "maxMovePoints", maxMovePoints + ""));
+	    attribs.add(nCreate(doc, "hitSkill", hitSkill + ""));
+	    attribs.add(nCreate(doc, "hitDamage", hitDamage + ""));
+	    attribs.add(nCreate(doc, "level", level + ""));
+	    attribs.add(nCreate(doc, "room", getCurrentRoom() + ""));
+	    attribs.add(nCreate(doc, "experience", experience + ""));
+	    boolean stillMore = true;
+	    while(stillMore) {
+	        Node newAttrib = (Node)attribs.getNext();
+	        if(newAttrib == null) {
+	            stillMore = false;
+	        } else {
+	            m.appendChild(newAttrib);
+	            
+	        }
+	    }
+	    
+	    return doc;
 	}
+	public Node nCreate(Document doc, String name, String value) {
+	    Node n = doc.createElement(name);
+	    n.appendChild(doc.createTextNode(value));
+	    
+	    return n;
+	}
+	public void roomSay(String string) {
+	    getActualRoom().say(Util.uppercaseFirst(string), this);
+	}
+	
 	public void closeConnection() {
 	    communication.close();
-	}
-	public void setState( int newState ) {
-	    state = newState;
 	}
 	public void handleCommand(String command) {
 	    ch.handleCommand(command);
@@ -100,20 +197,7 @@ public class Player extends Being implements Serializable {
 	public boolean isReady() {
 	    return !(isFighting() || state > 0);
 	}
-	public String getDoing() {
-	    if(isFighting()) {
-	        return "fighting";
-	    } else if(state == 0) {
-	        return "standing";
-	    } else if(state == 1) {
-	        return "sitting";
-	    } else if(state == 2) {
-	        return "lying down";
-	    } else {
-	        return "something secret";
-	    }
-	    
-	}
+	
 	public void addItem(Item i) {
 		for(int j = 0;j < playerItems.length; j++ ) {
 			if(playerItems[j] == null) {

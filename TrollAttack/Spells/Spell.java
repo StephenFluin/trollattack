@@ -15,18 +15,15 @@ import TrollAttack.*;
  */
 public abstract class Spell {
 	String name;
-	Player player;
+	
 	private int cost;
 	private double probability = .8;
 	boolean peaceful = true;
-	public Spell(Player p) {
-	    player = p;
-	}
 	public String toString() {
 		return name;
 	}
-	public Spell(String spellName, int c) { 
-	    this(spellName, c, true);
+	public Spell( String spellName, int c) { 
+	    this( spellName, c, true);
     }
 	/**
 	 * Creates a new spell with the name spellName
@@ -35,7 +32,7 @@ public abstract class Spell {
 	 * @param c The cost in manaPoints of casting this spell
 	 * @param b Is the command restricted to peaceful casting.
 	 */
-	public Spell(String spellName, int cost, boolean peacefulOnly) {
+	public Spell( String spellName, int cost, boolean peacefulOnly) {
 	    name = spellName; 
 	    this.cost = cost; 
 	    peaceful = peacefulOnly;
@@ -51,7 +48,7 @@ public abstract class Spell {
 	}
 	public boolean run() {return false;}
 	public boolean run(String s) {return false;}
-	public boolean execute() {
+	public boolean execute(Player player) {
 	    if(Math.random() < this.getProbability()) {
 	        return this.run();
 	    } else {
@@ -59,7 +56,7 @@ public abstract class Spell {
 	        return false;
 	    }
 	}
-	public boolean execute(String s) {
+	public boolean execute(Player player, String s) {
 	    if(Math.random() < this.getProbability()) {
 	        return this.run(s);
 	    } else {

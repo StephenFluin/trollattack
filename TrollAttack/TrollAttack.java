@@ -32,7 +32,7 @@ public class TrollAttack {
 	 */
 	public static Mobile[] gameMobiles;
 	public static LinkedList gamePlayers;
-	public static Item[] gameItems;
+	public static LinkedList gameItems;
 	public static Room[] gameRooms;
 	public static boolean isGameOver() {
 	    return gameOver;
@@ -58,7 +58,7 @@ public class TrollAttack {
         backGround = new Background();
 		backGround.start();
     
-    	io.run();
+    	io.start();
 
 	}
 	
@@ -73,17 +73,6 @@ public class TrollAttack {
 	}
 	public static void addPlayer(Player player) {
 	    	gamePlayers.add(player);
-	}
-	public static void healAllPlayers(int health) {
-	    Player player;
-	    for(int i = 1;i <= gamePlayers.length(); i++) {
-	        if(gamePlayers.find(i) != null ) {
-	            player = (Player)gamePlayers.find(i);
-	            player.increaseHitPoints(health + player.getState());
-	            player.increaseManaPoints(health + player.getState());
-	            player.increaseMovePoints(health + player.getState());
-	        }
-	    }
 	}
 	public static void broadcast(String message) {
 	    for(int i = 1;i <= gamePlayers.length(); i++) {
@@ -100,10 +89,10 @@ public class TrollAttack {
 	   // System.out.println(cal.MONTH + "/" + cal.DAY_OF_MONTH + "/" + cal.YEAR + " " + cal.HOUR + ":" + cal.MINUTE + ((cal.AM == 0) ? "PM" : "AM") + " " + string);
 	    error(string);
 	}
-	static public void healMobiles() {
+	static public void healBeings() {
 	    for(int i = 0; i < gameRooms.length;i++) {
 	        if(gameRooms[i] != null) {
-	            gameRooms[i].healMobiles();
+	            gameRooms[i].healBeings();
 	        }
 	    }
 	}

@@ -17,10 +17,10 @@ public class Background extends Thread {
 	public void run() {
 		while(!TrollAttack.gameOver) {
 			// Item routines
-			for(int i = 0;i < TrollAttack.gameItems.length; i++) {
+			for(int i = 0;i < TrollAttack.gameItems.getLength(); i++) {
 				
 			}
-			
+			//TrollAttack.message("Starting item background.");
 			// Mobile routines
 			/**
 			 * Every 60 seconds, refresh mobiles that are gone.
@@ -29,25 +29,25 @@ public class Background extends Thread {
 			if(time % 30 == 0) {
 			    TrollAttack.deadies.handleResurrection();
 			}
+			//TrollAttack.message("Starting healing background.");
 			if(time % 10 == 0) {
-			    TrollAttack.healMobiles();
+			    TrollAttack.healBeings();
 			}
 		
+			//TrollAttack.message("Starting room background.");
 			// Who cares what happens in rooms
 			for(int i = 0;i < TrollAttack.gameRooms.length; i++) {
 				
 			}
-			
-			// Make all persons better every 10 seconds.
-			if(time % 10 == 0) {
-			   TrollAttack.healAllPlayers(1);
-			}
+
 			try{
 			    Thread.sleep(1000);
 			} catch( Exception e ) {
-			    
+			   TrollAttack.message("Can't sleep, clowns will eat me.");
+			   e.printStackTrace();
 			}
 			time++;
+			//TrollAttack.message("Slept all the way to " + time + ".");
 		}
 	}
 }

@@ -15,7 +15,7 @@ import TrollAttack.*;
  */
 public class SpellHandler {
 	LinkedList spellList;
-	Player player;
+	public Player player;
 	public SpellHandler(Player play) {
 		spellList = new LinkedList(false, 0);
 		player = play;
@@ -58,11 +58,11 @@ public class SpellHandler {
 			        
 			    } else {
 			        if(spellParts.length > 1) {
-			            results = spell.execute(spellParameter);
+			            results = spell.execute(player, spellParameter);
 						
 					} else {
 					   // player.tell("casting the single spell");
-						results = spell.execute();
+						results = spell.execute(player);
 					}
 			    }
 			    if(results) {
@@ -80,7 +80,7 @@ public class SpellHandler {
 	class MagicMissile extends Spell {
 	    double probability = .6;
 	    int strength = 5;
-	    public MagicMissile(String s) { super(s, 5, false); }
+	    public MagicMissile(String s) { super( s, 5, false); }
 	    public boolean execute() {
 	        player.tell("You can't do this to yourself!");
 	        return false;
@@ -116,7 +116,7 @@ public class SpellHandler {
 		}
 		public boolean run( String s ) {
 		   	if( s.compareToIgnoreCase("self") == 0 ) {
-		   	    return this.execute();
+		   	    return this.run();
 		   	}
 			Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
 			if( mob == null) {

@@ -2,6 +2,7 @@ package TrollAttack;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -26,21 +27,28 @@ public class Communication extends Thread {
     DataOutputStream out;
     ServerSocket serverSocket;
     Socket adminSocket;
-    EasyReader stdin = new EasyReader(System.in);
     
     public Communication() { this(true, null); }
     public Communication( boolean newServerSocket, ServerSocket serverSock ) {
         ID = (int)(Math.random() * 1000);
         if(newServerSocket) {
-            try {
-                serverSocket = new ServerSocket(port, 1);
+                port--;
+                serverSocket = createNewSocket();
                 TrollAttack.message("Server started and listening on port " + port + ".");
-            } catch(Exception e) {
-                TrollAttack.error("Exception: " + e.toString());
-            }
         } else {
             serverSocket = serverSock;
         }
+    }
+    public ServerSocket createNewSocket() {
+        ServerSocket ss = null;
+        try {
+            ss = new ServerSocket(++port, 1);
+        } catch(BindException e) {
+            ss = createNewSocket();
+        } catch(Exception e) {
+            TrollAttack.error("Exception: " + e.toString());
+        }
+        return ss;
     }
     public int getID() {
         return ID;
@@ -86,6 +94,28 @@ public class Communication extends Thread {
                  TrollAttack.message("A new player joins the game (" + newConnection.getID() + ").");
                  
                  Player player = new Player( this );
+                 Player tmpPlayer = null;
+                 while(tmpPlayer == null) {
+                     player.tell(Communication.WHITE + "What is your name (or type " + Communication.CYAN + "new" + Communication.WHITE + " for a new character)?");
+                 
+	                 String name = in.readLine();
+	                 
+	                 try {
+	                     
+	                     tmpPlayer = Util.readPlayerData(name);
+	                    
+	                 } catch(NullPointerException e) {
+	                     tmpPlayer = null;
+	                     if(name.compareToIgnoreCase("new") == 0) {
+	                         tmpPlayer = player;
+	                         player.tell("Pick a name:");
+	                         name = in.readLine();
+	                         player.shortDescription = name;
+	                     }
+	                 }
+                 }
+                 player = tmpPlayer;
+                 player.setCommunication(this);
                  TrollAttack.broadcast(PURPLE + "A new player has joined our ranks.");
                  TrollAttack.addPlayer(player);
                  TrollAttack.gameRooms[player.getCurrentRoom()].addPlayer(player);
@@ -94,7 +124,7 @@ public class Communication extends Thread {
                  player.look();
                  player.tell( player.prompt() );
                 while (!TrollAttack.gameOver) {
-                   // TrollAttack.error(ID + ": Accepting command...");
+                  // TrollAttack.message(ID + ": Accepting command...");
                     try{
                         inputLine = in.readLine();
                         player.handleCommand(inputLine);

@@ -18,6 +18,7 @@ public class LinkedList {
 	private boolean allowDuplicates = true;
 	private int length = 0;
 	private int internalPointer = 0;
+	private Node internalPointerNode;
 	/**
 	 * 	Sort type of 0 indicates no sorting
 	 *  Sort type of 1 indicates ascending sort.
@@ -32,6 +33,7 @@ public class LinkedList {
 		sortType = sorty;
 		tail = new Node(null, null);
 		head = new Node(null, tail);
+		internalPointerNode = head;
 	}
 	
 	public String toString() {
@@ -88,6 +90,9 @@ public class LinkedList {
     public int length() {
 		return length;
 	}
+    public int getLength() {
+        return this.length();
+    }
         // returns the count of data nodes currently in the list
 
     public Object first() {
@@ -190,11 +195,14 @@ public class LinkedList {
     	this.addNode(obj);
 	}
     public Object getNext() {
-    	if(internalPointer >= this.length() ) {
-    		return null;
-    	}
-    	internalPointer++;
-    	return this.find(internalPointer);
+    	Object myReturn = null;
+        if(internalPointerNode.getPointer() != null ) {
+            myReturn = internalPointerNode.getPointer().getData();
+            internalPointer++;
+    	    internalPointerNode = internalPointerNode.getPointer();
+    	    
+    	} 
+    	return myReturn;
     }
     public Object getPrevious() {
     	if(internalPointer <= this.length()) {
@@ -205,6 +213,7 @@ public class LinkedList {
     }
     public void reset() {
     	internalPointer = 0;
+    	internalPointerNode = head;
     	
     }
     
