@@ -12,8 +12,18 @@ package TrollAttack.Commands;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-import TrollAttack.*;
-import TrollAttack.Spells.*;
+import TrollAttack.Being;
+import TrollAttack.Communication;
+import TrollAttack.Fight;
+import TrollAttack.Item;
+import TrollAttack.LinkedList;
+import TrollAttack.Mobile;
+import TrollAttack.Player;
+import TrollAttack.Roll;
+import TrollAttack.Room;
+import TrollAttack.TrollAttack;
+import TrollAttack.Util;
+import TrollAttack.Spells.SpellHandler;
 
 
 public class CommandHandler {
@@ -43,12 +53,14 @@ public class CommandHandler {
 		registerCommand(new CommandMove(player, "sw", CommandMove.SOUTHWEST));
 		registerCommand(new Kill("kill"));
 		registerCommand(new Get("get"));
+		registerCommand(new Give("give"));
 		registerCommand(new Drop("drop"));
 		registerCommand(new Sacrafice("sacrafice"));
 		registerCommand(new Favor("favor"));
 		registerCommand(new Look("look"));
 		registerCommand(new Cast("cast"));
-		registerCommand(new Name("name"));
+		//registerCommand(new Name("name"));
+		registerCommand(new Password("password"));
 		registerCommand(new Prompt("prompt"));
 		registerCommand(new Trance("trance"));
 		registerCommand(new Consider("consider"));
@@ -68,8 +80,39 @@ public class CommandHandler {
 		registerCommand(new Help("help"));
 		registerCommand(new CommandList("commands"));
 		registerCommand(new Help("?"));
+		registerCommand(new CRoll("roll"));
 		registerCommand(new Quit("quit"));
 		registerCommand(new Quit("exit"));
+		/* Builder Commands */
+		if(player.isBuilder()) {
+		    registerCommand(new UnQuit("unquit"));
+		    registerCommand(new Goto("goto"));
+		    registerCommand(new Slay("slay"));
+		    /* Room Building Commands */
+		    registerCommand(new rCreate("rcreate"));
+		    registerCommand(new mCreate("mcreate"));
+		    registerCommand(new iCreate("icreate"));
+		    registerCommand(new rTitle("rtitle"));
+		    registerCommand(new rDescription("rdescription"));
+			registerCommand(new rConnect( "rcnorth", CommandMove.NORTH));
+			registerCommand(new rConnect( "rcsouth", CommandMove.SOUTH));
+			registerCommand(new rConnect( "rceast", CommandMove.EAST));
+			registerCommand(new rConnect( "rcwest", CommandMove.WEST));
+			registerCommand(new rConnect( "rcup", CommandMove.UP));
+			registerCommand(new rConnect( "rcdown", CommandMove.DOWN));
+			registerCommand(new rConnect( "rcnortheast", CommandMove.NORTHEAST));
+			registerCommand(new rConnect( "rcne", CommandMove.NORTHEAST));
+			registerCommand(new rConnect( "rcnorthwest", CommandMove.NORTHWEST));
+			registerCommand(new rConnect( "rcnw", CommandMove.NORTHWEST));
+			registerCommand(new rConnect( "rcsoutheast", CommandMove.SOUTHEAST));
+			registerCommand(new rConnect( "rcse", CommandMove.SOUTHEAST));
+			registerCommand(new rConnect( "rcsouthwest", CommandMove.SOUTHWEST));
+			registerCommand(new rConnect( "rcsw", CommandMove.SOUTHWEST));
+			registerCommand(new Savearea("savearea"));
+			registerCommand(new InvokeItem("iinvoke"));
+			registerCommand(new InvokeMobile("minvoke"));
+		}
+		
 	}
 
 	public void registerCommand( Command c) {
@@ -83,7 +126,8 @@ public class CommandHandler {
 		 
 	}
 	public void handleCommand( String commandString) {
-		String[] commandParts = commandString.split(" ");
+		player.setLastActive(TrollAttack.getTime());
+	    String[] commandParts = commandString.split(" ");
 		String commandParameter = "";
 		if(commandParts.length > 0 ) {
 		    commandString = commandParts[0];
@@ -108,7 +152,11 @@ public class CommandHandler {
 		    } else {
 			    if(commandParts.length > 1) {
 	
-				        command.execute(commandParameter);
+				        try {
+				            command.execute(commandParameter);
+				        } catch(Exception e) {
+				            e.printStackTrace();
+				        }
 					
 				} else {
 					command.execute();
@@ -127,7 +175,7 @@ public class CommandHandler {
 	    public Consider( String s ) { super(s, false); }
 	    public void execute() { player.tell("Consider whom?"); }
 	    public void execute( String s ) {
-	        Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
+	        Being mob = player.getActualRoom().getBeing( s, null );
 	        if( mob == null) {
 	            player.tell("You don't see that here.");
 	        } else {
@@ -139,11 +187,14 @@ public class CommandHandler {
 		public Kill(String s) { super(s); }
 		public void execute() { player.tell("Kill what?"); }
 		public void execute(String s) {
-			Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
+			//TrollAttack.message("Running the kill command with '" + s + "' for a string.");
+		    Being mob = player.getActualRoom().getBeing( s, player );
+		    //TrollAttack.message("got here... 145");
 			if( mob == null) {
 				player.tell("You don't see that here.");
 			} else {
-				Fight myFight = new Fight(player, mob );
+				//TrollAttack.message("Starting a fight between " + player.getShort() + " and " + mob.getShort());
+			    Fight myFight = new Fight(player, mob );
 				myFight.start();
 				if(TrollAttack.isGameOver()) {
 				    
@@ -152,11 +203,26 @@ public class CommandHandler {
 		}
 		
 	}
+	class Slay extends Command {
+	    public Slay(String s) { super(s); }
+	    public void execute() {
+	        player.tell("Usage: slay <being>");
+	    }
+	    public void execute(String s) {
+	        Being mob = player.getActualRoom().getBeing( s, true, player );
+	        if( mob == null) {
+				player.tell("You don't see that here.");
+			} else {
+			    player.tell("You slay " + mob.getShort() + " in cold blood.");
+			    player.getActualRoom().say(Util.uppercaseFirst( player.getShort() ) + " slays " + mob.getShort() + " in cold blood.", player);
+			}
+	    }
+	}
 	class Get extends Command {
 		public Get(String s) { super(s, false);}
 		public void execute() { player.tell("Get what?"); }
 		public void execute(String command) {
-			Item item = TrollAttack.gameRooms[	player.getCurrentRoom()].removeItem(	command		);
+			Item item = player.getActualRoom().removeItem(	command		);
 			if(item == null) {
 				player.tell("You can't find that here!");
 			} else {
@@ -166,11 +232,20 @@ public class CommandHandler {
 			}
 		}
 	}
+	class Give extends Command {
+	    public Give(String s) { super(s, false);}
+	    public void execute() {
+	        player.tell("Usage: give <item> <being>");
+	    }
+	    public void execute(String s) {
+	        
+	    }
+	}
 	class Sacrafice extends Command {
 	    public Sacrafice(String s) { super(s, false);}
 	    public void execute() { player.tell("Sacrafice what?"); }
 	    public void execute(String command) {
-	      Item i = TrollAttack.gameRooms[ player.getCurrentRoom()].removeItem( command );
+	      Item i = player.getActualRoom().removeItem( command );
            if(i == null) {
                player.tell("You can't find that here.");
            } else {
@@ -227,7 +302,7 @@ public class CommandHandler {
 			} else {
 				player.tell("You drop " + item.getShort() + ".");
 				player.roomSay(player.getShort() + " drops " + item.getShort() + ".");
-				TrollAttack.gameRooms[ player.getCurrentRoom()].addItem( item );
+				player.getActualRoom().addItem( item );
 			}
 		}
 	}
@@ -294,6 +369,20 @@ public class CommandHandler {
 	        player.tell( player.removeItem( command ) );
 	    }
 	}
+	class CRoll extends Command {
+	    public CRoll(String s) { super( s, false); }
+	    public void execute() {
+	        player.tell("Roll what?");
+	    }
+	    public void execute(String s) {
+	        try {
+	            Roll roller = new Roll(s);
+	        	player.tell("You rolled '" + s + "' to get " + roller.roll());
+	        } catch(Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+	}
 	class Level extends Command {
 	    public Level(String s) {
 	        super( s, false );
@@ -324,7 +413,7 @@ public class CommandHandler {
 	    }
 	}
 	class Say extends Command {
-	    public Say(String s) { super(s, true); }
+	    public Say(String s) { super(s, false); }
 	    public void execute() {
 	        player.tell("Say what?");
 	    }
@@ -337,6 +426,7 @@ public class CommandHandler {
 	    public Emote(String s) { super(s, true); }
 	    public void execute() { player.tell("Emote what?"); }
 	    public void execute(String message) {
+	        //TrollAttack.message("Emoting " + message + ".");
 	        player.getActualRoom().say(player.getShort() + " " + message);
 	    }
 	}
@@ -350,10 +440,25 @@ public class CommandHandler {
 	        player.name(phrase);
 	    }
 	}
-	class Save extends Command {
-	    public Save(String s) { super(s, true); }
+	class Password extends Command {
+	    public Password(String s) { super(s, true); }
 	    public void execute() {
-	        Util.savePlayer(player);
+	        player.tell("Usage: password <old password> <new password>");
+	    }
+	    public void execute(String phrase) {
+	        String[] parts = phrase.split(" ");
+	        if(parts.length > 1 && player.checkPassword(parts[0]) ) {
+	            player.setPassword(parts[1]);
+	            player.tell("Your password has been changed.");
+	        } else {
+	            player.tell("Incorrect old password.");
+	        }
+	    }
+	}
+	class Save extends Command {
+	    public Save(String s) { super(s, false); }
+	    public void execute() {
+	        player.save();
 	        player.tell("You save your progress.");
 	    }
 	    public void Execute(String s) {
@@ -373,7 +478,6 @@ public class CommandHandler {
 	        
 	    }
 	}
-		
 	class Help extends Command {
 		public Help(String s) { super(s, false); }
 		public void execute() {
@@ -388,12 +492,199 @@ public class CommandHandler {
 		}
 		public void execute(String s) { this.execute(); }
 	}
+	/* Builder Commands */
+	class Goto extends Command {
+	    public Goto(String s) { super(s, false); }
+	    public void execute() {
+	        player.tell("You are currently in room " + player.getCurrentRoom() + ".");
+	    }
+	    public void execute( String s ) {
+	       int room;
+	       int oldRoom = 1;
+	        try {
+	           room = new Integer(s).intValue();
+	           oldRoom = player.getCurrentRoom();
+	           player.getActualRoom().removePlayer(player);
+	           player.setCurrentRoom(room);
+	           if(player.getActualRoom() == null) {
+	               player.tell("That isn't a room yet!");
+	               player.setCurrentRoom(oldRoom);
+	           }
+	           player.getActualRoom().addPlayer(player);
+	           player.look();
+	       } catch(Exception e) {
+	           player.tell("Problem changing rooms!");
+	       }
+	       
+	    }
+	}
+	
+	class rCreate extends Command {
+	    public rCreate(String s) { super(s, false); }
+	    public void execute() {
+	        player.tell("Usage: rcreate <room vnum>");
+	    }
+	    public void execute(String s) {
+	        Room newRoom = new Room(
+	               new Integer(s).intValue(),
+	               "A Freshly Created Room",
+	               "Change the title of this room by typing \"rtitle <new title>\".   Enter the description of this room by typing \"rdescription <description>\".",
+	               0,0,0,0,0,0,0,0,0,0);
+	        player.tell("You have create room " + s + ", type \"goto " + s + "\" to see your new room.");
+	        TrollAttack.gameRooms.add(newRoom);
+	    }
+	}
+	class iCreate extends Command {
+	    public iCreate(String s) { super(s); }
+	    public void execute() {
+	        player.tell("Usage: icreate <item vnum>");
+	    }
+	    public void execute(String s) {
+	        Item newItem = new Item(
+	               new Integer(s).intValue(),
+	               "new item",
+	               1,
+	               "a shiny object",
+	               "A shiny object floats where you left it.",
+	               new Roll("0d0"),
+	               Item.OTHER
+	               );
+	        player.tell("You have created item " + s + ".");
+	        TrollAttack.gameItems.add(newItem);
+	        player.getActualRoom().addItem(newItem);
+	    }
+	}
+	class mCreate extends Command {
+	    public mCreate(String s) { super(s, false); }
+	    public void execute() {
+	        player.tell("Usage: mcreate <mobile vnum>");
+	    }
+	    public void execute(String s) {
+	        Mobile newRoom = new Mobile(
+	               new Integer(s).intValue(),
+	               1,"new mobile",
+	               1,1,1, "1d1",1,
+	               "the new mobile",
+	               "A mobile takes its first breaths here.");
+	        player.tell("You have create mobile " + s + ".");
+	        TrollAttack.gameMobiles.add(newRoom);
+	    }
+	}
+	class rTitle extends Command {
+	    public rTitle(String s) { super(s); }
+	    public void execute() {
+	        player.tell("Usage: rtitle <new title>");
+	    }
+	    public void execute(String s) {
+	        player.getActualRoom().setTitle(s);
+	    }
+	}
+	class rDescription extends Command {
+	    public rDescription(String s) { super(s); }
+	    public void execute() {
+	        player.tell("Usage: rdescription <new title>");
+	    }
+	    public void execute(String s) {
+	        player.getActualRoom().setDescription(s);
+	    }
+	}
+	class rConnect extends Command {
+	    int direction = 0;
+	    public rConnect(String s, int directio) {
+	        super(s);
+	        direction = directio;
+	    }
+	    public void execute() {
+	        player.tell("Usage: " + this.name + " <destination> [one-way?]");
+	    }
+	    public void execute( String s ) {
+	        String[] parts = s.split(" ");
+	        int destination = new Integer(parts[0]).intValue();
+	        if(parts.length <= 1) {
+	            TrollAttack.getRoom(destination).setLink(CommandMove.directionOpposite(direction), player.getCurrentRoom());
+	        }
+	        player.getActualRoom().setLink(direction, destination);
+	    }
+	}
+	class Set extends Command {
+	    
+	}
+	class Savearea extends Command {
+	    public Savearea(String s) {
+	        super(s);
+	    }
+	    public void execute() {
+	        try {
+	            Util.Savearea();
+	        } catch(Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    public void execute(String s) {
+	        this.execute();
+	    }
+	}
+	class InvokeItem extends Command {
+	    public InvokeItem(String s) { super(s); }
+	    public void execute() {
+	        player.tell("Usage: invoke <item vnum>");
+	    }
+	    public void execute(String s) {
+	        Item newItem;
+	        try {
+	            newItem = TrollAttack.getItem(new Integer(s));
+	       
+		        if(newItem == null) {
+		            player.tell("That isn't an item yet!");
+		        } else {
+		            player.getActualRoom().addItem(new Item(newItem));
+		            player.tell("You invoke " + newItem.getShort() + ".");
+		        }
+	        } catch(NumberFormatException e) {
+	            player.tell("That isn't a valid item vnum.");
+	        }
+	    }
+	}
+	class InvokeMobile extends Command {
+	    public InvokeMobile(String s) { super(s); }
+	    public void execute() {
+	        player.tell("Usage: invoke <mobile vnum>");
+	    }
+	    public void execute(String s) {
+	        Mobile newMobile;
+	        try {
+	            newMobile = TrollAttack.getMobile(new Integer(s));
+	            if(newMobile == null) {
+		            player.tell("That isn't an mobile yet!");
+		        } else {
+		            player.getActualRoom().addMobile(new Mobile(newMobile));
+		            player.tell("You invoke " + newMobile.getShort() + ".");
+		            player.getActualRoom().say(player.getShort() + " invokes " + newMobile.getShort() + ".");
+		        }
+	        } catch(NumberFormatException e) {
+	            player.tell("That isn't a valid mobile vnum.");
+	        }
+	       
+	    }
+	}
+	
+	/* End of Builder Commands */
+	/* Immortal Commands */
+	class UnQuit extends Command {
+	    public UnQuit(String s) { super(s); }
+	    public void execute() {
+	        player.quit();
+	    }
+	    public void execute( String s ) { this.execute(); }
+	}
+	/* End of Immortal Commands */
 	class Quit extends Command {
 		public Quit(String s) { super(s); }
 		public void execute() {
-			TrollAttack.gameRooms[player.getCurrentRoom()].removePlayer(player);
-		    player.closeConnection();
+		    player.save();
+		    player.quit();
 		}
 		public void execute( String s ) { this.execute(); }
 	}
+	
 }

@@ -42,11 +42,11 @@ public class LinkedList {
 		String myString = "List[" + this.length() + "] {";
 		current = current.getPointer();
 		while( current != tail ) {
-			myString += "\n    [" + (++i) + "]: ";
+			myString += "\n\r    [" + (++i) + "]: ";
 			myString += current.getData().toString();
 			current = current.getPointer();
 		}
-		myString += "\n}";
+		myString += "\n\r}";
 			
 		return myString;
 	}
@@ -159,7 +159,8 @@ public class LinkedList {
     }
 
     public void delete(Object obj) {
-		Node current = head.getPointer();
+        this.reset();
+        Node current = head.getPointer();
 		Node previous = head;
 		while( current != tail && !current.getData().equals( obj ) ) {
 			//Lab3.print(current.getData());
@@ -173,6 +174,7 @@ public class LinkedList {
 			length--;
 			return;
 		}
+		
     }
 
     public void delete(int n) {
@@ -193,6 +195,7 @@ public class LinkedList {
 
     public void add(Object obj) {
     	this.addNode(obj);
+    	reset();
 	}
     public Object getNext() {
     	Object myReturn = null;

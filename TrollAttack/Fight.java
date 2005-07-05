@@ -41,7 +41,7 @@ public class Fight extends Thread {
 			try {
 				Thread.sleep(1000);
 			} catch( Exception e ) {
-				
+				TrollAttack.error("There was a problem sleeping for a second during a fight.");
 			}
 			damage = Math.floor( Math.floor(Math.random()*100 + 1)/first.hitSkill * first.getHitDamage());
 			first.increaseExperience((int)((second.level - first.level + 5)*damage));
@@ -60,18 +60,21 @@ public class Fight extends Thread {
 		}
 		boolean win = this.results().booleanValue();
 		if(win) {
-			TrollAttack.gameRooms[ first.getCurrentRoom()].removeMobile( second.name );
+			TrollAttack.getRoom( first.getCurrentRoom()).removeBeing( second.name );
 			first.tell("You killed " + second.getShort());
-			TrollAttack.deadies.add( (Mobile)second, first.getCurrentRoom() );
+			if(second.isPlayer) {
+			    ((Player)second).kill(first);
+			} else {
+			    TrollAttack.deadies.add( (Mobile)second, first.getCurrentRoom() );
+			}
+			second.dropAll();
 			int exp = first.getExperience();
 			first.increaseExperience((int)(second.level * second.getHitDamage() * second.maxHitPoints * 100 / second.hitSkill));
 			//TrollAttack.error("Experience was " + exp + " and became " + TrollAttack.player.getExperience());
 			
 		} else {
-		    first.tell( second.getShort() + " kills you!");
-			TrollAttack.gameOver = true;
-			TrollAttack.endGame();
-			//Is there any way to stop the entire program? Oh well....
+		    first.kill( second );
+
 		}
 		first.setBeingFighting(null);
 		second.setBeingFighting(null);

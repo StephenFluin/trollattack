@@ -1,5 +1,8 @@
 package TrollAttack.Spells;
-import TrollAttack.*;
+import TrollAttack.Being;
+import TrollAttack.Fight;
+import TrollAttack.LinkedList;
+import TrollAttack.Player;
 /*
  * Created on May 29, 2005
  *
@@ -82,11 +85,13 @@ public class SpellHandler {
 	    int strength = 5;
 	    public MagicMissile(String s) { super( s, 5, false); }
 	    public boolean execute() {
-	        player.tell("You can't do this to yourself!");
+	        if(player.getFighting() == null) {
+	            player.tell("You can't do this to yourself!");
+	        }
 	        return false;
 	    }
 	    public boolean run(String s) {
-	        Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
+	        Being mob = player.getActualRoom().getBeing( s, player );
 			if( mob == null) {
 				player.tell("You don't see that here.");
 				return false;
@@ -118,7 +123,7 @@ public class SpellHandler {
 		   	if( s.compareToIgnoreCase("self") == 0 ) {
 		   	    return this.run();
 		   	}
-			Mobile mob = TrollAttack.gameRooms[ player.getCurrentRoom()].getMobile( s );
+		   	Being mob = player.getActualRoom().getBeing( s, null );
 			if( mob == null) {
 				player.tell("You don't see that here.");
 				return false;

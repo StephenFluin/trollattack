@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrollAttack><player><hitPoints>50</hitPoints><maxHitPoints>50</maxHitPoints><manaPoints>40</manaPoints><maxManaPoints>40</maxManaPoints><movePoints>30</movePoints><maxMovePoints>30</maxMovePoints><hitSkill>50</hitSkill><hitDamage>1d3</hitDamage><level>1</level><room>1</room><experience>0</experience><password/></player></TrollAttack>

@@ -1,33 +1,24 @@
 package TrollAttack;
-import TrollAttack.Commands.*;
-import java.io.File;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
 
-//import java.io.File;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+
+import TrollAttack.Commands.CommandMove;
 
 public class Room {
-	int vnum, east, west , north, south, northEast, northWest, southEast, southWest;
+	int vnum, east, west , north, south, northEast, northWest, southEast, southWest, up, down;
 	String description = "", title = "";
-	private Item[] roomItems;
-	public LinkedList roomBeings;
-	static String dataFile = "rooms.xml";
+	private LinkedList roomItems = new LinkedList();
+	public LinkedList roomBeings = new LinkedList();
 	
-	public Room(int vnum, String title, String description, int east , int west, int north, int south, int  northEast, int  northWest, int  southEast, int  southWest, Item[] items, LinkedList mobiles) {
+	
+	public Room(int vnum, String title, String description, int east , int west, int north, int south, int  northEast, int  northWest, int  southEast, int  southWest, int up, int down) {
 	 this.vnum = vnum; this.east = east; this.west = west; this.north = north; this.south = south; 
 	 this.northEast = northEast; this.northWest = northWest; this.southEast = southEast; this.southWest = southWest;
+	 this.up = up; this.down = down;
 	 this.title = title;
 	 this.description = description;
 	 
-	 roomItems = items;
-	 roomBeings = mobiles;
-	  
-	 //TrollAttack.error("Creating room with vnum value of " + vnum );
 	}
 	
 	public String toString() {
@@ -39,131 +30,67 @@ public class Room {
 		northEast + "," +
 		northWest + "," +
 		southEast + "," +
-		southWest;
-		for(int i = 0; i < roomItems.length;i++) {
-		    if(roomItems[i] != null) {
-		        returnValue += "\nroomItems[" + i + "](" + roomItems[i] + ")" + roomItems[i].getShort();  
-		    }
+		southWest + "," +
+		up + "," +
+		down;
+		for(int i = 0; i < roomItems.length();i++) {
+		    Item currentItem = (Item)roomItems.getNext();
+	        returnValue += "\n\rroomItems[" + i + "](" + currentItem + ")" + currentItem.getShort();  
 		}
+		roomItems.reset();
 		return returnValue;
 					
 	}
-	
-
-	public static Room[] readData() {
-        Document doc = Util.xmlize(dataFile);
-        // Print the document from the DOM tree and feed it an initial 
-        // indentation of nothing
-
-		Node node = doc;
-		// @TODO: Stop hardcoding of max rooms limit.
-		final Room[] Roomlist = new Room[500];
-		int vnum = 0, east = 0, west = 0, north = 0, south = 0, northEast = 0, northWest = 0, southEast = 0, southWest = 0;
-		String title = "", description = "";
-		NodeList kids = node.getChildNodes();
-	
-//		 first child of this list is TrollAttack
-		Node Kid = kids.item(0);
-		// Roomlist must go before other rooms, @TODO!:
-		kids = Kid.getChildNodes();
-		Node kid = kids.item(1);		
-		kids = kid.getChildNodes();
-		int itemPtr;
-		//Cycle through this for each room
-		for(int j = 1; j < kids.getLength(); j += 2) {
-			kid = kids.item(j);
-			//System.out.println("+");
-			//printNode( kid , "" );
-			//System.out.println("+" + "has length of " + kid.getChildNodes().getLength());
-			east = west = north = south = northEast = northWest = southEast = southWest  = 0;
-			title = description = "";
-			//FIX THIS HARDCODING!
-			Item[] tmpItems = new Item[255];
-			LinkedList tmpMobiles = new LinkedList();
-			if( kid.getNodeType() != Node.TEXT_NODE ) {
-				NodeList children = kid.getChildNodes();
-				
-				for (int i = 1; i < children.getLength(); i += 2) {
-					
-					Node child = children.item(i);
-					if( child.getNodeType() != Node.TEXT_NODE ) {
-						//printNode(child, "");
-						String name = child.getNodeName();
-						String nvalue = child.getChildNodes().item(0).getNodeValue() + "";
-						//System.out.println("\"" + name + "->" + nvalue + "\"");
-					 	int nodeValue;
-					 	if(name.compareTo("title") == 0 || name.compareTo("description") == 0 ) {
-					 		nodeValue = 0;
-					 	} else {
-							if(nvalue.compareTo("null") == 0 ) {
-						 		nodeValue = 0;
-						 	} else {
-						 		//System.out.println("Trying to int " + nvalue );
-						 		Integer myInteger = new Integer(nvalue);
-						 		nodeValue = myInteger.intValue();
-						 	}
-					 	}
-					 	
-					 	
-					 	if( name.compareTo("vnum")== 0) {
-					 		vnum =  nodeValue;
-					 	} else if( name.compareTo("title")==0) {
-					 		title = nvalue;
-					 	} else if( name.compareTo("description")==0 ) {
-					 		description = nvalue;
-					 	} else if( name.compareTo("east")== 0) {
-					 		east = nodeValue;
-				 		} else if( name.compareTo("west")== 0) {
-					 		west = nodeValue;
-				 		} else if( name.compareTo("north")== 0) {
-					 		north = nodeValue;
-				 		} else if( name.compareTo("south")== 0) {
-					 		south = nodeValue;
-				 		} else if( name.compareTo("northEast")== 0) {
-				 			northEast = nodeValue;
-				 		} else if( name.compareTo("northWest")== 0) {
-					 		northWest = nodeValue;
-				 		} else if( name.compareTo("southEast")== 0) {
-					 		southEast = nodeValue;
-				 		} else if( name.compareTo("southWest")== 0) {
-					 		southWest =nodeValue;
-					 	} else if( name.compareTo("item")== 0 ) {
-					 		int n = 0;
-					 		while(tmpItems[n] != null ) {
-					 		   n++;
-					 		}
-					 		for(int p = 0; p < TrollAttack.gameItems.getLength(); p++) {
-					 		    Item currentItem = (Item)TrollAttack.gameItems.getNext();
-					 		    if(currentItem.vnum == nodeValue) {
-					 		       tmpItems[n] = new Item(currentItem);
-					 			}
-					 		    TrollAttack.gameItems.reset();
-					 		}
-					 	} else if( name.compareTo("mobile") == 0 ) {
-					 		
-					 		    //TrollAttack.error("Attempting to load mobile # " + nodeValue );
-					 		    // I need to make sure that this is instatiating the mobile, not just referencing it.
-					 		    Mobile m = new Mobile(TrollAttack.gameMobiles[nodeValue]);
-					 		   
-					 			tmpMobiles.add(m);
-					 		
-					 	}
-			        }
-				 }
-			}
-			Mobile currentMobile = (Mobile)tmpMobiles.getNext();
-			while(currentMobile != null) {
-			    currentMobile.setCurrentRoom(vnum);
-			    currentMobile = (Mobile)tmpMobiles.getNext();
-			}
-			tmpMobiles.reset();
-		//TrollAttack.error("vnum:" + vnum + ", south: " + south );
-		 Roomlist[vnum] = new Room(vnum, title, description, east, west, north, south, northEast, northWest, southEast, southWest, tmpItems, tmpMobiles);
-		 //System.out.println("Created: " + Roomlist[vnum].toString());
+	public Node toNode(Document doc) {
+	   
+	    Node m = doc.createElement("room");
+	    LinkedList attribs = new LinkedList();
+	    attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
+	    attribs.add(Util.nCreate(doc, "description", description + ""));
+	    attribs.add(Util.nCreate(doc, "title", title));
+	    if(east != 0) attribs.add(Util.nCreate(doc, "east", east + ""));
+	    if(west != 0) attribs.add(Util.nCreate(doc, "west", west + ""));
+	    if(north != 0) attribs.add(Util.nCreate(doc, "north", north + ""));
+	    if(south != 0) attribs.add(Util.nCreate(doc, "south", south + ""));
+	    if(up != 0) attribs.add(Util.nCreate(doc, "up", up + ""));
+	    if(down != 0) attribs.add(Util.nCreate(doc, "down", down + ""));
+	    if(northEast != 0) attribs.add(Util.nCreate(doc, "northeast", northEast + ""));
+	    if(northWest != 0) attribs.add(Util.nCreate(doc, "northwest", northWest + ""));
+	    if(southEast != 0) attribs.add(Util.nCreate(doc, "southeast", southEast + ""));
+	    if(southWest != 0) attribs.add(Util.nCreate(doc, "southwest", southWest + ""));
+	    /*Node itemList = doc.createElement("itemList");
+	    
+	    for(int i = 0;i < playerItems.getLength();i++) {
+	       itemList.appendChild(Util.nCreate(doc, "item", ( (Item)(playerItems.getNext()) ).vnum + ""));
+	    }
+	    attribs.add(itemList);*/
+	    Being roomBeing;
+	    for(int i = 0;i < roomBeings.getLength();i++) {
+		    roomBeing = (Being)roomBeings.getNext();
+		    if(!roomBeing.isPlayer()) {
+		        attribs.add(Util.nCreate(doc, "mobile", ((Mobile)(roomBeing)).vnum + ""));
+		    }
 		}
-		return Roomlist;
-
+	    roomBeings.reset();
+	    
+	    Item roomItem;
+	    for(int i = 0;i < roomItems.getLength();i++) {
+	        roomItem = (Item)roomItems.getNext();
+	        attribs.add(Util.nCreate(doc, "item", roomItem.vnum + ""));
+	    }
+	    roomItems.reset();
+	    
+	    for(int i = 0; i < attribs.length(); i++) {
+	        
+	        Node newAttrib = (Node)attribs.getNext();
+	        m.appendChild(newAttrib);
+	    }
+	    
+	    return m;
 	}
+	
+
+	
 	public String[] look() {
 	    return look(null);
 	}
@@ -201,15 +128,16 @@ public class Room {
 		 * Show Items
 		 * get all of the items in the room, and write their longdesc.
 		 */
-		String[] objects = new String[roomItems.length];
+		String[] objects = new String[roomItems.length()];
 		int n = 0;
-		for(int i = 0; i < roomItems.length; i++) {
+		for(int i = 0; i < roomItems.length(); i++) {
 			//TrollAttack.error("About to get room " + i + " of " + roomItems[i]);
-			if(roomItems[i] != null ) {
-				objects[n] = Communication.GREEN + roomItems[i].getLong();
-				n++;
-			}
+			Item currentItem = (Item)roomItems.getNext();
+			objects[n] = Communication.GREEN + currentItem.getLong();
+			n++;
+			
 		}
+		roomItems.reset();
 		
 		/**
 		 * Show Mobs
@@ -254,18 +182,21 @@ public class Room {
 	    Player player;
 	    try{
 	        for(int i = 1;i <= roomBeings.length(); i++ ) {
-	    
-		        temporaryBeing = (Being)roomBeings.find(i);
+	           // TrollAttack.message("Found a being...");
+		        temporaryBeing = (Being)roomBeings.getNext();
 		        if(temporaryBeing.isPlayer()) {
 		            player = (Player)temporaryBeing;
-		        
-			        if(ignorePlayer == null || player != ignorePlayer) {
+		            //TrollAttack.message("found a player..");
+			        if(player != ignorePlayer) {
 			            player.tell(s);
+			           // TrollAttack.message("telling " + player.getShort() + " " + s);
 			        }
 		        }
 	        }
 	    } catch(Exception e) {
 	        e.printStackTrace();
+	    } finally {
+	        roomBeings.reset();
 	    }
 	}
 	public int followLink (int direction) {
@@ -277,29 +208,66 @@ public class Room {
 			return west;
 		} else if (direction == CommandMove.SOUTH) {
 			return south;
+		} else if(direction == CommandMove.UP) {
+			return up;
+		} else if (direction == CommandMove.DOWN ) {
+			return down;
+		} else if (direction == CommandMove.NORTHEAST) {
+			return northEast;
+		} else if (direction == CommandMove.NORTHWEST) {
+			return northWest;
+		} else if (direction == CommandMove.SOUTHEAST) {
+			return southEast;
+		} else if (direction == CommandMove.SOUTHWEST) {
+			return southWest;
 		} else {
 			return 0;
 		}
 	}
+	public void setLink( int direction, int destination) {
+			if(direction == CommandMove.EAST) {
+				east = destination;
+			} else if (direction == CommandMove.NORTH ) {
+				north = destination;
+			} else if (direction == CommandMove.WEST) {
+				west = destination;
+			} else if (direction == CommandMove.SOUTH) {
+				south = destination;
+			} else if(direction == CommandMove.UP) {
+				up = destination;
+			} else if (direction == CommandMove.DOWN ) {
+				down = destination;
+			} else if (direction == CommandMove.NORTHEAST) {
+				northEast = destination;
+			} else if (direction == CommandMove.NORTHWEST) {
+				northWest = destination;
+			} else if (direction == CommandMove.SOUTHEAST) {
+				southEast = destination;
+			} else if (direction == CommandMove.SOUTHWEST) {
+				southWest = destination;
+			}
+	}
 	public Item removeItem(String name) {
 		Item newItem;
-		for(int i = 0; i < roomItems.length; i++) {
-			if(roomItems[i] != null) {
-				if(Util.contains(roomItems[i].name, name)) {
-					newItem = roomItems[i];
-					roomItems[i] = null;
-					return newItem;
-				}
+		for(int i = 0; i < roomItems.length(); i++) {
+			Item currentItem = (Item)roomItems.getNext();
+		    if(Util.contains(currentItem.name, name)) {
+				newItem = currentItem;
+				roomItems.delete(currentItem);
+				
+				return newItem;
 			}
 		}
+		roomItems.reset();
 		return null; 
 	}
-	public Mobile getMobile(String name, boolean remove) {
-		Mobile newMobile;
-		Being currentBeing = (Being)roomBeings.getNext();
-		while(currentBeing != null) {
-		    if(!currentBeing.isPlayer() && Util.contains(currentBeing.name, name)) {
-		        newMobile = (Mobile)currentBeing;
+	public Being getBeing(String name, boolean remove, Player ignorePlayer) {
+	    Being newMobile;
+		for(int i = 0; i < roomBeings.getLength();i++) {
+		    Being currentBeing = (Being)roomBeings.getNext();
+		
+		    if(currentBeing != ignorePlayer && Util.contains(currentBeing.getName(), name)) {
+		        newMobile = (Being)currentBeing;
 		        if(remove == true) {
 		            roomBeings.delete(newMobile);
 		        }
@@ -310,24 +278,37 @@ public class Room {
 		roomBeings.reset();
 		return null;
 	}
-	public Mobile getMobile(String name) {
-		return this.getMobile(name, false);
+	public Being getBeing(String name, Player player) {
+		return this.getBeing(name, false, player);
 	}
-	public Mobile removeMobile(String name) {
-		return this.getMobile(name, true);
+	public Being removeBeing(String name) {
+		return this.getBeing(name, true, null);
+	}
+	public Being removeBeing(Being being) {
+	    Being currentBeing = null;
+	    for(int i = 0; i < roomBeings.length();i++) {
+	        currentBeing = (Being)roomBeings.getNext();
+	        if(currentBeing == being) {
+	            roomBeings.delete(being);
+	            return being;
+	        }
+	    }
+	    return null;
 	}
 	public void addMobile( Mobile m) {
 		roomBeings.add(m);
 	}
 	public void addItem(Item i) {
-		for(int j = 0;j < roomItems.length;j++) {
-			if(roomItems[j] == null) {
-				roomItems[j] = i;
-				return;
-			}
-		}
-		throw(new Error("ROOM OVERFLOW!"));
+		    roomItems.add(i);
 	}
+	
+	public void setTitle(String newTitle) {
+	    title = newTitle;
+	}
+	public void setDescription(String newDesc) {
+	    description = newDesc;
+	}
+	
 	public void healBeings() {
 	    Mobile m;
 	    Being currentBeing = (Being)roomBeings.getNext();

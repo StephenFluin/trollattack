@@ -1,66 +1,85 @@
 <?xml version="1.0" ?> 
-<TrollAttack>
-	<mobileList>
-		<mobile>
-			<vnum>1</vnum>
-			<level>2</level>
-			<name>troll</name>
-			<short>a troll</short>
-			<long>A giant troll is here.</long>
-			<hp>20</hp>
-			<maxhp>20</maxhp>
-			<hitskill>100</hitskill>
-			<hitdamage>3</hitdamage>
-			<respawn>1</respawn>
-		</mobile>
-		<mobile>
-			<vnum>2</vnum>
-			<level>2</level>
-			<name>Troll Citizen</name>
-			<short>a troll</short>
-			<long>A troll citizen goes about his business.</long>
-			<hp>30</hp>
-			<maxhp>30</maxhp>
-			<hitskill>300</hitskill>
-			<hitdamage>1</hitdamage>
-			<respawn>2</respawn>
-		</mobile>
-		<mobile>
-			<vnum>3</vnum>
-			<level>10</level>
-			<name>Tim</name>
-			<short>tim</short>
-			<long>Tim the enchanter stands here.</long>
-			<hp>300</hp>
-			<maxhp>420</maxhp>
-			<hitskill>50</hitskill>
-			<hitdamage>15</hitdamage>
-			<respawn>5</respawn>
-		</mobile>
-		<mobile>
-			<vnum>4</vnum>
-			<level>3</level>
-			<name>candlestick maker</name>
-			<short>the candlestick maker</short>
-			<long>A fat man rests here, looking at you strangely.</long>
-			<hp>100</hp>
-			<maxhp>100</maxhp>
-			<hitskill>100</hitskill>
-			<hitdamage>7</hitdamage>
-			<respawn>2</respawn>
-		</mobile>
-		<mobile>
-			<vnum>5</vnum>
-			<level>3</level>
-			<name>baker</name>
-			<short>the baker</short>
-			<long>A lanky man looks furtively around him.</long>
-			<hp>100</hp>
-			<maxhp>100</maxhp>
-			<hitskill>100</hitskill>
-			<hitdamage>7</hitdamage>
-			<respawn>2</respawn>
-		</mobile>
-	</mobileList>
+<TrollAttack hacked="true">
+	<mobile>
+		<vnum>1</vnum>
+		<level>2</level>
+		<name>troll</name>
+		<short>a troll</short>
+		<long>A giant troll is here.</long>
+		<hp>20</hp>
+		<maxhp>20</maxhp>
+		<mana>0</mana>
+		<maxmana>0</maxmana>
+		<move>0</move>
+		<maxmove>0</maxmove>
+		<hitskill>100</hitskill>
+		<hitdamage>1d3</hitdamage>
+		<respawn>1</respawn>
+	</mobile>
+	<mobile>
+		<vnum>2</vnum>
+		<level>2</level>
+		<name>Troll Citizen</name>
+		<short>a troll</short>
+		<long>A troll citizen goes about his business.</long>
+		<hp>30</hp>
+		<maxhp>30</maxhp>
+		<mana>0</mana>
+		<maxmana>0</maxmana>
+		<move>0</move>
+		<maxmove>0</maxmove>
+		<hitskill>300</hitskill>
+		<hitdamage>1d4</hitdamage>
+		<respawn>2</respawn>
+		<item>2</item>
+	</mobile>
+	<mobile>
+		<vnum>3</vnum>
+		<level>10</level>
+		<name>Tim</name>
+		<short>tim</short>
+		<long>Tim the enchanter stands here.</long>
+		<hp>300</hp>
+		<maxhp>420</maxhp>
+		<mana>0</mana>
+		<maxmana>0</maxmana>
+		<move>0</move>
+		<maxmove>0</maxmove>
+		<hitskill>50</hitskill>
+		<hitdamage>2d7</hitdamage>
+		<respawn>5</respawn>
+	</mobile>
+	<mobile>
+		<vnum>4</vnum>
+		<level>3</level>
+		<name>candlestick maker</name>
+		<short>the candlestick maker</short>
+		<long>A fat man rests here, looking at you strangely.</long>
+		<hp>100</hp>
+		<maxhp>100</maxhp>
+		<mana>0</mana>
+		<maxmana>0</maxmana>
+		<move>0</move>
+		<maxmove>0</maxmove>
+		<hitskill>100</hitskill>
+		<hitdamage>1d7</hitdamage>
+		<respawn>2</respawn>
+	</mobile>
+	<mobile>
+		<vnum>5</vnum>
+		<level>3</level>
+		<name>baker</name>
+		<short>the baker</short>
+		<long>A lanky man looks furtively around him.</long>
+		<hp>100</hp>
+		<maxhp>100</maxhp>
+		<mana>0</mana>
+		<maxmana>0</maxmana>
+		<move>0</move>
+		<maxmove>0</maxmove>
+		<hitskill>100</hitskill>
+		<hitdamage>1d7</hitdamage>
+		<respawn>2</respawn>
+	</mobile>
 </TrollAttack>
 			

@@ -39,7 +39,7 @@ public class DeadMobiles {
 				    mobs[i].hitPoints = mobs[i].maxHitPoints;
 				    mobs[i].manaPoints = mobs[i].maxManaPoints;
 				    mobs[i].movePoints = mobs[i].maxMovePoints;
-					TrollAttack.gameRooms[roms[i]].addMobile( mobs[i] );
+					TrollAttack.getRoom(roms[i]).addMobile( mobs[i] );
 					//TrollAttack.error("A mobile returns from the netherworld");
 					mobs[i] = null;
 				}

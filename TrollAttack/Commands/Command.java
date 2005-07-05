@@ -20,7 +20,10 @@ public abstract class Command {
 		return name;
 	}
 	public Command(String commandName) { this(commandName, true);}
-	public Command(String commandName, boolean b) {name = commandName; peaceful = b;}
+	public Command(String commandName, boolean mustBePeaceful) {name = commandName; peaceful = mustBePeaceful;}
+	public Command(String commandName, int minimumState) {
+	    name = commandName; 
+	}
 	public boolean isPeaceful() {
 	    return peaceful;
 	}

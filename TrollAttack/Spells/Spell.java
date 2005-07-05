@@ -1,5 +1,5 @@
 package TrollAttack.Spells;
-import TrollAttack.*;
+import TrollAttack.Player;
 /*
  * Created on May 29, 2005
  *

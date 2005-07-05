@@ -1,5 +1,8 @@
 package TrollAttack.Commands;
-import TrollAttack.*;
+import TrollAttack.Player;
+import TrollAttack.Room;
+import TrollAttack.TrollAttack;
+import TrollAttack.Util;
 /*
  * Created on May 7, 2005
  *
@@ -37,7 +40,7 @@ public class CommandMove extends Command {
 	    String[] directionList = {"east", "west", "north", "south", "up", "down", "northeast", "southwest", "northwest", "southeast"};
 	    return directionList[direction - 1];
 	}
-	public int directionOpposite(int direction) {
+	public static int directionOpposite(int direction) {
 	    if(direction % 2 == 0) {
 	        return direction - 1;
 	    } else {
@@ -51,15 +54,19 @@ public class CommandMove extends Command {
 	public void execute() {
 	    //TrollAttack.error("Attempting to go!");
 		int results = 0;
-		Room previousRoom = TrollAttack.gameRooms[player.getCurrentRoom()];
+		Room previousRoom = player.getActualRoom();
 		
 		//player.tell(player.getCurrentRoom() + "");
 		results = previousRoom.followLink(direction);
 		if(results != 0) {
-		    Room nextRoom = TrollAttack.gameRooms[results];
+		    Room nextRoom = TrollAttack.getRoom(results);
 		    try{
 		        nextRoom.say(Util.uppercaseFirst(player.getShort()) + " arrives from the " + directionName(directionOpposite(direction)) + ".");
 		    } catch(Exception e) {
+		        TrollAttack.error("Error in CommandMove when attempting to say something as player moves to next room.");
+		        if(nextRoom == null) {
+		            TrollAttack.error("The next room is null, uh oh! (" + results + ").");
+		        }
 		        e.printStackTrace();
 		    }
 		    player.setCurrentRoom(results);

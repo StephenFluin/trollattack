@@ -1,17 +1,18 @@
 Todo List / Ideas:
 
-1.Saving
-.Word Wrapping
-2.Remove hardcoding of maxes via arrays.
 3.Building System.
 4. Food and Drink System
+Movement points
+Blindness / sleep state...
+
+Fix Experience System
 5. Pets and Mountable Mobiles
 6. Swimming and Water
-
+Convert .are files to my xml format.
 
 7. Guilds and Orders
 8. Better Item Handling
-9. Speech and Emotives
+9. Speech
 
-Bugs:
-Attempting to kill something that doesn't exist kills game.
+Known Bugs:
+Kill ___ kills first being in room...

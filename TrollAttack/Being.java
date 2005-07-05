@@ -13,8 +13,17 @@ package TrollAttack;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Being {
-	int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, hitSkill, hitDamage, experience, level, favor;
+	int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, hitSkill, experience, level, favor;
 	int currentRoom, state = 0;
+	protected LinkedList items = new LinkedList();
+	Room actualRoom = null;
+	
+	private Item weapon = null;
+	private Item helm = null;
+	private Item boots = null;
+	private Item greaves =  null;
+	
+	Roll hitDamage;
 	/**
 	 * States:
 	 * 0 Awake/Alert
@@ -32,11 +41,12 @@ public class Being {
 		return currentRoom;
 	}
 	public Room getActualRoom() {
-	    return TrollAttack.gameRooms[currentRoom];
+	    return actualRoom;
 	}
 
 	public void setCurrentRoom(int r) {
 		currentRoom = r;
+		actualRoom = TrollAttack.getRoom(currentRoom);
 	}
 	
 	public int getState() {
@@ -54,6 +64,8 @@ public class Being {
 	        return "sitting";
 	    } else if(state == 2) {
 	        return "lying down";
+	    } else if(state == 3) {
+	        return "sleeping";
 	    } else {
 	        return "something secret";
 	    }
@@ -79,7 +91,7 @@ public class Being {
 	    return name;
 	}
 	public int getHitDamage() {
-	    return hitDamage;
+	    return hitDamage.roll();
 	}
 	public String prompt() {
 		return myPrompt.showPrompt(hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, experience, Util.experienceLevel(level + 1) - experience);
@@ -102,6 +114,9 @@ public class Being {
 	}
 	public void setBeingFighting(Being b) {
 	    beingFighting = b;
+	}
+	public Being getFighting() {
+	    return beingFighting;
 	}
 	public int getExperience() {
 	    return experience;
@@ -160,7 +175,7 @@ public class Being {
 	        maxManaPoints += manaIncrease;
 	        movePoints += moveIncrease;
 	        maxMovePoints += moveIncrease;
-	        hitDamage += (int)(Math.random() * 4);
+	        hitDamage.sizeOfDice += (int)(Math.random() * 4);
 	        hitSkill -= (int)(Math.random() * 6);
 	    }
 	}
@@ -169,4 +184,141 @@ public class Being {
 	    return level;
 	}
 	
+	public void addItem(Item i) {
+		items.add(i);
+	}
+	private String[] inventory() {
+		String[] itemList = new String[255];
+		int n = 0;
+		Item currentItem;
+		for(int i = 0;i < items.length(); i++ ) {
+			currentItem = (Item)items.getNext();
+			itemList[n] = currentItem.getShort();
+			n++;
+		}
+		items.reset();
+		String[] inventoryList = new String[n];
+		for(int i = 0;i < n;i++) {
+			inventoryList[i] = itemList[i];
+		}
+		return inventoryList;
+		
+	}
+	public void pInventory() {
+			String[] inv = inventory();
+			tell("Your Inventory:");
+			for(int i = 0; i < inv.length; i++ ) {
+					tell( inv[i] );
+			}
+	}
+	public void pEquipment() {
+		tell("Your Equipment:");
+		if(weapon != null) {
+			tell("Weapon: " + weapon.getShort());
+		}
+		if(helm != null) {
+		    tell("Helm: " + helm.getShort());
+		}
+		if(boots != null) {
+		    tell("Boots: " + boots.getShort());
+		}
+		if(greaves != null) {
+		    tell("Greaves: " + greaves.getShort());
+		}
+	}
+	public Item dropItem(String name) {
+		Item newItem = null;
+		Item currentItem;
+		for(int i = 0; i < items.length(); i++) {
+			currentItem = (Item)items.getNext();
+				
+			if(Util.contains( currentItem.name, name)) {
+				newItem = currentItem;
+				items.delete(currentItem);
+				//TrollAttack.message("Someone drops " + newItem.getShort() + ".");
+			} else {
+				//TrollAttack.error("looking at object i in room " + .getCurrentRoom());
+			}
+		}
+		items.reset();
+		return newItem; 
+	
+	}
+	public String wearItem(String name) {
+	    boolean success = false;
+	    Item currentItem = null;
+		for(int i = 0; i < items.length(); i++) {
+			currentItem = (Item)items.getNext();
+		    if(currentItem.getName().compareToIgnoreCase(name) == 0) {
+		        Item newWear = currentItem;
+		       // TrollAttack.error("newWear would go on your " + newWear.type);
+		        switch(newWear.type) {
+		            case Item.SWORD:
+		                if(weapon == null) {
+		                    weapon = newWear;
+					        success = true;
+		                }
+		                break;
+		            case Item.HELM:
+		                if(helm == null) {
+		                    helm = newWear;
+		                    success = true;
+		                }
+		                break;
+		            case Item.BOOTS:
+		                if(boots == null) {
+		                    boots = newWear;
+		                    success = true;
+		                }
+		                break;
+		            case Item.GREAVES:
+		                if(greaves == null) {
+		                    greaves = newWear;
+		                    success = true;
+		                }
+		                break;
+		        }
+		        if(success) {
+		            items.delete(currentItem);
+		            items.reset();
+		            return "You wear " + newWear.getShort();
+		        } else {
+		            items.reset();
+		            return "You are already wearing something where this would go!";
+		        }
+		        
+		    }
+		}
+		items.reset();
+		return "You don't have that.";
+
+	}
+	public String removeItem(String name) {
+	    Item inHand = null;
+	    if(weapon != null && Util.contains(weapon.getName(), name)) {
+	        inHand = weapon;
+	        weapon = null;
+	    } else if(helm != null && Util.contains(helm.getName(), name)) {
+	        inHand = helm;
+	        helm = null;
+	    } else if(boots != null && Util.contains(boots.getName(), name)) {
+	        inHand = boots;
+	        boots = null;
+	    } else if(greaves != null && Util.contains(greaves.getName(), name)) {
+	        inHand = greaves;
+	        helm = null;
+	    }
+	    if(inHand != null) {
+	        items.add(inHand);
+            return "You remove " + inHand.shortDesc;
+	    } else {
+	        return "You aren't wearing that!";
+	    }
+	    
+	}
+	public void dropAll() {
+	    while(items.getLength() > 0 ) {
+	        getActualRoom().addItem(dropItem(""));
+	    }
+	}
 }

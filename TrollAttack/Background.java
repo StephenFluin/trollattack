@@ -33,12 +33,21 @@ public class Background extends Thread {
 			if(time % 10 == 0) {
 			    TrollAttack.healBeings();
 			}
-		
+			
+			// Punt players idle for more than 20 minutes every 10 minutes.
+			if(time % (60 ) == 0 ) {
+			    TrollAttack.puntIdlePlayers(60*20);
+			}
+			
 			//TrollAttack.message("Starting room background.");
 			// Who cares what happens in rooms
-			for(int i = 0;i < TrollAttack.gameRooms.length; i++) {
-				
+			//for(int i = 0;i < TrollAttack.gameRooms.length; i++) {
+			//	
+			//}
+			if(time % (60 * 5) == 0) {
+			    //TrollAttack.broadcast("A healing wind continues to blow accross the realm.");
 			}
+			
 
 			try{
 			    Thread.sleep(1000);
@@ -49,5 +58,9 @@ public class Background extends Thread {
 			time++;
 			//TrollAttack.message("Slept all the way to " + time + ".");
 		}
+	}
+	public int getTime() {
+	    return time;
+	    
 	}
 }
