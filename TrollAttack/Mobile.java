@@ -1,5 +1,8 @@
 package TrollAttack;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 /*
  * Created on May 5, 2005
  *
@@ -14,9 +17,7 @@ package TrollAttack;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Mobile extends Being {
-	int vnum, reSpawn;
-	String  longDesc = "";
-	static String dataFile = "mobiles.xml";
+	public int vnum, reSpawn;
 	
 	public Mobile(int v, int leve, String n, int h, int mh, int hSkill, String hDamage, int rSpawn, String s, String l) {
 	 vnum = v;
@@ -66,4 +67,38 @@ public class Mobile extends Being {
 	public int getRespawnTime() {
 		return reSpawn;
 	}
+	public Node toNode(Document doc) {
+		   
+		    Node m = doc.createElement("mobile");
+		    LinkedList attribs = new LinkedList();
+		    attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
+		    attribs.add(Util.nCreate(doc, "name", name + ""));
+		    attribs.add(Util.nCreate(doc, "level", level + ""));
+		    attribs.add(Util.nCreate(doc, "short", getShort()));
+		    attribs.add(Util.nCreate(doc, "long", longDesc + ""));
+		    attribs.add(Util.nCreate(doc, "respawn", reSpawn + ""));
+		    attribs.add(Util.nCreate(doc, "hp", hitPoints + ""));
+		    attribs.add(Util.nCreate(doc, "maxhp", maxHitPoints + ""));
+		    attribs.add(Util.nCreate(doc, "mana", manaPoints + ""));
+		    attribs.add(Util.nCreate(doc, "maxmana", maxManaPoints + ""));
+		    attribs.add(Util.nCreate(doc, "move", movePoints + ""));
+		    attribs.add(Util.nCreate(doc, "maxmove",  maxMovePoints + ""));
+		    attribs.add(Util.nCreate(doc, "hitskill", hitSkill + ""));
+		    attribs.add(Util.nCreate(doc, "hitdamage", hitDamage.toString() + ""));
+		    
+		    Item roomItem;
+		    for(int i = 0;i < items.getLength();i++) {
+		        roomItem = (Item)items.getNext();
+		        attribs.add(Util.nCreate(doc, "item", roomItem.vnum + ""));
+		    }
+		    items.reset();
+		    
+		    for(int i = 0; i < attribs.length(); i++) {
+		        
+		        Node newAttrib = (Node)attribs.getNext();
+		        m.appendChild(newAttrib);
+		    }
+		    
+		    return m;
+		}
 }

@@ -1,6 +1,7 @@
 Todo List / Ideas:
 
-3.Building System.
+3. Item Building System.
+	Better Item Handling
 4. Food and Drink System
 Movement points
 Blindness / sleep state...
@@ -15,4 +16,4 @@ Convert .are files to my xml format.
 9. Speech
 
 Known Bugs:
-Kill ___ kills first being in room...
+There has to be at least 2 items, mobiles, and rooms in the game.

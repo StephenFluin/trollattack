@@ -32,6 +32,7 @@ public class TrollAttack {
 	 *  before you can load the game rooms because the rooms contain Mobile 
 	 *  objects and item objects, and Mobiles can contain items.
 	 */
+	public static LinkedList gameAreas;
 	public static LinkedList gameItems;
 	public static LinkedList gameMobiles;
 	public static LinkedList gamePlayers;
@@ -50,9 +51,12 @@ public class TrollAttack {
 		
 		String command;
 		
-		gameItems = Util.readItemData();
-        gameMobiles = Util.readMobileData();
-		gameRooms =  Util.readRoomData();
+		DataReader myData = new DataReader();
+		gameAreas = myData.getAreas();
+		gameItems = myData.getItems();
+		gameMobiles = myData.getMobiles();
+		gameRooms = myData.getRooms();
+
 		gamePlayers = new LinkedList();
 		io = new Communication();
 		

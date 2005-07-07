@@ -16,6 +16,7 @@ public class LinkedList {
 	private Node head;
 	private Node tail;
 	private boolean allowDuplicates = true;
+	
 	private int length = 0;
 	private int internalPointer = 0;
 	private Node internalPointerNode;
@@ -86,7 +87,13 @@ public class LinkedList {
 	
 	
 	// Their commands (and <em>my</em> wrappers)
-
+	public boolean itemsRemain() {
+	    if(internalPointerNode.getPointer() == tail) {
+	        return false;
+	    } else {
+	        return true;
+	    }
+	}
     public int length() {
 		return length;
 	}

@@ -12,6 +12,7 @@ package TrollAttack.Commands;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
+import TrollAttack.Area;
 import TrollAttack.Being;
 import TrollAttack.Communication;
 import TrollAttack.Fight;
@@ -89,11 +90,19 @@ public class CommandHandler {
 		    registerCommand(new Goto("goto"));
 		    registerCommand(new Slay("slay"));
 		    /* Room Building Commands */
+		    registerCommand(new freeze("freeze"));
+		    registerCommand(new unfreeze("unfreeze"));
+		    registerCommand(new rList("rlist"));
+		    registerCommand(new mList("mlist"));
+		    registerCommand(new iList("ilist"));
+		    registerCommand(new aList("alist"));
 		    registerCommand(new rCreate("rcreate"));
 		    registerCommand(new mCreate("mcreate"));
 		    registerCommand(new iCreate("icreate"));
 		    registerCommand(new rTitle("rtitle"));
 		    registerCommand(new rDescription("rdescription"));
+		    registerCommand(new mSet("mset"));
+		    registerCommand(new mStat("mstat"));
 			registerCommand(new rConnect( "rcnorth", CommandMove.NORTH));
 			registerCommand(new rConnect( "rcsouth", CommandMove.SOUTH));
 			registerCommand(new rConnect( "rceast", CommandMove.EAST));
@@ -518,6 +527,94 @@ public class CommandHandler {
 	       
 	    }
 	}
+	class freeze extends Command {
+	    public freeze(String s) { super(s); }
+	    public void execute() {
+	        player.getActualArea().freeze();
+	        player.tell("You freeze time and link all mobiles and objects.");
+	    }
+	    public void execute(String s) {
+	        this.execute();
+	    }
+	}
+	class unfreeze extends Command {
+	    public unfreeze(String s) { super(s); }
+	    public void execute() {
+	        player.getActualArea().unfreeze();
+	        player.tell("You return time and the universe to their normal states..");
+	    }
+	    public void execute(String s) {
+	        this.execute();
+	    }
+	}
+	class aList extends Command {
+	    public aList(String s) { super(s, false); }
+	    public void execute() {
+		    player.tell(Communication.GREEN + "Game Areas:");
+		    player.tell(Communication.CYAN + "Filename\t\tName\t\tLowVnum\tHighVnum" + Communication.WHITE);
+		    Area area;
+		    while(TrollAttack.gameAreas.itemsRemain()) {
+		        area = (Area)TrollAttack.gameAreas.getNext();
+		       
+		        player.tell(area.filename + "\t" + area.name + "\t" + area.low+"\t"+area.high);
+		    }
+		    TrollAttack.gameAreas.reset();
+		}
+	    public void execute(String s) {
+	        this.execute();
+	    }
+	}
+	class iList extends Command {
+	    public iList(String s) { super(s, false); }
+	    public void execute() {
+		    player.tell(Communication.GREEN +"Game Items:");
+		    player.tell(Communication.CYAN + "VNUM\tName\t\tShortDesc" + Communication.WHITE);
+		    Item item;
+		    while(TrollAttack.gameItems.itemsRemain()) {
+		        item = (Item)TrollAttack.gameItems.getNext();
+		        
+		        player.tell(item.vnum + "\t" + item.name + "\t" + item.getShort());
+		    }
+		    TrollAttack.gameItems.reset();
+		}
+	    public void execute(String s) {
+	        this.execute();
+	    }
+	}
+	class mList extends Command {
+	    public mList(String s) { super(s, false); }
+	    public void execute() {
+		    player.tell(Communication.GREEN +"Game Mobiles:");
+		    player.tell(Communication.CYAN + "VNUM\tName\t\tShortDesc" + Communication.WHITE);
+		    Mobile mobile;
+		    while(TrollAttack.gameMobiles.itemsRemain()) {
+		        mobile = (Mobile)TrollAttack.gameMobiles.getNext();
+		        
+		        player.tell(mobile.vnum + "\t" + mobile.name + "\t" + mobile.getShort());
+		    }
+		    TrollAttack.gameMobiles.reset();
+		}
+	    public void execute(String s) {
+	        this.execute();
+	    }
+	}
+	class rList extends Command {
+	    public rList(String s) { super(s, false); }
+	    public void execute() {
+		    player.tell(Communication.GREEN +"Game Rooms:");
+		    player.tell(Communication.CYAN + "VNUM\tTitle" + Communication.WHITE);
+		    Room room;
+		    while(TrollAttack.gameRooms.itemsRemain()) {
+		        room = (Room)TrollAttack.gameRooms.getNext();
+		        
+		        player.tell(room.vnum + "\t" + room.title);
+		    }
+		    TrollAttack.gameRooms.reset();
+		}
+	    public void execute(String s) {
+	        this.execute();
+	    }
+	}
 	
 	class rCreate extends Command {
 	    public rCreate(String s) { super(s, false); }
@@ -606,8 +703,82 @@ public class CommandHandler {
 	        player.getActualRoom().setLink(direction, destination);
 	    }
 	}
-	class Set extends Command {
-	    
+	class mStat extends Command {
+	    public mStat(String s) { super(s, false); }
+	    public void execute() {
+	        player.tell("Usage: mstat <mobile name>");
+	    }
+	    public void execute(String s) {
+	        Being mob = player.getActualRoom().getBeing( s, player );
+	        if(mob == null) {
+	            player.tell("You can't find that!");
+	        } else {
+	            player.tell(mob.getShort() + ":");
+	            player.tell(mob.toString());
+	        }
+	    }
+	}
+	class mSet extends Command {
+	    public mSet(String s) { super(s, false); }
+	    public void execute() {
+	        player.tell("Usage: mset <mobile name> <attribute> <value>");
+	    }
+	    public void execute(String s) {
+	        String[] parts = s.split(" ");
+	        if(parts.length < 3) {
+	            this.execute();
+	        } else {
+	            Being mobile = null;
+	            try {
+	               mobile = (Being)player.getActualRoom().getBeing(parts[0], null);
+	            } catch(Exception e) {
+	                TrollAttack.error("Possilbe attempt to change player with mset.");
+	                e.printStackTrace();
+	            }
+	            if(mobile != null) {
+		            String attr = parts[1];
+		            String value = parts[2];
+		            for(int i = 3;i < parts.length;i++) {
+		                value += " " + parts[i];
+		            }
+		            int intValue = 0;
+		            try {
+		               intValue  = new Integer(value).intValue();
+		            } catch(Exception e) {
+		                
+		            }
+		            if(attr.compareToIgnoreCase("hp") == 0) {
+		                mobile.hitPoints = intValue;
+		            } else if(attr.compareToIgnoreCase("hp") == 0) {
+		                mobile.hitPoints = intValue;
+		            } else if(attr.compareToIgnoreCase("maxhp") == 0) {
+		                mobile.maxHitPoints = intValue;
+		            } else if(attr.compareToIgnoreCase("mana") == 0) {
+		                mobile.manaPoints = intValue;
+		            } else if(attr.compareToIgnoreCase("maxmana") == 0) {
+		                mobile.maxManaPoints = intValue;
+		            } else if(attr.compareToIgnoreCase("move") == 0) {
+		                mobile.movePoints = intValue;
+		            } else if(attr.compareToIgnoreCase("maxmove") == 0) {
+		                mobile.maxMovePoints = intValue;
+		            } else if(attr.compareToIgnoreCase("name") == 0) {
+		                mobile.name = value;
+		            } else if(attr.compareToIgnoreCase("short") == 0) {
+		                mobile.shortDescription = value;
+		            } else if(attr.compareToIgnoreCase("long") == 0) {
+		                mobile.longDesc = value;
+		            } else if(attr.compareToIgnoreCase("hitdamage") == 0) {
+		                mobile.hitDamage = new Roll(value);
+		            } else if(attr.compareToIgnoreCase("hitskill") == 0) {
+		                mobile.hitSkill = intValue;
+		            } else {
+		                player.tell(attr + " is not a valid attribute for a mobile!");
+		            }
+	            } else {
+	                player.tell("You don't see that here!");
+	            }
+	        }
+	    }
 	}
 	class Savearea extends Command {
 	    public Savearea(String s) {

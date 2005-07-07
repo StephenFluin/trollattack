@@ -13,9 +13,9 @@ package TrollAttack;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Being {
-	int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, hitSkill, experience, level, favor;
+	public int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, hitSkill, experience, level, favor;
 	int currentRoom, state = 0;
-	protected LinkedList items = new LinkedList();
+	LinkedList items = new LinkedList();
 	Room actualRoom = null;
 	
 	private Item weapon = null;
@@ -23,7 +23,7 @@ public class Being {
 	private Item boots = null;
 	private Item greaves =  null;
 	
-	Roll hitDamage;
+	public Roll hitDamage;
 	/**
 	 * States:
 	 * 0 Awake/Alert
@@ -33,7 +33,7 @@ public class Being {
 	 */
 	
 	
-	String shortDescription, name;
+	public String shortDescription, name, longDesc;
 	boolean isPlayer = false;
 	Being beingFighting = null;
 	private Prompt myPrompt = new Prompt();
@@ -43,7 +43,9 @@ public class Being {
 	public Room getActualRoom() {
 	    return actualRoom;
 	}
-
+	public Area getActualArea() {
+	    return Area.test(currentRoom);
+	}
 	public void setCurrentRoom(int r) {
 		currentRoom = r;
 		actualRoom = TrollAttack.getRoom(currentRoom);

@@ -6,8 +6,8 @@ import org.w3c.dom.Node;
 import TrollAttack.Commands.CommandMove;
 
 public class Room {
-	int vnum, east, west , north, south, northEast, northWest, southEast, southWest, up, down;
-	String description = "", title = "";
+	public int vnum, east, west , north, south, northEast, northWest, southEast, southWest, up, down;
+	public String description = "", title = "";
 	private LinkedList roomItems = new LinkedList();
 	public LinkedList roomBeings = new LinkedList();
 	
@@ -18,7 +18,7 @@ public class Room {
 	 this.up = up; this.down = down;
 	 this.title = title;
 	 this.description = description;
-	 
+	// TrollAttack.message("Creating room with up and down: " + up + " and " + down + ".");
 	}
 	
 	public String toString() {
@@ -88,8 +88,75 @@ public class Room {
 	    
 	    return m;
 	}
-	
-
+	public void freeze() {
+	    Integer[] itemVnums = new Integer[roomItems.length()];
+	    for(int i = 0; i < roomItems.length();i++) {
+	        itemVnums[i] = new Integer(((Item)roomItems.getNext()).vnum);
+	    }
+	    roomItems = new LinkedList();
+	    for(int i = 0; i < itemVnums.length;i++) {
+	        roomItems.add(TrollAttack.getItem(itemVnums[i]));
+	        //TrollAttack.message("Recreating item..");
+	        
+	    }
+	    try{
+		    Integer[] mobileVnums = new Integer[roomBeings.length()];
+		    LinkedList roomMobiles = new LinkedList();
+		    for(int i = 0; i < roomBeings.length();i++) {
+		        Being tmp = (Being)roomBeings.getNext();
+		        if(tmp.isPlayer()) {
+		            roomMobiles.add(tmp);
+		        } else {
+		            mobileVnums[i] = new Integer(((Mobile)tmp).vnum);
+		        }
+		    }
+		    roomBeings.reset();
+		    roomBeings = roomMobiles;
+		    for(int i = 0; i < mobileVnums.length;i++) {
+		        if(mobileVnums[i] != null) {
+		            roomBeings.add(TrollAttack.getMobile(mobileVnums[i]));
+		        }
+		        //TrollAttack.message("Recreating mobile..");
+		        
+		    }
+	    } catch(Exception e) {
+	        e.printStackTrace();
+	    }
+	    
+	}
+	public void unfreeze() {
+	    Integer[] roomVnums = new Integer[roomItems.length()];
+	    for(int i = 0; i < roomItems.length();i++) {
+	        roomVnums[i] = new Integer(((Item)roomItems.getNext()).vnum);
+	    }
+	    roomItems = new LinkedList();
+	    for(int i = 0; i < roomVnums.length;i++) {
+	        roomItems.add(new Item(TrollAttack.getItem(roomVnums[i])));
+	    }
+	    try{
+		    Integer[] mobileVnums = new Integer[roomBeings.length()];
+		    LinkedList roomMobiles = new LinkedList();
+		    for(int i = 0; i < roomBeings.length();i++) {
+		        Being tmp = (Being)roomBeings.getNext();
+		        if(tmp.isPlayer()) {
+		            roomMobiles.add(tmp);
+		        } else {
+		            mobileVnums[i] = new Integer(((Mobile)tmp).vnum);
+		        }
+		    }
+		    roomBeings.reset();
+		    roomBeings = roomMobiles;
+		    for(int i = 0; i < mobileVnums.length;i++) {
+		        if(mobileVnums[i] != null) {
+		            roomBeings.add(new Mobile(TrollAttack.getMobile(mobileVnums[i])));
+		        }
+		        //TrollAttack.message("Recreating mobile..");
+		        
+		    }
+	    } catch(Exception e) {
+	        e.printStackTrace();
+	    }
+	}
 	
 	public String[] look() {
 	    return look(null);
@@ -116,8 +183,18 @@ public class Room {
 				exits += ", ";
 			}
 			exits += "South";
-		} else {
-		//	System.out.println(this.toString()  );
+		}
+		if(up != 0) {
+		    if(exits.length() > 7) {
+		        exits += ", ";
+		    }
+		    exits += "Up";
+		}
+		if(down != 0) {
+		    if(exits.length() > 7) {
+		        exits += ", ";
+		    }
+		    exits += "Down";
 		}
 		if(exits.length() <= 7 ) {
 			exits += " none";

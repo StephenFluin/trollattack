@@ -149,7 +149,7 @@ public class Communication extends Thread {
                 
 	                player.tell(name + "'s password:");
 	                pass = in.readLine();
-	                tmpPlayer = Util.readPlayerData(name);
+	                tmpPlayer = DataReader.readPlayerData(name);
 	                tmpPlayer.authenticated = true;
 	                TrollAttack.message("Created player " + tmpPlayer.getShort());
                 }
@@ -233,22 +233,22 @@ public class Communication extends Thread {
    // Server server = new Server();
    // server.start();
    // public
-    static String GREY = 	"\033[1:30:40m";
-    static String RED = 	"\033[1;31;40m";
-    static String GREEN = 	"\033[1;32;40m";
-    static String YELLOW = 	"\033[1;33;40m";
-    static String BLUE = 	"\033[1;34;40m";
-    static String PURPLE = 	"\033[1;35;40m";
-    static String CYAN = 	"\033[1;36;40m";
-    static String WHITE = 	"\033[1;37;40m";
-    static String DARKGREY = 	"\033[0:30:40m";
-    static String DARKRED = 	"\033[0;31;40m";
-    static String DARKGREEN = 	"\033[0;32;40m";
-    static String DARKYELLOW = 	"\033[0;33;40m";
-    static String DARKBLUE = 	"\033[0;34;40m";
-    static String DARKPURPLE = 	"\033[0;35;40m";
-    static String DARKCYAN = 	"\033[0;36;40m";
-    static String DARKWHITE = 	"\033[0;37;40m";
+    public static String GREY = 	"\033[1:30:40m";
+    public static String RED = 	"\033[1;31;40m";
+    public static String GREEN = 	"\033[1;32;40m";
+    public static String YELLOW = 	"\033[1;33;40m";
+    public static String BLUE = 	"\033[1;34;40m";
+    public static String PURPLE = 	"\033[1;35;40m";
+    public static String CYAN = 	"\033[1;36;40m";
+    public static String WHITE = 	"\033[1;37;40m";
+    public static String DARKGREY = 	"\033[0:30:40m";
+    public static String DARKRED = 	"\033[0;31;40m";
+    public static String DARKGREEN = 	"\033[0;32;40m";
+    public static String DARKYELLOW = 	"\033[0;33;40m";
+    public static String DARKBLUE = 	"\033[0;34;40m";
+    public static String DARKPURPLE = 	"\033[0;35;40m";
+    public static String DARKCYAN = 	"\033[0;36;40m";
+    public static String DARKWHITE = 	"\033[0;37;40m";
     
    
     

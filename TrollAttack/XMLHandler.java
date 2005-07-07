@@ -14,12 +14,15 @@ import org.w3c.dom.NodeList;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class XMLHandler {
-    public LinkedList sections;
+    public Hashtable sections;
     static int loopStart, loopIncrement;
     Node node, kid, Kid;
     NodeList kids;
     public XMLHandler(Document doc) {
-        sections = new LinkedList();
+        this(doc, new Hashtable());
+    }
+    public XMLHandler(Document doc, Hashtable secs) {
+        sections = secs;
 
         node = doc;
 	    kids = node.getChildNodes();
@@ -34,11 +37,11 @@ public class XMLHandler {
 	        loopIncrement = 1;
 	    }
         
-	    listProcess(Kid, sections);
-		
+	    hashProcess(Kid, sections);
+		//TrollAttack.message(sections.toString());
 		/*
 		 * I would like section to look like this:
-		 * List[x] { [1]: {vnum=1, name=sword}
+		 * item=List[x] { [1]: {vnum=1, name=sword}
 		 * 		[2]: {vnum=2, name=sword2, ... , item=List[2] {...}}
 		 */
 	}
@@ -81,20 +84,40 @@ public class XMLHandler {
         for(int j = loopStart; j < kids.getLength(); j += loopIncrement) {
             kid = kids.item(j);
             //TrollAttack.message("Looping through childnode " + kid.getNodeName());
+            
+
             Object currentValue  = hash.get(kid.getNodeName());
             if( currentValue != null ) {
                 if( currentValue.getClass() == LinkedList.class ) {
                     LinkedList list = (LinkedList)currentValue;
-                    list.add(kid.getChildNodes().item(0).getNodeValue());
+                    if(kid.getChildNodes().getLength() > 2) {
+                        Hashtable hashy = new Hashtable();
+                        hashProcess(kid, hashy);
+                        list.add(hashy);
+                    } else {
+                        list.add(kid.getChildNodes().item(0).getNodeValue());
+                    }
                 } else {
                     Object tmp = currentValue;
                     LinkedList ll = new LinkedList();
                     hash.put(kid.getNodeName(), ll);
                     ll.add(tmp);
-                    ll.add(kid.getChildNodes().item(0).getNodeValue());
+                    if(kid.getChildNodes().getLength() > 2) {
+                        Hashtable hashy = new Hashtable();
+                        hashProcess(kid, hashy);
+                        ll.add(hashy);
+                    } else {
+                        ll.add(kid.getChildNodes().item(0).getNodeValue());
+                    }
                 }
             } else {
-                hash.put( kid.getNodeName() , kid.getChildNodes().item(0).getNodeValue());
+                if(kid.getChildNodes().getLength() > 2) {
+                    Hashtable hashy = new Hashtable();
+                    hashProcess(kid, hashy);
+                    hash.put( kid.getNodeName() , hashy);
+                } else {
+                    hash.put( kid.getNodeName() , kid.getChildNodes().item(0).getNodeValue());
+                }
             }
         }
     }

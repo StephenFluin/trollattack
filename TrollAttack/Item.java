@@ -1,9 +1,13 @@
 
 
 package TrollAttack;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 public class Item {
-	int vnum, weight, type;
-	String  shortDesc = "", longDesc = "", name = "";
+	public int vnum, weight, type;
+	public String  shortDesc = "", longDesc = "", name = "";
 	Roll hitDamage;
 
 	/**
@@ -16,7 +20,21 @@ public class Item {
 	final public static int BOOTS = 3;
 	final public static int GREAVES = 4;
 	final public static int RING = 5;
-	
+	public String typeToString(int type) {
+	    if(type == SWORD) {
+	        return "sword";
+	    } else if(type == HELM) {
+	        return "helm";
+	    } else if(type == BOOTS) {
+	        return "boots";
+	    } else if(type == GREAVES) {
+	        return "greaves";
+	    } else if(type == RING) {
+	        return "ring";
+	    } else {
+	        return "other";
+	    }
+	}
 	public Item(int vnum, String nom, int weigh, String shortdes, String longdes, Roll hd, int type) {
 	 this.vnum = vnum;
 	 name = nom;
@@ -39,7 +57,26 @@ public class Item {
 		longDesc;
 					
 	}
-	
+	public Node toNode(Document doc) {
+		   
+		    Node m = doc.createElement("item");
+		    LinkedList attribs = new LinkedList();
+		    attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
+		    attribs.add(Util.nCreate(doc, "name", name + ""));
+		    attribs.add(Util.nCreate(doc, "short", getShort()));
+		    attribs.add(Util.nCreate(doc, "long", longDesc + ""));
+		    attribs.add(Util.nCreate(doc, "weight", weight + ""));
+		    attribs.add(Util.nCreate(doc, "type", typeToString(type) + ""));
+		    attribs.add(Util.nCreate(doc, "hitDamage", hitDamage.toString() + ""));
+		    
+		    for(int i = 0; i < attribs.length(); i++) {
+		        
+		        Node newAttrib = (Node)attribs.getNext();
+		        m.appendChild(newAttrib);
+		    }
+		    
+		    return m;
+		}
 
 		public String[] look() {
 		String[] items = new String[255];
