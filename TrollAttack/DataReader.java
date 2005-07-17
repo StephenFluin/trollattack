@@ -12,6 +12,8 @@ import java.util.Hashtable;
 
 import org.w3c.dom.Document;
 
+import TrollAttack.Items.*;
+
 /**
  * @author PeEll
  *
@@ -64,25 +66,41 @@ public class DataReader {
     public static Player readPlayerData(String playerName) {
 	    //TrollAttack.message("Reading a player..");
 	    Document doc = Util.xmlize("Players/" + playerName + ".txt");
+	   if(doc == null) {
+	       return null;
+	   }
 	    XMLHandler handler = new XMLHandler(doc);
 	    Hashtable hash = (Hashtable)handler.sections.get("player");
 	    
-	    //TrollAttack.message("About to createa new player...");
+	    if(hash.get("hitLevel") == null) {
+	        hash.put("hitLevel", 3 + "");
+	    }
+	    if(hash.get("gold") == null) {
+	        hash.put("gold", 0 + "");
+	    }
+	    if(hash.get("name") == null) {
+	        hash.put("name", playerName + "");
+	    }
+	   // TrollAttack.message("About to createa new player (Area " + (String)hash.get("area") + "...");
 	    Player p = null;
         p = new Player(
+            
+            new Integer((String)hash.get("gold")).intValue(),
             new Integer((String)hash.get("hitPoints")).intValue(),
             new Integer((String)hash.get("maxHitPoints")).intValue(),
             new Integer((String)hash.get("manaPoints")).intValue(),
             new Integer((String)hash.get("maxManaPoints")).intValue(),
             new Integer((String)hash.get("movePoints")).intValue(),
             new Integer((String)hash.get("maxMovePoints")).intValue(),
-            new Integer((String)hash.get("hitSkill")).intValue(),
-            new Roll((String)hash.get("hitDamage")),
+            new Integer((String)hash.get("hitLevel")).intValue(),
+            (String)hash.get("hitSkill"),
+            (String)hash.get("hitDamage"),
             new Integer((String)hash.get("level")).intValue(),
             new Integer((String)hash.get("room")).intValue(),
             new Integer((String)hash.get("experience")).intValue(),
             new Boolean((String)hash.get("builder")).booleanValue(),
-            playerName,
+            Area.findArea((String)hash.get("area")),
+            (String)hash.get("name"),
             (String)hash.get("password")
             );
         //TrollAttack.message("ZIZZAPED PLAYER " + p.getShort());
@@ -120,41 +138,46 @@ public class DataReader {
                     new Integer((String)area.get("low")).intValue(),
                     new Integer((String)area.get("high")).intValue(),
                     (String)area.get("filename"),
-                    (String)area.get("name"));
+                    (String)area.get("name"), 15);
             areas.add(newArea);
                     
         }
         return areas;
     }
 	public static LinkedList readItemData(LinkedList itemList) {
-	    int vnum = 0, weight = 0, t = 0;
+	    int vnum = 0, weight = 0, t = 0, cost = 0, wearLoc = 0;
+	    Item newItem;
 	    Roll hd;
 		String shortDesc = "", longDesc = "", itemName = "", type = "";
         LinkedList items = new LinkedList();
+        LinkedList affects = new LinkedList();
         for(int i = 0;i < itemList.length(); i++) {
+            vnum = weight = t = cost = wearLoc = 0;
             Hashtable item = (Hashtable)itemList.getNext();
 
             vnum = new Integer((String)item.get("vnum")).intValue();
+            if(item.get("cost") != null) cost = new Integer((String)item.get("cost")).intValue();
             shortDesc = (String)item.get("short");
             longDesc = (String)item.get("long");
+            
             weight = new Integer((String)item.get("weight")).intValue();
             itemName = (String)item.get("name");
-            hd = new Roll((String)item.get("hitDamage"));
+            
             type = (String)item.get("type");
- 		    if(type.compareToIgnoreCase("sword") == 0) {
- 		        t = Item.SWORD;
- 		    } else if(type.compareToIgnoreCase("helm") == 0) {
- 		        t = Item.HELM;
- 		    } else if(type.compareToIgnoreCase("boots") == 0) {
- 		        t = Item.BOOTS;
- 		    } else if(type.compareToIgnoreCase("greaves") == 0) {
- 		        t = Item.GREAVES;
- 		    } else if(type.compareToIgnoreCase("ring") == 0) {
- 		        t = Item.RING;
- 		    }
-			
+		if(type.compareToIgnoreCase(Weapon.getItemType()) == 0) {
+		    Weapon newWeapon = new Weapon(vnum, weight, cost, itemName, shortDesc, longDesc );
+		    newWeapon.setDamage((String)item.get("hitDamage"));
+		    newItem = newWeapon;
+		} else if(type.compareToIgnoreCase(Armor.getItemType()) == 0 ) {
+		    Armor newArmor = new Armor(vnum, weight, cost, itemName, shortDesc, longDesc);
+		    newArmor.setupArmor(new Integer((String)item.get("armorClass")).intValue(), (String)item.get("wearLocation"));
+		    newItem = newArmor;
+		} else {
+		    newItem = new Item(vnum, weight, cost, itemName, shortDesc, longDesc);
+		}
 		//TrollAttack.error("vnum:" + vnum + ", south: " + south );
-		 items.add( new Item(vnum, itemName, weight, shortDesc, longDesc, hd, t) );
+		 items.add( newItem );
+		 //new Item(vnum,weight, cost, itemName, shortDesc, longDesc) );
 		 //System.out.println("Created: " + itemList[vnum].toString());
 		}
         TrollAttack.message("Loaded " + items.length() + " items.");
@@ -164,29 +187,56 @@ public class DataReader {
 	    Room newRoom;
 	    LinkedList rooms = new LinkedList();
 	    
-	    int vnum = 0, east = 0, west = 0, north = 0, south = 0, northEast = 0, northWest = 0, southEast = 0, southWest = 0, up = 0, down = 0;
+	    int vnum = 0;
+	    //Exit east = null, west = null, north = null, south = null, northEast = null, northWest = null, southEast = null, southWest = null, up = null, down = null;
+	    LinkedList exits = new LinkedList();
 	    String title = "", description = "";
-	    String[] defaultNames = {"east", "west", "north", "south", "northEast", "northWest", "southEast", "southWest", "up", "down"};
-	    String[] defaultValues = {"0", "0", "0", "0", "0", "0", "0", "0", "0", "0"};
+	    // Defaults aren't necessary with null checks.
+	    //String[] defaultNames = {"east", "west", "north", "south", "northEast", "northWest", "southEast", "southWest", "up", "down"};
+	    //String[] defaultValues = {"0", "0", "0", "0", "0", "0", "0", "0", "0", "0"};
 	    
         for(int j = 0;j < roomList.length(); j++) {
+            exits = new LinkedList();
+            //east = west = north = south = northEast = northWest = southEast = southWest = up = down = null;
             Hashtable room = (Hashtable)roomList.getNext();
-            Util.fillDefaults(room, defaultNames, defaultValues);
+            //Util.fillDefaults(room, defaultNames, defaultValues);
             vnum = new Integer((String)room.get("vnum")).intValue();
             title = (String)room.get("title");
             description = (String)room.get("description");
-            east = new Integer((String)room.get("east")).intValue();
-            west = new Integer((String)room.get("west")).intValue();
-            north = new Integer((String)room.get("north")).intValue();
-            south = new Integer((String)room.get("south")).intValue();
-            northEast = new Integer((String)room.get("northEast")).intValue();
-            northWest = new Integer((String)room.get("northWest")).intValue();
-            southEast = new Integer((String)room.get("southEast")).intValue();
-            southWest = new Integer((String)room.get("southWest")).intValue();
-            up = new Integer((String)room.get("up")).intValue();
-            down = new Integer((String)room.get("down")).intValue();
+            for(int i = 1;i < Exit.directionList.length;i++) {
+                //TrollAttack.message("looping " + i);
+                if((Exit.directionList[i] != null) && room.get(Exit.directionList[i]) != null) {
+                    if(room.get(Exit.directionList[i]).getClass() == Hashtable.class) {
+                        
+                        Hashtable exitData = (Hashtable)room.get(Exit.directionList[i]);
+                        int ivnum = new Integer((String)exitData.get("vnum")).intValue();
+                        Exit thisExit = new Exit(ivnum, i);
+                        if(exitData.get("door") != null) {
+                            thisExit.setDoor(true);
+                            TrollAttack.gameResets.add(
+                                    new Reset.ExitReset(
+                                            thisExit,
+                                            ((String)exitData.get("door")).
+                                            	compareToIgnoreCase("open") == 0 
+                                            	? true : false,
+                                            false,
+                                            15)
+                                            );
+                        }
+                        exits.add(thisExit);
+                    } else {
+                      TrollAttack.error("Wrong type of information for exit " + Exit.directionName(i) + " for room " + title + ", DITCHING IT.");
+                        //exits.add( new Exit( new Integer((String)room.get(Exit.directionList[i])).intValue(), i) );
+	                    //TrollAttack.message("adding exit..");
+                    }
+                } else {
+                    if(Exit.directionList[i] != null) {
+                        //TrollAttack.message("Didn't find an exit type.");
+                    }
+                }
+            }
             
-            newRoom = new Room(vnum, title, description, east, west, north, south, northEast, northWest, southEast, southWest, up, down);
+            newRoom = new Room(vnum, title, description, exits);
             rooms.add(newRoom);
             Area.test(vnum)
             .rooms
@@ -200,11 +250,12 @@ public class DataReader {
     	        //TrollAttack.message("linked list of items found.");
     	        LinkedList items = (LinkedList)(tmpRooms);
     	        for(int i = 0; i < items.length();i++) {
-    	            newRoom.addItem(new Item(TrollAttack.getItem(new Integer((String)items.getNext()))));
+    	            TrollAttack.gameResets.add(new Reset.ItemReset(new Item(TrollAttack.getItem(new Integer((String)items.getNext()))), newRoom, 15));
     	        }
     	    } else {
     	        //TrollAttack.message("single item found");
     	        newRoom.addItem(new Item(TrollAttack.getItem(new Integer((String)tmpRooms))));
+    	        TrollAttack.gameResets.add(new Reset.ItemReset(new Item(TrollAttack.getItem(new Integer((String)tmpRooms))), newRoom, 15));
     	    }
     	    Object tmpMobiles = room.get("mobile");
     	    if(tmpMobiles == null) {
@@ -215,12 +266,13 @@ public class DataReader {
     	        //TrollAttack.message(Mobilenum + "");
     	        //TrollAttack.message(TrollAttack.getMobile(new Integer(Mobilenum)).toString());
     	        for(int i = 0; i < mobiles.length();i++) {
-    	            newRoom.addMobile(new Mobile(TrollAttack.getMobile(new Integer((String)mobiles.getNext()))));
+    	            TrollAttack.gameResets.add(new Reset.MobileReset(new Mobile(TrollAttack.getMobile(new Integer((String)mobiles.getNext()))), newRoom, 1));
     	        }
     	        mobiles.reset();
     	    } else {
     	        //TrollAttack.message("single mobile found");
-    	        newRoom.addMobile(new Mobile(TrollAttack.getMobile(new Integer((String)tmpMobiles))));
+    	        TrollAttack.gameResets.add(new Reset.MobileReset(new Mobile(TrollAttack.getMobile(new Integer((String)tmpMobiles))), newRoom, 5));
+    	        //newRoom.addMobile(new Mobile(TrollAttack.getMobile(new Integer((String)tmpMobiles))));
     	    }
             
         }
@@ -231,11 +283,12 @@ public class DataReader {
 	static public LinkedList readMobileData(LinkedList mobileList) {
 	    Mobile newMobile;
 	    LinkedList mobiles = new LinkedList();
-	    int vnum, hp, maxhp, hitSkill, rSpawn, level;
+	    int vnum, hp, maxhp, clicks, level, hitLevel;
 	    int mana, maxMana, move, maxMove;
-	    String shortDesc, longDesc, mobileName, hitDamage;
+	    String shortDesc, longDesc, mobileName, hitDamage, hitSkill;
 	    
         for(int j = 0;j < mobileList.length(); j++) {
+            hitLevel = 0; clicks = 8;
             Hashtable mobile = (Hashtable)mobileList.getNext();
             //TrollAttack.message(mobile.toString());
             vnum = new Integer((String)mobile.get("vnum")).intValue();
@@ -246,13 +299,15 @@ public class DataReader {
             maxMana = new Integer((String)mobile.get("maxmana")).intValue();
             move = new Integer((String)mobile.get("move")).intValue();
             maxMove = new Integer((String)mobile.get("maxmove")).intValue();
-            rSpawn = new Integer((String)mobile.get("respawn")).intValue();
-            hitSkill = new Integer((String)mobile.get("hitskill")).intValue();
+            if(mobile.get("clicks") != null) clicks = new Integer((String)mobile.get("clicks")).intValue();
+            if(mobile.get("respawn") != null) clicks = new Integer((String)mobile.get("respawn")).intValue();
+            if(mobile.get("hitlevel") != null) hitLevel = new Integer((String)mobile.get("hitlevel")).intValue();
+            hitSkill = (String)mobile.get("hitskill");
             hitDamage = (String)mobile.get("hitdamage");
             shortDesc = (String)mobile.get("short");
             longDesc = (String)mobile.get("long");
             mobileName = (String)mobile.get("name");
-            newMobile = new Mobile(vnum, level, mobileName, hp, maxhp, hitSkill, hitDamage, rSpawn, shortDesc, longDesc);
+            newMobile = new Mobile(vnum, level, mobileName, hp, maxhp, hitLevel, hitSkill, hitDamage, clicks, shortDesc, longDesc);
 	    		 //System.out.println("Created: " + itemList[vnum].toString());
             mobiles.add(newMobile);
 	    }

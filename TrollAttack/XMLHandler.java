@@ -23,7 +23,9 @@ public class XMLHandler {
     }
     public XMLHandler(Document doc, Hashtable secs) {
         sections = secs;
-
+        if(doc == null) {
+            return;
+        }
         node = doc;
 	    kids = node.getChildNodes();
 		// Kid is root item
@@ -111,12 +113,20 @@ public class XMLHandler {
                     }
                 }
             } else {
-                if(kid.getChildNodes().getLength() > 2) {
+                if(kid.getChildNodes().getLength() > (loopStart + loopIncrement)) {
                     Hashtable hashy = new Hashtable();
                     hashProcess(kid, hashy);
                     hash.put( kid.getNodeName() , hashy);
                 } else {
-                    hash.put( kid.getNodeName() , kid.getChildNodes().item(0).getNodeValue());
+                    if(kid.getChildNodes().item(loopStart).getNodeType() == Node.TEXT_NODE) {
+                        hash.put( kid.getNodeName() , kid.getChildNodes().item(0).getNodeValue());
+                    } else {
+                        //TrollAttack.message("Probably processing exit " + kid.getNodeName() + ".");
+                        Hashtable hashy = new Hashtable();
+                        hashProcess(kid, hashy);
+                        hash.put( kid.getNodeName() , hashy);
+                        //TrollAttack.message(hashy.toString());
+                    }
                 }
             }
         }

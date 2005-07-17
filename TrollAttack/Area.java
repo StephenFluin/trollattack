@@ -6,8 +6,9 @@
  */
 package TrollAttack;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.util.Hashtable;
-import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -15,6 +16,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
+import TrollAttack.Items.Item;
 
 /**
  * @author PeEll
@@ -25,28 +28,45 @@ import org.w3c.dom.Node;
 public class Area {
     public int low, high;
     public String filename, name;
+    public boolean frozen = false;
+    public int defaultClicks;
     public LinkedList rooms;
     public Area() {
-        this(0,0,"uncategorized.xml","Uncategorized");
+        this(0,0,"uncategorized.xml","Uncategorized", 15);
     }
-    public Area(int lowVnum, int highVnum, String areaFilename, String areaName) {
+    public Area(int lowVnum, int highVnum, String areaFilename, String areaName, int clicks) {
         low = lowVnum;
         high = highVnum;
         filename = areaFilename;
         name = areaName;
         rooms = new LinkedList();
+        defaultClicks = clicks;
     }
-    public void freeze() {
-        while(rooms.itemsRemain()) {
-            ((Room)rooms.getNext()).freeze();
-        }
-        rooms.reset();
+    public String toString() {
+        return filename + ":\t" + low + "\t" + high + "\t" + name;
     }
-    public void unfreeze() {
-        while(rooms.itemsRemain()) {
-            ((Room)rooms.getNext()).unfreeze();
+    public boolean freeze() {
+        if(frozen == true) {
+            return false;
+        } else {
+            frozen = true;
+	        while(rooms.itemsRemain()) {
+	            ((Room)rooms.getNext()).freeze();
+	        }
+	        rooms.reset();
+	        return true;
         }
-        rooms.reset();
+    }
+    public boolean unfreeze() {
+        if(frozen == true) {
+            while(rooms.itemsRemain()) {
+	            ((Room)rooms.getNext()).unfreeze();
+	        }
+	        rooms.reset();
+	        return true;
+        } else {
+            return false;
+        }
     }
     public Node toNode(Document doc) {
  		   
@@ -56,6 +76,7 @@ public class Area {
  		    attribs.add(Util.nCreate(doc, "high", high + ""));
  		    attribs.add(Util.nCreate(doc, "filename", filename));
  		    attribs.add(Util.nCreate(doc, "name", name + ""));
+ 		    attribs.add(Util.nCreate(doc, "clicks",defaultClicks + "" ));
  		    
  		    for(int i = 0; i < attribs.length(); i++) {
  		        
@@ -66,9 +87,95 @@ public class Area {
  		    return m;
  		}
 
- 		public String[] look() {
- 		String[] items = new String[255];
- 		return items;
+ 
+ 		
+ 	public void save() {
+ 	   DocumentBuilderFactory factory = 
+           DocumentBuilderFactory.newInstance();
+
+	    DocumentBuilder builder = null;
+       try {
+           builder = factory.newDocumentBuilder();
+       } catch (ParserConfigurationException e) {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
+       }
+       Hashtable areasList = new Hashtable();
+       Document doc = builder.newDocument();
+	    Room currentRoom = null;
+	    // Add all of the rooms to their appropriate file hashes.
+	    for(int i = 0; i < TrollAttack.gameRooms.length(); i++ ) {
+	        currentRoom = (Room)TrollAttack.gameRooms.getNext();
+	        //TrollAttack.message("Adding " + currentRoom.vnum + "room to new file...");
+	        Area.addToList(doc, areasList, currentRoom);
+	        
+	    }
+	    TrollAttack.gameRooms.reset();
+	    
+	    Mobile currentMobile = null;
+	    for(int i = 0; i < TrollAttack.gameMobiles.length();i++) {
+	        currentMobile = (Mobile)TrollAttack.gameMobiles.getNext();
+	        Area.addToList(doc, areasList, currentMobile);
+	    }
+	    TrollAttack.gameMobiles.reset();
+	    
+	    Item currentItem = null;
+	    for(int i = 0; i < TrollAttack.gameItems.length();i++) {
+	        currentItem = (Item)TrollAttack.gameItems.getNext();
+	        Area.addToList(doc, areasList, currentItem);
+	    }
+	    TrollAttack.gameItems.reset();
+	    
+	    /* Deleting old files... */
+	    File dir = new File("Areas");
+       FilenameFilter filter = new FilenameFilter() {
+           public boolean accept(File dir, String name) {
+               return name.compareToIgnoreCase(filename) == 0;
+           }
+       };
+       File[] children = dir.listFiles(filter);
+       if (children == null) {
+           TrollAttack.error("Couldn't find area files.");
+           // Either dir does not exist or is not a directory
+       } else {
+           for (int i=0; i<children.length; i++) {
+               // Get filename of file or directory
+               children[i].delete();
+           }
+       }
+        try{
+            if(areasList.get(filename) == null) {
+                TrollAttack.message("The area doesn't contain info to be saved, or there is no document.");
+            } else {
+		        Util.XMLPrint((Document)areasList.get(filename), "Areas/" + filename);
+		        TrollAttack.message("Writing file Areas/"+ filename + ".");
+            }
+		} catch(Exception ex) {
+		    TrollAttack.message("Problem with area " + filename + ".");
+		    Util.XMLSprint((Document)areasList.get(filename));
+		    TrollAttack.error("There was a problem writing the area file.");
+		    ex.printStackTrace();
+		}
+ 	}
+ 		
+    static public Area findArea(String s) {
+        Area currentArea;
+        while(TrollAttack.gameAreas.itemsRemain()) {
+            currentArea = (Area)TrollAttack.gameAreas.getNext();
+            if(s == null) {
+                s = "";
+            }
+            if(currentArea
+                    .filename
+                    .compareToIgnoreCase(
+                            s
+                            ) == 0) {
+                TrollAttack.gameAreas.reset();
+                return currentArea;
+            }
+        }
+        TrollAttack.gameAreas.reset();
+        return null;
     }
     static public Area test(int vnum) {
         Area currentArea;

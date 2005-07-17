@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,7 +101,11 @@ public class Communication extends Thread {
                  player = new Player( this );
                 
                  player = authenticate(player);
-                 
+                 if(player == null) {
+                     out.close();
+                     adminSocket.close();
+                     return;
+                 }
                  player.setLastActive(TrollAttack.getTime());
                  player.setCommunication(this);
                  TrollAttack.broadcast(PURPLE + player.getShort() + " has joined our ranks.");
@@ -116,7 +121,7 @@ public class Communication extends Thread {
                         inputLine = in.readLine();
                         player.handleCommand(inputLine);
                     } catch(Exception e) {
-                        //TrollAttack.error("Lost connection to " + ID);
+                        TrollAttack.error("Lost connection to " + ID);
                         break;
                     }
                   
@@ -137,21 +142,35 @@ public class Communication extends Thread {
             try {
                 player.tell(Communication.WHITE + "What is your name (or type " + Communication.CYAN + "new" + Communication.WHITE + " for a new character)?");
                 name = in.readLine();
+                if(name == null) {
+                    continue;
+                }
                 if(name.compareToIgnoreCase("new") == 0) {
                     tmpPlayer = player;
-                    player.tell("Pick a name:");
-                    name = in.readLine();
+                    while(name.compareToIgnoreCase("new") == 0) {
+                        player.tell("Pick a name:");
+                        name = in.readLine();
+                        if(DataReader.readPlayerData(name) != null) {
+                            name = "new";
+                            player.tell("That name is taken!");
+                        }
+                    }
+                    
                     player.shortDescription = name;
                     player.tell("Pick a password:");
                     pass = in.readLine();
                     player.setPassword(pass);
+                    player.authenticated = true;
                 } else {
                 
 	                player.tell(name + "'s password:");
 	                pass = in.readLine();
 	                tmpPlayer = DataReader.readPlayerData(name);
-	                tmpPlayer.authenticated = true;
-	                TrollAttack.message("Created player " + tmpPlayer.getShort());
+	                if(tmpPlayer != null) {
+	                    tmpPlayer.authenticated = true;
+	                    TrollAttack.message("Created player " + tmpPlayer.getShort());
+	                }
+	                
                 }
                 
                 if(!tmpPlayer.checkPassword(pass)) {
@@ -161,9 +180,13 @@ public class Communication extends Thread {
             } catch(NullPointerException e) {
                 tmpPlayer = null;
                 e.printStackTrace();
+                return null;
                
+            } catch(SocketException e) {
+                return null;
             } catch(IOException e) {
                 e.printStackTrace();
+                return null;
             }
         }
         player = tmpPlayer;

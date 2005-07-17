@@ -20,6 +20,7 @@ import java.util.GregorianCalendar;
 import org.w3c.dom.Document;
 
 import TrollAttack.Commands.CommandHandler;
+import TrollAttack.Items.Item;
 
 public class TrollAttack {
 	static Document document;
@@ -37,12 +38,14 @@ public class TrollAttack {
 	public static LinkedList gameMobiles;
 	public static LinkedList gamePlayers;
 	public static LinkedList gameRooms;
+	public static LinkedList gameResets = new LinkedList();
 	
 
 	public static boolean isGameOver() {
 	    return gameOver;
 	}
-	static DeadMobiles deadies = new DeadMobiles();
+	// SHOULD BE HANDLED BY RESETS NOW
+	//static DeadMobiles deadies = new DeadMobiles();
 	
 	
 	public static CommandHandler ch;
@@ -101,7 +104,20 @@ public class TrollAttack {
 	   // System.out.println(cal.MONTH + "/" + cal.DAY_OF_MONTH + "/" + cal.YEAR + " " + cal.HOUR + ":" + cal.MINUTE + ((cal.AM == 0) ? "PM" : "AM") + " " + string);
 	    error(string);
 	}
-	
+	static public Player getPlayer(String s) {
+	    Player p;
+	    Player returnPlayer = null;
+	    while(gamePlayers.itemsRemain()) {
+	        p = (Player)gamePlayers.getNext();
+	        if(p.getName().compareToIgnoreCase(s) == 0) {
+	            returnPlayer = p;
+	        } else {
+	            //TrollAttack.message(s + " != " + p.getName());
+	        }
+	    }
+	    gamePlayers.reset();
+	    return returnPlayer;
+	}
 	static public Item getItem(Integer vnum) {
 	    Item item;
 	    Item returnItem = null;
@@ -145,7 +161,7 @@ public class TrollAttack {
 	        } else {
 	        }
 	    }
-	    TrollAttack.error("Room " + vnum + " not found!");
+	    //TrollAttack.error("Room " + vnum + " not found!");
 	    gameRooms.reset();
 	    return null;
 	}
@@ -168,7 +184,7 @@ public class TrollAttack {
 	static public void puntIdlePlayers(int time) {
 	    Player currentPlayer;
 
-	    for(int i = 1;i <= gamePlayers.length(); i++) {
+	    while(gamePlayers.itemsRemain()) {
 	        
 	        currentPlayer = (Player)gamePlayers.getNext();
 	        //message(currentPlayer.getShort() + ": idle " + currentPlayer.getIdleTime() + " seconds.");

@@ -1,6 +1,5 @@
 package TrollAttack;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -9,6 +8,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -18,6 +18,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
+import TrollAttack.Items.Item;
 
 
 /*
@@ -62,7 +64,8 @@ public class Util {
 		}
 	}
 	static public int experienceLevel(int level) {
-	    return (int)Math.pow(Math.log(level)/Math.log(2), level - 2) * 2000;
+	    //return (int)Math.pow(Math.log(level)/Math.log(2), level - 2) * 2000;
+	    return (int)(Math.pow(1.6, level)*4000);
 	}
 	
 
@@ -72,19 +75,23 @@ public class Util {
 	static public Document xmlize(String dataFile) {
 	    try {
 		    File xmlFile = new File( dataFile );
-	        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	
-	        factory.setValidating( false );
-	        factory.setNamespaceAware(false);
-	        factory.setIgnoringComments( true ) ;
+		    if(xmlFile.exists()) {
+		        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		
+		        factory.setValidating( false );
+		        factory.setNamespaceAware(false);
+		        factory.setIgnoringComments( true ) ;
+		        
+		        factory.setIgnoringElementContentWhitespace( true );
+		        DocumentBuilder builder = factory.newDocumentBuilder();
+		        try {
+		            return builder.parse(xmlFile);
+		        } catch(Exception e) {
+		            TrollAttack.error("Badly formed area file (" + dataFile + ").");
+		        }
+		    }
 	        
-	        factory.setIgnoringElementContentWhitespace( true );
-	        DocumentBuilder builder = factory.newDocumentBuilder();
-	        return builder.parse(xmlFile);
 	        
-	        
-		} catch(FileNotFoundException e) {
-		    //TrollAttack.error("File not found in xmlize...");
 		} catch (ParserConfigurationException e) {
 	        TrollAttack.error("The underlying parser does not support " +
 	                           "the requested features.");
@@ -100,12 +107,10 @@ public class Util {
        
        return null;
 	}
-	static public void XMLSprint(Document doc, String filename) {
+	static public void XMLSprint(Document doc) {
 	    try {  
             Source source = new DOMSource(doc);
-            File file = new File(filename);
-            Result result = new StreamResult(file);
-            result = new StreamResult(System.out);
+            Result result = new StreamResult(System.out);
             
             Transformer trox = TransformerFactory.newInstance().newTransformer();
             trox.transform(source,result);
@@ -117,8 +122,7 @@ public class Util {
              e.printStackTrace();
          }
 	}
-	static public void XMLPrint(Document doc, String filename) {
-	    try {  
+	static public void XMLPrint(Document doc, String filename) throws TransformerFactoryConfigurationError, TransformerException {
 	            Source source = new DOMSource(doc);
 	            File file = new File(filename);
 	            Result result = new StreamResult(file);
@@ -126,13 +130,6 @@ public class Util {
 	            
 	            Transformer trox = TransformerFactory.newInstance().newTransformer();
 	            trox.transform(source,result);
-	            
-	            
-	            
-	         } catch(Exception e) {
-	             TrollAttack.error("There was a problem in XMLPrint when writing the file.");
-	             e.printStackTrace();
-	         }
 	}
 	static public void fillDefaults(Hashtable hash, String[] fillNames, String[] fillValues) {
 	    Object tmp;
@@ -149,7 +146,7 @@ public class Util {
 	    
 	    return n;
 	}
-	static public void Savearea() {
+	static public void saveAllAreas() {
 	    DocumentBuilderFactory factory = 
             DocumentBuilderFactory.newInstance();
 
@@ -213,5 +210,17 @@ public class Util {
 			    ex.printStackTrace();
 			}
 	    }
+	}
+
+	static public int intize(Player p, String s) {
+	    int result = Integer.MIN_VALUE;
+	    try {
+	        result = new Integer(s).intValue();
+	    } catch(Exception e) {
+	        if(p != null) {
+	            p.tell("'" + s + "' isn't a valid number.");
+	        }
+	    }
+	    return result;
 	}
 }

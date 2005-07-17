@@ -3,6 +3,8 @@ package TrollAttack;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import TrollAttack.Items.Item;
+
 /*
  * Created on May 5, 2005
  *
@@ -17,20 +19,21 @@ import org.w3c.dom.Node;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Mobile extends Being {
-	public int vnum, reSpawn;
+	public int vnum, clicks;
 	
-	public Mobile(int v, int leve, String n, int h, int mh, int hSkill, String hDamage, int rSpawn, String s, String l) {
+	public Mobile(int v, int leve, String n, int h, int mh, int hLevel, String hSkill, String hDamage, int mClicks, String s, String l) {
 	 vnum = v;
 	 level = leve;
 	 isPlayer = false;
 	 name = n;
 	 hitPoints = h;
 	 maxHitPoints = mh;
-	 hitSkill = hSkill;
+	 hitLevel = hLevel;
+	 hitSkill = new Roll(hSkill);
 	 hitDamage = new Roll(hDamage);
 	 shortDescription = s;
 	 longDesc = l;
-	 reSpawn = rSpawn;
+	 clicks = mClicks;
 	 //TrollAttack.error("Creating mobile #" + v);
 	 this.setPrompt("<%h>");
 	}
@@ -39,13 +42,15 @@ public class Mobile extends Being {
 	public Mobile( Mobile m ) {
 	    vnum = m.vnum;
 	    name = m.name;
+	    gold = m.gold;
 	    hitPoints = m.hitPoints;
 	    maxHitPoints = m.maxHitPoints;
+	    hitLevel = m.hitLevel;
 	    hitSkill = m.hitSkill;
 	    hitDamage = m.hitDamage;
 	    shortDescription = m.shortDescription;
 	    longDesc = m.longDesc;
-	    reSpawn = m.reSpawn;
+	    clicks = m.clicks;
 	    setPrompt("<%h>");
 	    isPlayer = m.isPlayer;
 	    level = m.level;
@@ -58,14 +63,17 @@ public class Mobile extends Being {
 		longDesc;
 					
 	}
+	public  boolean equals(Mobile mob) {
+	    return (vnum == mob.vnum);
+	}
 	public String getLong() {
 		return longDesc;
 	}
 	public String getname() {
 		return name;
 	}
-	public int getRespawnTime() {
-		return reSpawn;
+	public int getClicks() {
+		return clicks;
 	}
 	public Node toNode(Document doc) {
 		   
@@ -76,13 +84,14 @@ public class Mobile extends Being {
 		    attribs.add(Util.nCreate(doc, "level", level + ""));
 		    attribs.add(Util.nCreate(doc, "short", getShort()));
 		    attribs.add(Util.nCreate(doc, "long", longDesc + ""));
-		    attribs.add(Util.nCreate(doc, "respawn", reSpawn + ""));
+		    attribs.add(Util.nCreate(doc, "clicks", clicks + ""));
 		    attribs.add(Util.nCreate(doc, "hp", hitPoints + ""));
 		    attribs.add(Util.nCreate(doc, "maxhp", maxHitPoints + ""));
 		    attribs.add(Util.nCreate(doc, "mana", manaPoints + ""));
 		    attribs.add(Util.nCreate(doc, "maxmana", maxManaPoints + ""));
 		    attribs.add(Util.nCreate(doc, "move", movePoints + ""));
 		    attribs.add(Util.nCreate(doc, "maxmove",  maxMovePoints + ""));
+		    attribs.add(Util.nCreate(doc, "hitlevel", hitLevel + ""));
 		    attribs.add(Util.nCreate(doc, "hitskill", hitSkill + ""));
 		    attribs.add(Util.nCreate(doc, "hitdamage", hitDamage.toString() + ""));
 		    

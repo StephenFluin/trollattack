@@ -1,4 +1,5 @@
 package TrollAttack.Commands;
+import TrollAttack.*;
 import TrollAttack.Player;
 import TrollAttack.Room;
 import TrollAttack.TrollAttack;
@@ -26,42 +27,28 @@ public class CommandMove extends Command {
 		name = n;
 		player = play;
 	}
-	public static int 	EAST = 		1,
-	NORTHEAST = 7,
-	NORTH = 	3,
-	NORTHWEST = 9,
-	WEST = 		2,
-	SOUTHWEST = 8,
-	SOUTH = 	4,
-	SOUTHEAST = 10,
-	UP = 		5,
-	DOWN = 		6;
-	public String directionName(int direction) {
-	    String[] directionList = {"east", "west", "north", "south", "up", "down", "northeast", "southwest", "northwest", "southeast"};
-	    return directionList[direction - 1];
-	}
-	public static int directionOpposite(int direction) {
-	    if(direction % 2 == 0) {
-	        return direction - 1;
-	    } else {
-	        return direction + 1;
-	    }
-	}
+	
+
+
 	
 	public void execute(String s) {
 		this.execute();
 	}
 	public void execute() {
 	    //TrollAttack.error("Attempting to go!");
-		int results = 0;
+		Exit results = null;
 		Room previousRoom = player.getActualRoom();
 		
 		//player.tell(player.getCurrentRoom() + "");
 		results = previousRoom.followLink(direction);
-		if(results != 0) {
-		    Room nextRoom = TrollAttack.getRoom(results);
+		if(results != null) {
+		    if(!results.isOpen()) {
+		        player.tell("The door is closed.");
+		        return;
+		    }
+		    Room nextRoom = TrollAttack.getRoom(results.getDestination());
 		    try{
-		        nextRoom.say(Util.uppercaseFirst(player.getShort()) + " arrives from the " + directionName(directionOpposite(direction)) + ".");
+		        nextRoom.say(Util.uppercaseFirst(player.getShort()) + " arrives from the " + Exit.directionName(Exit.directionOpposite(direction)) + ".");
 		    } catch(Exception e) {
 		        TrollAttack.error("Error in CommandMove when attempting to say something as player moves to next room.");
 		        if(nextRoom == null) {
@@ -69,11 +56,11 @@ public class CommandMove extends Command {
 		        }
 		        e.printStackTrace();
 		    }
-		    player.setCurrentRoom(results);
+		    player.setCurrentRoom(results.getDestination());
 			previousRoom.removePlayer(player);
-			nextRoom.addPlayer(player);
 			previousRoom.say(Util.uppercaseFirst(player.getShort()) + " leaves to the " + name);
-		    player.look();
+			nextRoom.addPlayer(player);
+			player.look();
 		} else {
 			player.tell("Alas, you cannot go that way.");
 		}

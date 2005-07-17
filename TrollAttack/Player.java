@@ -8,6 +8,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import TrollAttack.Commands.CommandHandler;
+import TrollAttack.Items.Item;
+import TrollAttack.Items.Weapon;
 
 /*
  * Created on Mar 7, 2005
@@ -24,14 +26,15 @@ import TrollAttack.Commands.CommandHandler;
  */
 public class Player extends Being {
 	//String prompt = "&G<&R%h&G/&R%H&G-&z%x&G> %T";
-	// HARDCODED MAX ITEMS - FIX THIS! @TODO!
 	
 	
 	private String password = "";
+	public String title = "the newbie";
 	Communication communication = null;
 	CommandHandler ch = null;
 	private int lastActive = 0;
 	private boolean builder = false;
+	private Area area;
 	public boolean authenticated = false;
 
 	public void look() {
@@ -48,13 +51,15 @@ public class Player extends Being {
 	   
 	public Player(Communication com) {
 		// Set the default player values here.
+	    gold = 0;
 	    hitPoints = 50;
 		maxHitPoints = 50;
 		manaPoints = 40;
 		maxManaPoints = 40;
 		movePoints = 30;
 		maxMovePoints = 30;
-		hitSkill = 50;
+		hitSkill = new Roll("2d3");
+		hitLevel = 5;
 		hitDamage = new Roll("2d2");
 		level = 1;
 		currentRoom = 1;
@@ -66,20 +71,24 @@ public class Player extends Being {
 		
 		
 	}
-	public Player(int hp, int mhp, int mp, int mmp, int vp, int mvp, 
-	        int hs, Roll hd, int lev, int room, int exp, boolean isBuilder, String shortd, String pass) {
+	public Player(int gold, int hp, int mhp, int mp, int mmp, int vp, int mvp, 
+	        int playerHitLevel, String hitSkillString, String hitDamageString, 
+	        int lev, int room, int exp, boolean isBuilder, Area myArea, String shortd, String pass) {
+	    this.gold = gold;
 	    hitPoints = hp;
 	    maxHitPoints = mhp;
 	    manaPoints = mp;
 	    maxManaPoints = mmp;
 	    movePoints = vp;
 	    maxMovePoints = mvp;
-	    hitSkill = hs;
-	    hitDamage = hd;
+	    hitLevel = playerHitLevel;
+	    hitSkill = new Roll(hitSkillString);
+	    hitDamage = new Roll(hitDamageString);
 	    level = lev;
 	    setCurrentRoom( room );
 	    experience = exp;
 	    builder = isBuilder;
+	    setArea(myArea);
 	    shortDescription = shortd;
 	    ch = new CommandHandler(this);
 	    password = pass;
@@ -116,6 +125,32 @@ public class Player extends Being {
 	public void name(String newName) {
 	    shortDescription = newName;
 	}
+	public void setArea(Area newArea) {
+	    area = newArea;
+	}
+	public Area getArea() {
+	    return area;
+	}
+	public boolean canEdit(Room room) {
+	    return canEdit(room.vnum);
+	}
+	public boolean canEdit(Mobile mobile) {
+	    return canEdit(mobile.vnum);
+	}
+	public void rehash() {
+	    ch = new CommandHandler(this);
+	}
+	public boolean canEdit(Item item) {
+	    return canEdit(item.vnum);
+	}
+	public boolean canEdit(int vnum) {
+	    if (level > 60 || (getActualArea().low <= vnum && getActualArea().high >= vnum )) {
+	        return true;
+	    } else {
+	        tell("You don't have permissions to modify this area!");
+	        return false;
+	    }
+	}
 	public void save() {
 	    Util.savePlayer(this);
 	}
@@ -129,6 +164,9 @@ public class Player extends Being {
 	}
 	public void setPassword(String pass) {
 	    password = pass;
+	}
+	public void setTitle(String newTitle) {
+	    title = newTitle;
 	}
 	public boolean checkPassword(String pass) {
 	    //TrollAttack.message("Comparing " + pass + " to " + password);
@@ -146,6 +184,9 @@ public class Player extends Being {
 	}
 	public boolean isBuilder() {
 	    return builder;
+	}
+	public void setBuilder(boolean is) {
+	    builder = is;
 	}
 	public String toString() {
 	    String r = "";
@@ -174,19 +215,22 @@ public class Player extends Being {
 	    Node m = doc.createElement("player");
 	    n.appendChild(m);
 	    LinkedList attribs = new LinkedList();
+	    attribs.add(Util.nCreate(doc, "name", getName() + ""));
 	    attribs.add(Util.nCreate(doc, "hitPoints", hitPoints + ""));
 	    attribs.add(Util.nCreate(doc, "maxHitPoints", maxHitPoints + ""));
 	    attribs.add(Util.nCreate(doc, "manaPoints", manaPoints + ""));
 	    attribs.add(Util.nCreate(doc, "maxManaPoints", maxManaPoints + ""));
 	    attribs.add(Util.nCreate(doc, "movePoints", movePoints + ""));
 	    attribs.add(Util.nCreate(doc, "maxMovePoints", maxMovePoints + ""));
-	    attribs.add(Util.nCreate(doc, "hitSkill", hitSkill + ""));
-	    attribs.add(Util.nCreate(doc, "hitDamage", hitDamage + ""));
+	    attribs.add(Util.nCreate(doc, "hitLevel", hitLevel + ""));
+	    attribs.add(Util.nCreate(doc, "hitSkill", hitSkill.toString() + ""));
+	    attribs.add(Util.nCreate(doc, "hitDamage", hitDamage.toString() + ""));
 	    attribs.add(Util.nCreate(doc, "level", level + ""));
 	    attribs.add(Util.nCreate(doc, "room", getCurrentRoom() + ""));
 	    attribs.add(Util.nCreate(doc, "experience", experience + ""));
 	    attribs.add(Util.nCreate(doc, "password", password + ""));
 	    attribs.add(Util.nCreate(doc, "builder", this.builder + ""));
+	    if(getArea() != null) attribs.add(Util.nCreate(doc, "area",  getArea().filename + ""));
 	    /*Node itemList = doc.createElement("itemList");
 	    
 	    for(int i = 0;i < playerItems.getLength();i++) {
@@ -226,9 +270,11 @@ public class Player extends Being {
 	    //TrollAttack.error("Reading player hit damage.");
 	    int hd = hitDamage.roll();
 	    Item currentItem;
-	    for(int j = 0;j < items.length(); j++ ) {
+	    while(items.itemsRemain()) {
 	        currentItem = (Item)items.getNext();
-            hd += currentItem.getHitDamage();
+            if(currentItem.getClass() == Weapon.class) {
+                hd += ((Weapon)currentItem).getHitDamage();
+            }
 	    }
 	    items.reset();
 	    return hd;

@@ -1,4 +1,8 @@
 package TrollAttack;
+
+import TrollAttack.Items.Equipment;
+import TrollAttack.Items.Item;
+
 /*
  * Created on May 9, 2005
  *
@@ -13,17 +17,15 @@ package TrollAttack;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Being {
-	public int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, hitSkill, experience, level, favor;
+	public int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, hitLevel, experience, level, favor, gold, weight;
 	int currentRoom, state = 0;
+	int strength, intelligence, wisdom, dexterity, constitution, charisma, luck;
 	LinkedList items = new LinkedList();
 	Room actualRoom = null;
-	
-	private Item weapon = null;
-	private Item helm = null;
-	private Item boots = null;
-	private Item greaves =  null;
+	private LinkedList equipment = new LinkedList();
 	
 	public Roll hitDamage;
+	public Roll hitSkill;
 	/**
 	 * States:
 	 * 0 Awake/Alert
@@ -73,6 +75,25 @@ public class Being {
 	    }
 	    
 	}
+	
+	public int[] getStatistics() {
+	    int[] stats = {strength, intelligence, wisdom, dexterity, constitution, charisma, luck};
+	    return stats;
+	}
+	public void setStatistics(int str, int intel, int wis, int dex, int con, int cha, int lck) {
+	    int[] stats = {str, intel, wis, dex, con, cha, lck};
+	    setStatistics(stats);
+	}
+	public void setStatistics(int[] stats) {
+	    strength = stats[0];
+	    intelligence = stats[1];
+	    wisdom = stats[2];
+	    dexterity = stats[3];
+	    constitution = stats[4];
+	    charisma = stats[5];
+	    luck = stats[6];
+	}
+	
 	public boolean isPlayer() {
 	    return isPlayer;
 	}
@@ -94,6 +115,9 @@ public class Being {
 	}
 	public int getHitDamage() {
 	    return hitDamage.roll();
+	}
+	public int getAverageHitDamage() {
+	    return hitDamage.getAverage();
 	}
 	public String prompt() {
 		return myPrompt.showPrompt(hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, experience, Util.experienceLevel(level + 1) - experience);
@@ -138,6 +162,11 @@ public class Being {
 	public void tell(String s) {
 	    
 	}
+	public void healAll() {
+	    hitPoints = maxHitPoints;
+	    manaPoints = maxManaPoints;
+	    movePoints = maxMovePoints;
+	}
 	public void increaseManaPoints(int increase) {
 	    manaPoints += increase;
 	    if(manaPoints > maxManaPoints) {
@@ -160,25 +189,27 @@ public class Being {
 	    }
 	}
 	/**
-	 * Level Calculation
-	 * The leveling is cacluated as such:
-	 * 2^(level-2) * 2000
+	 * Level Improvement Calculations
 	 */
 	public void increaseExperience(int e) {
 	    experience += e;
 	    if(experience > Util.experienceLevel(level) ) {
 	        tell("You have attained level " + ++level + ".");
-	        int healthIncrease = (int)(Math.random() * 10) + 10;
-	        int manaIncrease = (int)(Math.random() * 10) + 10;
-	        int moveIncrease = (int)(Math.random() * 10) + 10;
+	        int healthIncrease = (int)(Math.random() * 9) + constitution / 2 - 2;
+	        int manaIncrease = (int)(Math.random() * 9) + wisdom / 2 - 2;
+	        int moveIncrease = (int)(Math.random() * 9) + strength / 4 + constitution  / 4 - 2;
+	        if(healthIncrease < 3) healthIncrease = (int)(Math.random() * 3) + 1;
+	        if(manaIncrease < 3) manaIncrease = (int)(Math.random() * 3) + 1;
+	        if(moveIncrease < 3) moveIncrease = (int)(Math.random() * 3) + 1;
 	        hitPoints += healthIncrease;
 	        maxHitPoints += healthIncrease;
 	        manaPoints += manaIncrease;
 	        maxManaPoints += manaIncrease;
 	        movePoints += moveIncrease;
 	        maxMovePoints += moveIncrease;
-	        hitDamage.sizeOfDice += (int)(Math.random() * 4);
-	        hitSkill -= (int)(Math.random() * 6);
+	        hitDamage.sizeOfDice += (int)(Math.random() * 3) + strength - ((strength / 2) < 2 ? 0 : strength / 2 - 2);
+	        hitDamage.addition++;
+	        hitSkill.sizeOfDice += (int)(Math.random() * 1) + dexterity - ((dexterity / 2) < 2 ? 0 : dexterity / 2 - 2);
 	    }
 	}
 	
@@ -215,18 +246,12 @@ public class Being {
 	}
 	public void pEquipment() {
 		tell("Your Equipment:");
-		if(weapon != null) {
-			tell("Weapon: " + weapon.getShort());
+		Equipment currentItem;
+		while(equipment.itemsRemain()) {
+		    currentItem = (Equipment)equipment.getNext();
+		    tell(Util.uppercaseFirst(currentItem.getType()) + ": " + currentItem.getShort());
 		}
-		if(helm != null) {
-		    tell("Helm: " + helm.getShort());
-		}
-		if(boots != null) {
-		    tell("Boots: " + boots.getShort());
-		}
-		if(greaves != null) {
-		    tell("Greaves: " + greaves.getShort());
-		}
+		equipment.reset();
 	}
 	public Item dropItem(String name) {
 		Item newItem = null;
@@ -246,76 +271,54 @@ public class Being {
 		return newItem; 
 	
 	}
-	public String wearItem(String name) {
+	public Item findItem(String name) {
+	    Item currentItem;
+	    while(items.itemsRemain()) {
+	        currentItem = (Item)items.getNext();
+	        if(Util.contains(currentItem.getName(), name)) {
+	            items.reset();
+	            return currentItem;
+	        }
+	    }
+	    items.reset();
+	    return null;
+	}
+	public String wearItem(Item newWear) {
 	    boolean success = false;
-	    Item currentItem = null;
-		for(int i = 0; i < items.length(); i++) {
-			currentItem = (Item)items.getNext();
-		    if(currentItem.getName().compareToIgnoreCase(name) == 0) {
-		        Item newWear = currentItem;
-		       // TrollAttack.error("newWear would go on your " + newWear.type);
-		        switch(newWear.type) {
-		            case Item.SWORD:
-		                if(weapon == null) {
-		                    weapon = newWear;
-					        success = true;
-		                }
-		                break;
-		            case Item.HELM:
-		                if(helm == null) {
-		                    helm = newWear;
-		                    success = true;
-		                }
-		                break;
-		            case Item.BOOTS:
-		                if(boots == null) {
-		                    boots = newWear;
-		                    success = true;
-		                }
-		                break;
-		            case Item.GREAVES:
-		                if(greaves == null) {
-		                    greaves = newWear;
-		                    success = true;
-		                }
-		                break;
-		        }
-		        if(success) {
-		            items.delete(currentItem);
-		            items.reset();
-		            return "You wear " + newWear.getShort();
-		        } else {
-		            items.reset();
-		            return "You are already wearing something where this would go!";
-		        }
-		        
-		    }
-		}
-		items.reset();
-		return "You don't have that.";
-
+        if(newWear.getClass() != Equipment.class) {
+            return "You don't know how to wear this!";
+        }
+        Equipment newWearEquipment = (Equipment)newWear;
+        Equipment tmpEq;
+        while(equipment.itemsRemain()) {
+            tmpEq = (Equipment)equipment.getNext();
+            if(tmpEq.wearLocation.compareToIgnoreCase( newWearEquipment.wearLocation ) == 0 ) {
+            } else {
+                equipment.add(newWear);
+                items.delete(newWear);
+                return "You wear " + newWear.getShort();
+            }
+        }
+        equipment.reset();
+        return "You are already wearing something where this would go!";
 	}
 	public String removeItem(String name) {
 	    Item inHand = null;
-	    if(weapon != null && Util.contains(weapon.getName(), name)) {
-	        inHand = weapon;
-	        weapon = null;
-	    } else if(helm != null && Util.contains(helm.getName(), name)) {
-	        inHand = helm;
-	        helm = null;
-	    } else if(boots != null && Util.contains(boots.getName(), name)) {
-	        inHand = boots;
-	        boots = null;
-	    } else if(greaves != null && Util.contains(greaves.getName(), name)) {
-	        inHand = greaves;
-	        helm = null;
+	    String result = "";
+	    while(equipment.itemsRemain()) {
+	        inHand = (Item)equipment.getNext();
+	        if(Util.contains(inHand.getName(), name)) {
+		        items.add(inHand);
+		        equipment.delete(inHand);
+	        }
 	    }
-	    if(inHand != null) {
-	        items.add(inHand);
-            return "You remove " + inHand.shortDesc;
-	    } else {
+	    equipment.reset();
+	    if(inHand == null) {
 	        return "You aren't wearing that!";
+	    } else {
+	        result = "You remove " + inHand.shortDesc + ".";
 	    }
+	    return result;
 	    
 	}
 	public void dropAll() {

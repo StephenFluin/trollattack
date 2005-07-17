@@ -23,12 +23,27 @@ public class Background extends Thread {
 			//TrollAttack.message("Starting item background.");
 			// Mobile routines
 			/**
+			 * Every 60 seconds, CLICK!
+			 * (2 seconds for testing purposes)
+			 */
+			if(time % 60 == 0 ) {
+			    //TrollAttack.message("CLICK");
+			    Reset reset;
+			    while(TrollAttack.gameResets.itemsRemain()) {
+			        reset = (Reset)TrollAttack.gameResets.getNext();
+			        reset.run();
+			    }
+			    TrollAttack.gameResets.reset();
+			}
+			
+			/**
 			 * Every 60 seconds, refresh mobiles that are gone.
 			 * Every 10 seconds, increase healths by 2.
 			 */
-			if(time % 30 == 0) {
+			
+			/*if(time % 30 == 0) {
 			    TrollAttack.deadies.handleResurrection();
-			}
+			}*/
 			//TrollAttack.message("Starting healing background.");
 			if(time % 10 == 0) {
 			    TrollAttack.healBeings();

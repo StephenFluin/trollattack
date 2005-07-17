@@ -28,5 +28,5 @@ public abstract class Command {
 	    return peaceful;
 	}
 	public void execute() {}
-	public void execute(String s) {}
+	public void execute(String s) { this.execute(); }
 }

@@ -43,14 +43,10 @@ public class Fight extends Thread {
 			} catch( Exception e ) {
 				TrollAttack.error("There was a problem sleeping for a second during a fight.");
 			}
-			damage = Math.floor( Math.floor(Math.random()*100 + 1)/first.hitSkill * first.getHitDamage());
-			first.increaseExperience((int)((second.level - first.level + 5)*damage));
-			first.tell(Util.uppercaseFirst(first.getShort(first)) + " rend[" + (int)damage + "] " + second.getShort() + ".");
-			second.hitPoints = second.hitPoints - (int)damage;
-			damage = Math.floor( Math.floor(Math.random()*100 + 1)/second.hitSkill * second.getHitDamage());
-			first.tell(Util.uppercaseFirst(second.getShort()) + " rends[" + (int)damage + "] " + first.getShort(first) + ".");
-			first.hitPoints = first.hitPoints - (int)damage;
+			runRound(first, second);
+			runRound(second, first);
 			first.tell(first.prompt());
+			second.tell(second.prompt());
 
 		}
 		if(first.hitPoints > 0) {
@@ -65,11 +61,12 @@ public class Fight extends Thread {
 			if(second.isPlayer) {
 			    ((Player)second).kill(first);
 			} else {
-			    TrollAttack.deadies.add( (Mobile)second, first.getCurrentRoom() );
+			    // SHOULD BE HANDLED BY RESETS!!!!
+			    //TrollAttack.deadies.add( (Mobile)second, first.getCurrentRoom() ); 
 			}
 			second.dropAll();
 			int exp = first.getExperience();
-			first.increaseExperience((int)(second.level * second.getHitDamage() * second.maxHitPoints * 100 / second.hitSkill));
+			first.increaseExperience((int)(second.getAverageHitDamage() * second.maxHitPoints));
 			//TrollAttack.error("Experience was " + exp + " and became " + TrollAttack.player.getExperience());
 			
 		} else {
@@ -78,6 +75,22 @@ public class Fight extends Thread {
 		}
 		first.setBeingFighting(null);
 		second.setBeingFighting(null);
+	}
+	public void runRound(Being first, Being second) {
+		double damage;
+		if(first.hitSkill.roll() >= first.hitLevel) {
+		    damage = Math.floor( first.getHitDamage() );
+		    if(first.isPlayer) {
+		        first.increaseExperience((int)((second.level - first.level + 5)*damage));
+		    }
+			first.tell(Util.uppercaseFirst(first.getShort(first)) + " rend [" + (int)damage + "] " + second.getShort() + ".");
+			second.tell(first.getShort(second) + " causes " + (int)damage + " damage to you!");
+			second.hitPoints = second.hitPoints - (int)damage;
+		} else {
+		    first.tell("You miss " + second.getShort());
+		    second.tell(Util.uppercaseFirst(second.getShort()) + " misses you!");
+		}
+
 	}
 	
 }

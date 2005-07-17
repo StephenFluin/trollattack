@@ -24,7 +24,11 @@ public class Roll {
         //Pattern pattern = Pattern.compile("(\\d+)d(\\d+)\\+(\\d+)");
         //Matcher matcher = pattern.matcher(value);
         String[] parts = value.split("d");
-        if(Util.contains(parts[1], ",")) {
+        if(parts.length < 2) {
+            numberOfDice = 1;
+            sizeOfDice = new Integer(parts[0]).intValue();
+            addition = 0;
+        } else if(Util.contains(parts[1], ",")) {
             String[] tmpParts = parts[1].split(",");
             numberOfDice = new Integer(parts[0]).intValue();
             sizeOfDice = new Integer(tmpParts[0]).intValue();
@@ -42,6 +46,11 @@ public class Roll {
             results += (Math.random() * sizeOfDice)+ 1 + addition;
         }
         return results;
+    }
+    public int getAverage() {
+        double results = 0;
+        results = numberOfDice * (sizeOfDice / 2 + addition + .5);
+        return (int)results;
     }
     public String toString() {
         return numberOfDice + "d" + sizeOfDice + "," + addition;

@@ -3,19 +3,23 @@ package TrollAttack;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import TrollAttack.Commands.CommandMove;
+import TrollAttack.Items.Item;
 
 public class Room {
-	public int vnum, east, west , north, south, northEast, northWest, southEast, southWest, up, down;
+	public int vnum;
+    //public Exit east, west , north, south, northEast, northWest, southEast, southWest, up, down;
+    
 	public String description = "", title = "";
 	private LinkedList roomItems = new LinkedList();
 	public LinkedList roomBeings = new LinkedList();
+	public LinkedList roomExits = new LinkedList();
 	
-	
-	public Room(int vnum, String title, String description, int east , int west, int north, int south, int  northEast, int  northWest, int  southEast, int  southWest, int up, int down) {
-	 this.vnum = vnum; this.east = east; this.west = west; this.north = north; this.south = south; 
-	 this.northEast = northEast; this.northWest = northWest; this.southEast = southEast; this.southWest = southWest;
-	 this.up = up; this.down = down;
+	public Room(int vnum, String title, String description, LinkedList exits) {
+	 this.vnum = vnum; 
+	 //this.east = east; this.west = west; this.north = north; this.south = south; 
+	 //this.northEast = northEast; this.northWest = northWest; this.southEast = southEast; this.southWest = southWest;
+	 //this.up = up; this.down = down;
+	 roomExits = exits;
 	 this.title = title;
 	 this.description = description;
 	// TrollAttack.message("Creating room with up and down: " + up + " and " + down + ".");
@@ -23,16 +27,7 @@ public class Room {
 	
 	public String toString() {
 		String returnValue = vnum + ":" + 
-		east + "," +
-		west + "," +
-		north + "," +
-		south + "," +
-		northEast + "," +
-		northWest + "," +
-		southEast + "," +
-		southWest + "," +
-		up + "," +
-		down;
+		title;
 		for(int i = 0; i < roomItems.length();i++) {
 		    Item currentItem = (Item)roomItems.getNext();
 	        returnValue += "\n\rroomItems[" + i + "](" + currentItem + ")" + currentItem.getShort();  
@@ -48,16 +43,16 @@ public class Room {
 	    attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
 	    attribs.add(Util.nCreate(doc, "description", description + ""));
 	    attribs.add(Util.nCreate(doc, "title", title));
-	    if(east != 0) attribs.add(Util.nCreate(doc, "east", east + ""));
-	    if(west != 0) attribs.add(Util.nCreate(doc, "west", west + ""));
-	    if(north != 0) attribs.add(Util.nCreate(doc, "north", north + ""));
-	    if(south != 0) attribs.add(Util.nCreate(doc, "south", south + ""));
-	    if(up != 0) attribs.add(Util.nCreate(doc, "up", up + ""));
-	    if(down != 0) attribs.add(Util.nCreate(doc, "down", down + ""));
-	    if(northEast != 0) attribs.add(Util.nCreate(doc, "northeast", northEast + ""));
-	    if(northWest != 0) attribs.add(Util.nCreate(doc, "northwest", northWest + ""));
-	    if(southEast != 0) attribs.add(Util.nCreate(doc, "southeast", southEast + ""));
-	    if(southWest != 0) attribs.add(Util.nCreate(doc, "southwest", southWest + ""));
+	    while(roomExits.itemsRemain()) {
+	        Exit exit = (Exit)roomExits.getNext();
+	        Node n = doc.createElement(exit.getDirectionName());
+	        Node ex = Util.nCreate(doc, "vnum", exit.getDestination() + "");
+	        n.appendChild(ex);
+	        if(exit.isDoor()) n.appendChild(Util.nCreate(doc, "door", exit.isOpen() ? "open" : "closed"));
+	        if(exit.isLockable()) n.appendChild(Util.nCreate(doc, "lockable", exit.getKey().vnum + ""));
+	        attribs.add(n);
+	    }
+	    roomExits.reset();
 	    /*Node itemList = doc.createElement("itemList");
 	    
 	    for(int i = 0;i < playerItems.getLength();i++) {
@@ -163,39 +158,15 @@ public class Room {
 	}
 	public String[] look(Player player) {
 		String exits = "Exits: ";
-		if(east != 0 ) {
-			exits += "East";
-		}
-		if(north != 0 ) {
-			if(exits.length() > 7) {
-				exits += ", ";
-			}
-			exits += "North";
-		}
-		if(west != 0 ) {
-			if(exits.length() > 7) {
-				exits += ", ";
-			}
-			exits += "West";
-		}
-		if(south != 0 ) {
-			if(exits.length() > 7) {
-				exits += ", ";
-			}
-			exits += "South";
-		}
-		if(up != 0) {
+		while(roomExits.itemsRemain()) {
 		    if(exits.length() > 7) {
 		        exits += ", ";
 		    }
-		    exits += "Up";
+		    Exit exit = (Exit)roomExits.getNext();
+		    exits += Util.uppercaseFirst(exit.getDirectionName());
 		}
-		if(down != 0) {
-		    if(exits.length() > 7) {
-		        exits += ", ";
-		    }
-		    exits += "Down";
-		}
+		roomExits.reset();
+		
 		if(exits.length() <= 7 ) {
 			exits += " none";
 		}
@@ -276,62 +247,93 @@ public class Room {
 	        roomBeings.reset();
 	    }
 	}
-	public int followLink (int direction) {
-		if(direction == CommandMove.EAST) {
-			return east;
-		} else if (direction == CommandMove.NORTH ) {
-			return north;
-		} else if (direction == CommandMove.WEST) {
-			return west;
-		} else if (direction == CommandMove.SOUTH) {
-			return south;
-		} else if(direction == CommandMove.UP) {
-			return up;
-		} else if (direction == CommandMove.DOWN ) {
-			return down;
-		} else if (direction == CommandMove.NORTHEAST) {
-			return northEast;
-		} else if (direction == CommandMove.NORTHWEST) {
-			return northWest;
-		} else if (direction == CommandMove.SOUTHEAST) {
-			return southEast;
-		} else if (direction == CommandMove.SOUTHWEST) {
-			return southWest;
-		} else {
-			return 0;
+	public Exit followLink (int direction) {
+		while(roomExits.itemsRemain()) {
+		    Exit exit = (Exit)roomExits.getNext();
+		    if(exit.getDirection() == direction) {
+		        roomExits.reset();
+		        return exit;
+		    }
 		}
+		roomExits.reset();
+		return null;
+	}
+	public String open(int direction) {
+	    while(roomExits.itemsRemain()) {
+	        Exit exit = (Exit)roomExits.getNext();
+	        if(exit.getDirection() == direction) {
+	            roomExits.reset();
+	            
+	            return exit.open();
+	        } else {
+	            //TrollAttack.message(direction + "!=" + exit.getDirectionName());
+	        }
+	    }
+	    roomExits.reset();
+	    return "You can't find that door.";
+	}
+	public String close(int direction) {
+	    while(roomExits.itemsRemain()) {
+	        Exit exit = (Exit)roomExits.getNext();
+	        if(exit.getDirection() == direction) {
+	            roomExits.reset();
+	            return exit.close();
+	        }
+	    }
+	    roomExits.reset();
+	    return "You can't find that door.";
 	}
 	public void setLink( int direction, int destination) {
-			if(direction == CommandMove.EAST) {
-				east = destination;
-			} else if (direction == CommandMove.NORTH ) {
-				north = destination;
-			} else if (direction == CommandMove.WEST) {
-				west = destination;
-			} else if (direction == CommandMove.SOUTH) {
-				south = destination;
-			} else if(direction == CommandMove.UP) {
-				up = destination;
-			} else if (direction == CommandMove.DOWN ) {
-				down = destination;
-			} else if (direction == CommandMove.NORTHEAST) {
-				northEast = destination;
-			} else if (direction == CommandMove.NORTHWEST) {
-				northWest = destination;
-			} else if (direction == CommandMove.SOUTHEAST) {
-				southEast = destination;
-			} else if (direction == CommandMove.SOUTHWEST) {
-				southWest = destination;
-			}
+		if(destination == 0) {
+		    while(roomExits.itemsRemain()) {
+		        Exit exit = (Exit)roomExits.getNext();
+		        if(exit.getDirection() == direction) {
+		            roomExits.delete(exit);
+		        }
+		    }
+		} else {
+		    roomExits.add(new Exit(destination, direction));
+		}
+		roomExits.reset();
+	}
+	public int countExactItem(Item item) {
+	    int count = 0;
+	    while(roomItems.itemsRemain()) {
+	        Item currentItem = (Item)roomItems.getNext();
+	        if(currentItem == item) {
+	            count++;
+	        }
+	    }
+	    roomItems.reset();
+	    return count;
+	}
+	public int countExactMobile(Mobile mobile) {
+	    int count = 0;
+	    while(roomBeings.itemsRemain()) {
+	        Being currentMobile = (Being)roomBeings.getNext();
+	        if(currentMobile == mobile) {
+	            count++;
+	        }
+	    }
+	    roomBeings.reset();
+	    return count;
+	}
+	public Item getItem(String name) {
+	    return getItem(name, false);
 	}
 	public Item removeItem(String name) {
+	    return getItem(name, true);
+	}
+	public Item getItem(String name, boolean remove) {
 		Item newItem;
 		for(int i = 0; i < roomItems.length(); i++) {
 			Item currentItem = (Item)roomItems.getNext();
 		    if(Util.contains(currentItem.name, name)) {
 				newItem = currentItem;
-				roomItems.delete(currentItem);
-				
+				if(remove) {
+				    roomItems.delete(currentItem);
+				}
+				roomItems.reset();
 				return newItem;
 			}
 		}

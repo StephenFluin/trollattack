@@ -13,11 +13,11 @@ package TrollAttack;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 
-public class DeadMobiles {
+public class DeadMobilesbak {
 	private Mobile[] mobs = new Mobile[255];
 	private int[] roms = new int[255];
 	private int[] refs = new int[255];
-	public DeadMobiles() {
+	public DeadMobilesbak() {
 		
 	}
 	public void add(Mobile m, int r) {
@@ -29,7 +29,7 @@ public class DeadMobiles {
 		}
 		mobs[i] = m;
 		roms[i] = r;
-		refs[i] = m.getRespawnTime();
+		//refs[i] = m.getRespawnTime();
 		//TrollAttack.error(m.getShort() + " joins the netherworld.");
 	}
 	public void handleResurrection() {
