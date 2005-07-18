@@ -18,7 +18,9 @@ public class Armor extends Equipment {
     public Armor(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);
     }
-    
+    public Armor(Item i) {
+        this(i.vnum, i.weight, i.cost, i.name, i.shortDesc, i.longDesc);
+    }
     public int armorClass = 0;
     public String wearLocation = "";
     public void setArmorClass(int newAC) {

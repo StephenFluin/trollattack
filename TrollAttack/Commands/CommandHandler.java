@@ -97,12 +97,13 @@ public class CommandHandler {
 		/* Immortal Commands */
 		if(player.level > 60) {
 		    registerCommand(new vAssign("vassign"));
-		    
+		    registerCommand(new reloadWorld("reloadworld"));
 		    //registerCommand(new Transport("transport"));
 		}
 		
 		/* Builder Commands */
 		if(player.isBuilder() || player.level > 60) {
+		    registerCommand(new Force("force"));
 		    registerCommand(new UnQuit("unquit"));
 		    registerCommand(new Goto("goto"));
 		    registerCommand(new Slay("slay"));
@@ -110,9 +111,11 @@ public class CommandHandler {
 		    registerCommand(new freeze("freeze"));
 		    registerCommand(new unfreeze("unfreeze"));
 		    registerCommand(new rList("rlist"));
+		    registerCommand(new resetList("resets"));
 		    registerCommand(new mList("mlist"));
 		    registerCommand(new iList("ilist"));
 		    registerCommand(new aList("alist"));
+		    registerCommand(new myArea("area"));
 		    registerCommand(new rCreate("rcreate"));
 		    registerCommand(new mCreate("mcreate"));
 		    registerCommand(new iCreate("icreate"));
@@ -228,7 +231,8 @@ public class CommandHandler {
 				player.tell("You don't see that here.");
 			} else {
 			    player.tell("You slay " + mob.getShort() + " in cold blood.");
-			    player.getActualRoom().say(Util.uppercaseFirst( player.getShort() ) + " slays " + mob.getShort() + " in cold blood.", player);
+			    Being[] pBroadcast = {player, player, mob};
+			    player.getActualRoom().say("%1 slays %2 in cold blood.", pBroadcast);
 			}
 	    }
 	}
@@ -692,12 +696,12 @@ public class CommandHandler {
 	    public aList(String s) { super(s, false); }
 	    public void execute() {
 		    player.tell(Communication.GREEN + "Game Areas:");
-		    player.tell(Communication.CYAN + "Filename\t\tName\t\tLowVnum\tHighVnum" + Communication.WHITE);
+		    player.tell(Communication.CYAN + "Filename\t\tLowVnum\tHighVnum\tFrozen\tName" + Communication.WHITE);
 		    Area area;
 		    while(TrollAttack.gameAreas.itemsRemain()) {
 		        area = (Area)TrollAttack.gameAreas.getNext();
 		       
-		        player.tell(area.filename + "\t" + area.name + "\t" + area.low+"\t"+area.high);
+		        player.tell(area.filename + (area.filename.length() < 12 ? "\t" : "") + "\t" + area.low+"\t"+area.high + "\t" + "(" + (area.frozen ? "X" : " ") + ")\t" + area.name);
 		    }
 		    TrollAttack.gameAreas.reset();
 		}
@@ -766,7 +770,16 @@ public class CommandHandler {
 	        this.execute();
 	    }
 	}
-	
+	class resetList extends Command {
+	    public resetList(String s) { super(s, false); }
+		public void execute() {
+		    int i = 0;
+		    while(TrollAttack.gameResets.itemsRemain()) {
+		        Reset reset = (Reset)TrollAttack.gameResets.getNext();
+		        player.tell(++i + ": " + reset.toString());
+		    }
+		}
+	}
 	class vAssign extends Command {
 	    public vAssign(String s) { super(s, false); }
 	    public void execute() {
@@ -809,7 +822,7 @@ public class CommandHandler {
 		                new Integer(parts[1]).intValue(),
 		                new Integer(parts[2]).intValue(),
 		                parts[0] + ".xml",
-		                p.getShort() + "'s Area In Progress", 15);
+		                p.getShort() + "'s Area In Progress", 15, true);
 		        TrollAttack.gameAreas.add(newArea);
 	        }
 	        p.setArea(newArea);
@@ -821,6 +834,30 @@ public class CommandHandler {
 	        p.rehash();
 	        
 	        p.save();
+	    }
+	}
+	class reloadWorld extends Command {
+	    public reloadWorld(String s) { super(s, false); }
+	    public void execute() {
+	        TrollAttack.broadcast("The world is swept into a void, but it quickly reappears as if from a whirl of electricity.");
+	        TrollAttack.gameResets = new LinkedList();
+	        TrollAttack.myData = new DataReader();
+	        
+	        TrollAttack.gameAreas =  	TrollAttack.myData.getAreas();
+	        TrollAttack.gameItems =  	TrollAttack.myData.getItems();
+	        TrollAttack.gameMobiles =  	TrollAttack.myData.getMobiles();
+	        TrollAttack.gameRooms =  	TrollAttack.myData.getRooms();
+	        while(TrollAttack.gameResets.itemsRemain()) {
+		        Reset reset = (Reset)TrollAttack.gameResets.getNext();
+		        reset.run();
+		    }
+		    TrollAttack.gameResets.reset();
+	        while(TrollAttack.gamePlayers.itemsRemain()) {
+	            Player p = (Player)TrollAttack.gamePlayers.getNext();
+	            TrollAttack.getRoom(p.getCurrentRoom()).addPlayer(p);
+	        }
+	        
+	        TrollAttack.gamePlayers.reset();
 	    }
 	}
 	class rCreate extends Command {
@@ -967,9 +1004,11 @@ public class CommandHandler {
 		                mobile.shortDescription = value;
 		            } else if(attr.compareToIgnoreCase("long") == 0) {
 		                mobile.longDesc = value;
-		            } else if(attr.compareToIgnoreCase("hitdamage") == 0) {
+		            } else if(attr.compareToIgnoreCase("gold") == 0) {
+		                mobile.gold = intValue;
+		            } else if(attr.compareToIgnoreCase("damagedice") == 0) {
 		                mobile.hitDamage = new Roll(value);
-		            } else if(attr.compareToIgnoreCase("hitskill") == 0) {
+		            } else if(attr.compareToIgnoreCase("hitdice") == 0) {
 		                mobile.hitSkill = new Roll(value);
 		            } else if(attr.compareToIgnoreCase("hitlevel") == 0) {
 		                mobile.hitLevel = intValue;
@@ -1021,6 +1060,15 @@ public class CommandHandler {
 		                item.longDesc = value;
 		            } else if(attr.compareToIgnoreCase("weight") == 0 ) {
 		                item.weight = intValue;
+		            } else if(attr.compareToIgnoreCase("type") == 0 ) {
+		                if(value.compareToIgnoreCase(Weapon.getItemType()) == 0 && item.getType() != Weapon.getItemType()) {
+		                    Item newItem = new Weapon(item);
+		                } else if(value.compareToIgnoreCase(Armor.getItemType()) == 0 && item.getType() != Armor.getItemType()) {
+		                    Item newItem = new Armor(item);
+		                } else {
+		                    return; 
+		                }
+		                
 		            } else {
 		                if(item.getType().compareToIgnoreCase(Weapon.getItemType())== 0) {
 		                    Weapon weapon = (Weapon)item;
@@ -1044,7 +1092,12 @@ public class CommandHandler {
 	        }
 	    }
 	}
-	
+	class myArea extends Command {
+	    public myArea(String s) { super(s); }
+	    public void execute() {
+	        builder.area();
+	    }
+	}
 	class Savearea extends Command {
 	    public Savearea(String s) {
 	        super(s, false);
@@ -1052,10 +1105,12 @@ public class CommandHandler {
 	    public void execute() {
 	        try {
 	            player.getArea().save();
+	            player.tell("You save your area. (" + player.getArea().filename + ")");
 	        } catch(Exception e) {
 	            TrollAttack.message("Player probably doesn't have an area.");
 	            e.printStackTrace();
 	        }
+	        
 	    }
 	    public void execute(String s) {
 	        if(player.level >= 60) {
@@ -1112,7 +1167,7 @@ public class CommandHandler {
 	            if(newMobile == null) {
 		            player.tell("That isn't an mobile yet!");
 		        } else {
-		            player.getActualRoom().addMobile(new Mobile(newMobile));
+		            player.getActualRoom().addMobile(newMobile);
 		            player.tell("You invoke " + newMobile.getShort() + ".");
 		            player.getActualRoom().say(player.getShort() + " invokes " + newMobile.getShort() + ".");
 		        }
@@ -1125,6 +1180,31 @@ public class CommandHandler {
 	
 	/* End of Builder Commands */
 	/* Immortal Commands */
+	class Force extends Command {
+	    public Force(String s) { super(s); }
+	    public void execute() {
+	        player.tell("Usage: force <player> <command>");
+	    }
+	    public void execute(String s) {
+	        String[] parts = s.split(" ");
+	        if(parts.length < 2) {
+	            execute();
+	            return;
+	        }
+	        String playerName = parts[0];
+	        String command = parts[1];
+	        for(int i = 2; i < parts.length; i++) {
+	            command += " " + parts[i];
+	        }
+	        while( TrollAttack.gamePlayers.itemsRemain() ) {
+	            Player p = (Player)TrollAttack.gamePlayers.getNext();
+	            if( Util.contains(p.getName(), playerName)) {
+	                p.tell(player.getShort() + " forces you to '" + command + "'.");
+	                p.ch.handleCommand(command);
+	            }
+	        }
+	    }
+	}
 	class UnQuit extends Command {
 	    public UnQuit(String s) { super(s); }
 	    public void execute() {

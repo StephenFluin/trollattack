@@ -31,7 +31,7 @@ public class Player extends Being {
 	private String password = "";
 	public String title = "the newbie";
 	Communication communication = null;
-	CommandHandler ch = null;
+	public CommandHandler ch = null;
 	private int lastActive = 0;
 	private boolean builder = false;
 	private Area area;
@@ -58,9 +58,9 @@ public class Player extends Being {
 		maxManaPoints = 40;
 		movePoints = 30;
 		maxMovePoints = 30;
-		hitSkill = new Roll("2d3");
+		hitSkill = new Roll("2d3,2");
 		hitLevel = 5;
-		hitDamage = new Roll("2d2");
+		hitDamage = new Roll("2d3");
 		level = 1;
 		currentRoom = 1;
 		shortDescription = "a player";
@@ -257,7 +257,8 @@ public class Player extends Being {
 	}
 	
 	public void roomSay(String string) {
-	    getActualRoom().say(Util.uppercaseFirst(string), this);
+	    Being[] pBroadcast= {this};
+	    getActualRoom().say(Util.uppercaseFirst(string), pBroadcast);
 	}
 	
 	public void closeConnection() {

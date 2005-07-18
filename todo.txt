@@ -1,7 +1,6 @@
 Todo List / Ideas:
 
 3. Item Building System.
-	Better Item Handling
 4. Food and Drink System
 Movement points
 Blindness / sleep state...

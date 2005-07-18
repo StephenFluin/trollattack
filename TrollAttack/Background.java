@@ -27,7 +27,7 @@ public class Background extends Thread {
 			 * (2 seconds for testing purposes)
 			 */
 			if(time % 60 == 0 ) {
-			    //TrollAttack.message("CLICK");
+			    TrollAttack.broadcast("CLICK");
 			    Reset reset;
 			    while(TrollAttack.gameResets.itemsRemain()) {
 			        reset = (Reset)TrollAttack.gameResets.getNext();

@@ -138,7 +138,9 @@ public class DataReader {
                     new Integer((String)area.get("low")).intValue(),
                     new Integer((String)area.get("high")).intValue(),
                     (String)area.get("filename"),
-                    (String)area.get("name"), 15);
+                    (String)area.get("name"),
+                    15,
+                    (area.get("frozen") == null) ? false : (((String)area.get("frozen")).compareToIgnoreCase("true") == 0 ? true : false));
             areas.add(newArea);
                     
         }
@@ -164,9 +166,12 @@ public class DataReader {
             itemName = (String)item.get("name");
             
             type = (String)item.get("type");
+            if(type == null) {
+                type = "";
+            }
 		if(type.compareToIgnoreCase(Weapon.getItemType()) == 0) {
 		    Weapon newWeapon = new Weapon(vnum, weight, cost, itemName, shortDesc, longDesc );
-		    newWeapon.setDamage((String)item.get("hitDamage"));
+		    if(item.get("hitDamage") != null) newWeapon.setDamage((String)item.get("hitDamage"));
 		    newItem = newWeapon;
 		} else if(type.compareToIgnoreCase(Armor.getItemType()) == 0 ) {
 		    Armor newArmor = new Armor(vnum, weight, cost, itemName, shortDesc, longDesc);
@@ -236,7 +241,7 @@ public class DataReader {
                 }
             }
             
-            newRoom = new Room(vnum, title, description, exits);
+            newRoom = new Room( vnum, title, description, exits);
             rooms.add(newRoom);
             Area.test(vnum)
             .rooms
@@ -250,7 +255,12 @@ public class DataReader {
     	        //TrollAttack.message("linked list of items found.");
     	        LinkedList items = (LinkedList)(tmpRooms);
     	        for(int i = 0; i < items.length();i++) {
-    	            TrollAttack.gameResets.add(new Reset.ItemReset(new Item(TrollAttack.getItem(new Integer((String)items.getNext()))), newRoom, 15));
+    	            Item resetItem = TrollAttack.getItem(new Integer((String)items.getNext()));;
+    	            if(Area.test(resetItem.vnum).frozen) {
+    	            } else {
+    	                resetItem = new Item(resetItem);
+    	            }
+    	            TrollAttack.gameResets.add(new Reset.ItemReset(resetItem, newRoom, 15));
     	        }
     	    } else {
     	        //TrollAttack.message("single item found");
@@ -266,7 +276,12 @@ public class DataReader {
     	        //TrollAttack.message(Mobilenum + "");
     	        //TrollAttack.message(TrollAttack.getMobile(new Integer(Mobilenum)).toString());
     	        for(int i = 0; i < mobiles.length();i++) {
-    	            TrollAttack.gameResets.add(new Reset.MobileReset(new Mobile(TrollAttack.getMobile(new Integer((String)mobiles.getNext()))), newRoom, 1));
+    	            Mobile resetMobile = TrollAttack.getMobile(new Integer((String)mobiles.getNext()));
+    	            if(Area.testMobile(resetMobile).frozen) {
+    	            } else {
+    	                resetMobile = new Mobile(resetMobile);
+    	            }
+    	            TrollAttack.gameResets.add(new Reset.MobileReset(resetMobile, newRoom, 1));
     	        }
     	        mobiles.reset();
     	    } else {

@@ -33,6 +33,7 @@ public class TrollAttack {
 	 *  before you can load the game rooms because the rooms contain Mobile 
 	 *  objects and item objects, and Mobiles can contain items.
 	 */
+	public static DataReader myData;
 	public static LinkedList gameAreas;
 	public static LinkedList gameItems;
 	public static LinkedList gameMobiles;
@@ -54,7 +55,7 @@ public class TrollAttack {
 		
 		String command;
 		
-		DataReader myData = new DataReader();
+		myData = new DataReader();
 		gameAreas = myData.getAreas();
 		gameItems = myData.getItems();
 		gameMobiles = myData.getMobiles();
@@ -199,5 +200,14 @@ public class TrollAttack {
 	        }
 	    }
 	    gamePlayers.reset();
+	}
+	public static void replaceItem(Item find, Item replace) {
+	    gameItems.delete(find);
+	    gameItems.add(replace);
+	   while(gameRooms.itemsRemain()) {
+	       Room currentRoom = (Room)gameRooms.getNext();
+	       currentRoom.replaceItem(find, replace);
+	   }
+	   gameRooms.reset();
 	}
 }

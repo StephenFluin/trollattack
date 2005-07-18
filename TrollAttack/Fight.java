@@ -24,9 +24,14 @@ public class Fight extends Thread {
     private Player first;
     private Being second;
 	private Boolean results = null;
+	private Room fightRoom = null;
+	private Being[] pBroadcast = new Being[3];
 	public Fight(Player a, Being b) {
 		first = a;
 		second = b;
+		fightRoom = a.getActualRoom();
+		pBroadcast[0] = pBroadcast[1] = first;
+		pBroadcast[2] = second;
 	}
 	public Boolean results() {
 	    return results;
@@ -57,7 +62,10 @@ public class Fight extends Thread {
 		boolean win = this.results().booleanValue();
 		if(win) {
 			TrollAttack.getRoom( first.getCurrentRoom()).removeBeing( second.name );
-			first.tell("You killed " + second.getShort());
+			first.tell(Communication.RED + "You KILLED " + second.getShort());
+			pBroadcast[0] = pBroadcast[1] = first;
+			pBroadcast[2] = second;
+			fightRoom.say("%1 killed %2.", pBroadcast);
 			if(second.isPlayer) {
 			    ((Player)second).kill(first);
 			} else {
@@ -84,11 +92,13 @@ public class Fight extends Thread {
 		        first.increaseExperience((int)((second.level - first.level + 5)*damage));
 		    }
 			first.tell(Util.uppercaseFirst(first.getShort(first)) + " rend [" + (int)damage + "] " + second.getShort() + ".");
-			second.tell(first.getShort(second) + " causes " + (int)damage + " damage to you!");
+			pBroadcast[0] = pBroadcast[1] = first;
+			pBroadcast[2] = second;
+			fightRoom.say("%1 causes " + (int)damage + " damage to %2!", pBroadcast);
 			second.hitPoints = second.hitPoints - (int)damage;
 		} else {
 		    first.tell("You miss " + second.getShort());
-		    second.tell(Util.uppercaseFirst(second.getShort()) + " misses you!");
+		    fightRoom.say("%1 misses %2!", pBroadcast);
 		}
 
 	}

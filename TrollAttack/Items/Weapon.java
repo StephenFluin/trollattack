@@ -2,7 +2,7 @@
  * Created on Jul 17, 2005
  *
  * This file is a source file of TrollAttack.  TrollAttack 
- * is a java game imitating smaug muds. TrollAttack
+ * is a ja`va game imitating smaug muds. TrollAttack
  * and all of the files that make it up are (c) 2005
  * to Stephen Fluin.
  */
@@ -21,6 +21,9 @@ import TrollAttack.Roll;
 public class Weapon extends Equipment {
     public Weapon(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);
+    }
+    public Weapon(Item i) {
+        this(i.vnum, i.weight, i.cost, i.name, i.shortDesc, i.longDesc);
     }
     
     public Roll damage = new Roll("0d0");

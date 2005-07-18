@@ -223,22 +223,31 @@ public class Room {
 	    roomBeings.delete(player);
 	}
 	public void say(String s) {
-	    say(s, null);
+	    Being[] pBroadcast = {};
+	    say(s, pBroadcast);
 	}
-	public void say(String s, Player ignorePlayer) {
-	    Being temporaryBeing;
-	    Player player;
+	// players works like this:
+	// 0 is ignored
+	// 1 is %1
+	// 2 is %2 ...
+	// Any player that matches who they are talking to
+	// is replaced with you.
+	public void say(String s, Being[] players) {
+	    Being person;
 	    try{
 	        for(int i = 1;i <= roomBeings.length(); i++ ) {
 	           // TrollAttack.message("Found a being...");
-		        temporaryBeing = (Being)roomBeings.getNext();
-		        if(temporaryBeing.isPlayer()) {
-		            player = (Player)temporaryBeing;
-		            //TrollAttack.message("found a player..");
-			        if(player != ignorePlayer) {
-			            player.tell(s);
-			           // TrollAttack.message("telling " + player.getShort() + " " + s);
-			        }
+		        person = (Being)roomBeings.getNext();
+		        String message = s;
+		        if(players.length < 1 || person != players[0]) {
+		            
+		            //TrollAttack.message("telling " + person.getShort() + " " + s);
+		            for(int j = 1;j < players.length;j++) {
+		                //TrollAttack.message(players[j] == null ? "players[j] is null" : "players[j] is not null");
+		                message = message.replaceAll("%" + j , players[j].getShort(person));
+		            }
+		            person.tell(Util.uppercaseFirst(message));
+		            
 		        }
 	        }
 	    } catch(Exception e) {
@@ -400,6 +409,19 @@ public class Room {
 	        currentBeing = (Being)roomBeings.getNext();
 	    }
 	    roomBeings.reset();
+	}
+	
+	public void replaceItem(Item find, Item replace) {
+		if( find == replace ) {
+		    TrollAttack.error("Can't replace with self, otherwise infinite loop!");
+		}
+	    while( roomItems.itemsRemain() ) {
+		    if(roomItems.getNext() == find) {
+		        roomItems.delete(find);
+		        roomItems.add(replace);
+		    }
+		}
+	    roomItems.reset();
 	}
 
 }

@@ -76,16 +76,6 @@ public class Communication extends Thread {
         }
     }
      public void run() {
-       /* String input;
-        while(!TrollAttack.gameOver) {
-            input = stdin.stringInputLine();
-            TrollAttack.ch.handleCommand(input);
-        }
-        TrollAttack.endGame();
-        */
-       // adminSocket = null;
-       // in = null;
-       // out = null;
         String inputLine = "";
         try {
             
@@ -110,8 +100,9 @@ public class Communication extends Thread {
                  player.setCommunication(this);
                  TrollAttack.broadcast(PURPLE + player.getShort() + " has joined our ranks.");
                  TrollAttack.addPlayer(player);
-                 TrollAttack.getRoom(player.getCurrentRoom()).addPlayer(player);
-                 TrollAttack.getRoom(player.getCurrentRoom()).say(WHITE + player.getShort() + " enters the room.", player);
+                 player.getActualRoom().addPlayer(player);
+                 Player[] pBroadcast = {player};
+                 player.getActualRoom().say(WHITE + player.getShort() + " enters the room.", pBroadcast);
                  
                  player.look();
                  player.tell( player.prompt() );

@@ -23,7 +23,13 @@ public class Roll {
         //TrollAttack.message("Trying to do math for roll of '" + value + "'.");
         //Pattern pattern = Pattern.compile("(\\d+)d(\\d+)\\+(\\d+)");
         //Matcher matcher = pattern.matcher(value);
-        String[] parts = value.split("d");
+        String[] parts = {};
+        try {
+            parts = value.split("d");
+        } catch(Exception e) {
+            TrollAttack.error("Invalid roll type given");
+            e.printStackTrace();
+        }
         if(parts.length < 2) {
             numberOfDice = 1;
             sizeOfDice = new Integer(parts[0]).intValue();

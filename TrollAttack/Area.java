@@ -32,15 +32,16 @@ public class Area {
     public int defaultClicks;
     public LinkedList rooms;
     public Area() {
-        this(0,0,"uncategorized.xml","Uncategorized", 15);
+        this(0,0,"uncategorized.xml","Uncategorized", 15, true);
     }
-    public Area(int lowVnum, int highVnum, String areaFilename, String areaName, int clicks) {
+    public Area(int lowVnum, int highVnum, String areaFilename, String areaName, int clicks, boolean frozen) {
         low = lowVnum;
         high = highVnum;
         filename = areaFilename;
         name = areaName;
         rooms = new LinkedList();
         defaultClicks = clicks;
+        this.frozen = frozen;
     }
     public String toString() {
         return filename + ":\t" + low + "\t" + high + "\t" + name;
@@ -77,6 +78,7 @@ public class Area {
  		    attribs.add(Util.nCreate(doc, "filename", filename));
  		    attribs.add(Util.nCreate(doc, "name", name + ""));
  		    attribs.add(Util.nCreate(doc, "clicks",defaultClicks + "" ));
+ 		    attribs.add(Util.nCreate(doc, "frozen", frozen ? "true" : "false"));
  		    
  		    for(int i = 0; i < attribs.length(); i++) {
  		        

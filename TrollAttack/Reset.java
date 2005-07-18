@@ -49,6 +49,9 @@ public abstract class Reset {
                 room.addItem(item);
             }
         }
+        public String toString() {
+            return "Put (Item x " + limit + ")" + item.getShort() + " in " + room.title + ".";
+        }
     }
     public static class MobileReset extends Reset {
         Mobile mob;
@@ -63,8 +66,13 @@ public abstract class Reset {
             if(room.countExactMobile(mob) < limit) {
                 room.addMobile(mob);
                 mob.healAll();
+            } else if(TrollAttack.getTime() <= 1) {
+                limit++;
             }
             //TrollAttack.message("Done mobile Reset.");
+        }
+        public String toString() {
+            return "Put (Mobile x " + limit + ") " + mob.getShort() + " in " + room.title + ".";
         }
     }
     public static class ExitReset extends Reset {
@@ -90,6 +98,9 @@ public abstract class Reset {
                 exit.unlock();
             }
             
+        }
+        public String toString() {
+            return "Make door " + (open ? "open" : "closed") + ".";
         }
     }
 }

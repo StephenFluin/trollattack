@@ -118,6 +118,11 @@ public class XMLHandler {
                     hashProcess(kid, hashy);
                     hash.put( kid.getNodeName() , hashy);
                 } else {
+                    //TrollAttack.message(kid.getNodeName());
+                    if(kid.getChildNodes().item(loopStart) == null) {
+                        TrollAttack.error("Node " + kid.getNodeName() + " has null child.");
+                        continue;
+                    }
                     if(kid.getChildNodes().item(loopStart).getNodeType() == Node.TEXT_NODE) {
                         hash.put( kid.getNodeName() , kid.getChildNodes().item(0).getNodeValue());
                     } else {

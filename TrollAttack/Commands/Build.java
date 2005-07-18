@@ -135,4 +135,7 @@ public class Build {
         player.tell("Cost:\t" + item.cost + "\t" + "Weight:\t" + item.weight);
         player.tell(item.getTypeData());
     }
+    public void area() {
+        player.tell("Your area " + (player.getArea().frozen ? "<frozen>" : "") + ": " + player.getArea().filename + " " + player.getArea().name);
+    }
 }
