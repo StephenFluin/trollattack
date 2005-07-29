@@ -133,6 +133,7 @@ public class Communication extends Thread {
             try {
                 player.tell(Communication.WHITE + "What is your name (or type " + Communication.CYAN + "new" + Communication.WHITE + " for a new character)?");
                 name = in.readLine();
+                TrollAttack.message("Read name " + name + ".");
                 if(name == null) {
                     continue;
                 }
@@ -160,6 +161,8 @@ public class Communication extends Thread {
 	                if(tmpPlayer != null) {
 	                    tmpPlayer.authenticated = true;
 	                    TrollAttack.message("Created player " + tmpPlayer.getShort());
+	                } else {
+	                    TrollAttack.message("Could not create player (" + name + ":" + pass + ").");
 	                }
 	                
                 }
@@ -171,7 +174,6 @@ public class Communication extends Thread {
             } catch(NullPointerException e) {
                 tmpPlayer = null;
                 e.printStackTrace();
-                return null;
                
             } catch(SocketException e) {
                 return null;

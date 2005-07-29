@@ -22,20 +22,20 @@ public class Mobile extends Being {
 	public int vnum, clicks;
 	
 	public Mobile(int v, int leve, String n, int h, int mh, int hLevel, String hSkill, String hDamage, int mClicks, String s, String l) {
-	 vnum = v;
-	 level = leve;
-	 isPlayer = false;
-	 name = n;
-	 hitPoints = h;
-	 maxHitPoints = mh;
-	 hitLevel = hLevel;
-	 hitSkill = new Roll(hSkill);
-	 hitDamage = new Roll(hDamage);
-	 shortDescription = s;
-	 longDesc = l;
-	 clicks = mClicks;
-	 //TrollAttack.error("Creating mobile #" + v);
-	 this.setPrompt("<%h>");
+	    vnum = v;
+		level = leve;
+		isPlayer = false;
+		name = n;
+		hitPoints = h;
+		maxHitPoints = mh;
+		hitLevel = hLevel;
+		hitSkill = new Roll(hSkill);
+		hitDamage = new Roll(hDamage);
+		shortDescription = s;
+		longDesc = l;
+		clicks = mClicks;
+		//TrollAttack.error("Creating mobile #" + v);
+		this.setPrompt("<%h>");
 	}
 	
 	// Is there a better way to duplicate a mobile?

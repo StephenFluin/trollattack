@@ -98,25 +98,26 @@ public class CommandHandler {
 		if(player.level > 60) {
 		    registerCommand(new vAssign("vassign"));
 		    registerCommand(new reloadWorld("reloadworld"));
-		    //registerCommand(new Transport("transport"));
+		    registerCommand(new freeze("freeze"));
+		    registerCommand(new unfreeze("unfreeze"));
+		    registerCommand(new UnQuit("unquit"));
 		}
 		
 		/* Builder Commands */
 		if(player.isBuilder() || player.level > 60) {
+		    
+		    /* Room Building Commands */
 		    registerCommand(new Force("force"));
-		    registerCommand(new UnQuit("unquit"));
 		    registerCommand(new Goto("goto"));
 		    registerCommand(new Slay("slay"));
-		    /* Room Building Commands */
-		    registerCommand(new freeze("freeze"));
-		    registerCommand(new unfreeze("unfreeze"));
 		    registerCommand(new rList("rlist"));
+		    registerCommand(new Click("resetworld"));
 		    registerCommand(new resetList("resets"));
 		    registerCommand(new mList("mlist"));
 		    registerCommand(new iList("ilist"));
 		    registerCommand(new aList("alist"));
 		    registerCommand(new myArea("area"));
-		    registerCommand(new rCreate("rcreate"));
+		    //registerCommand(new rCreate("rcreate"));
 		    registerCommand(new mCreate("mcreate"));
 		    registerCommand(new iCreate("icreate"));
 		    registerCommand(new mSet("mset"));
@@ -162,6 +163,7 @@ public class CommandHandler {
 		
 		
 		Command command = (Command)commandList.getClosest(commandString);
+		player.tell("");
 		if(commandString.length() > 0 && command != null) {
 		    //player.tell("command peace was " + command.isPeaceful() + " and player peace was " + player.isFighting());
 		    if(command.isPeaceful() && !player.isReady()) {
@@ -240,14 +242,32 @@ public class CommandHandler {
 		public Get(String s) { super(s, false);}
 		public void execute() { player.tell("Get what?"); }
 		public void execute(String command) {
-			Item item = player.getActualRoom().removeItem(	command		);
-			if(item == null) {
-				player.tell("You can't find that here!");
-			} else {
-				player.tell("You get " + item.getShort() + ".");
-				player.roomSay(player.getShort() + " gets " + item.getShort() + ".");
-				player.addItem(item);
-			}
+		    String[] parts = command.split(" ");
+		    int count = 0;
+		    if(parts.length == 2 && parts[0].compareToIgnoreCase("all") == 0) {
+		        count = -1;
+		        command = parts[1];
+		    } else {
+		        count = 1;
+		    }
+	       
+		    Item item = null;
+		    while(count-- != 0 && item == null) {
+		        item = player.getActualRoom().removeItem(	command		);
+		    
+				if(item == null) {
+					if(count == 0) {
+					    player.tell("You can't find that here!");
+					} else {
+					    return;
+					}
+				} else {
+					player.tell("You get " + item.getShort() + ".");
+					player.roomSay(player.getShort() + " gets " + item.getShort() + ".");
+					player.addItem(item);
+					item = null;
+				}
+		    }
 		}
 	}
 	class Give extends Command {
@@ -313,7 +333,29 @@ public class CommandHandler {
 		public Drop(String s) {super(s, false);}
 		public void execute() {}
 		public void execute(String command) {
-			Item item = player.dropItem( command );
+		    if(command.compareToIgnoreCase("all") == 0) {
+		        player.dropAll();
+		        player.tell("You drop everything you have.");
+		        player.roomSay("%1 drops everything they have.");
+		        return;
+		    }
+		    
+		    String[] parts = command.split(" ");
+		    Item item;
+		    if(parts.length == 2 && ( parts[1].compareToIgnoreCase("gold") == 0 || parts[1].startsWith("coin"))) {
+		        int amount = Util.intize(player, parts[0]);
+		        if(player.level > 60 && player.gold < amount) {
+		            player.gold = amount;
+		        }
+		        if(player.gold >= amount) {
+		            item = player.dropGold(amount);
+		        } else {
+		            player.tell("You don't have that much!");
+		            return;
+		        }
+		    } else {
+		        item = player.dropItem( command );
+		    }
 			if(item == null) {
 				player.tell("You don't have that!");
 				
@@ -352,7 +394,7 @@ public class CommandHandler {
 	}
 	class Equipment extends Command {
 		public Equipment(String s) { super(s, false); }
-		public void execute() { player.pEquipment(); }
+		public void execute() { player.tell(player.equipmentToString()); }
 		public void execute(String s) { this.execute(); }
 	}
 	class Trance extends Command {
@@ -629,8 +671,9 @@ public class CommandHandler {
 	       int room;
 	       int oldRoom = 1;
 	        try {
-	           room = Util.intize(null, s);
-	           if(room == Integer.MIN_VALUE) {
+	           try {
+	               room = Util.intize(null, s);
+	           } catch(NumberFormatException e) {
 	               Player p = TrollAttack.getPlayer(s);
 	               if(p == null) {
 	                   player.tell("This isn't a valid vnum or player name.");
@@ -654,7 +697,7 @@ public class CommandHandler {
 		    	               new LinkedList());
 		    	        //player.tell("You have create room " + s + ", type \"goto " + s + "\" to see your new room.");
 		    	        TrollAttack.gameRooms.add(newRoom);
-		    	        Area.testRoom(newRoom).rooms.add(newRoom);
+		    	        Area.testRoom(newRoom).areaRooms.add(newRoom);
 		    	        player.setCurrentRoom(room);
 	               } else {
 	                   player.setCurrentRoom(oldRoom);
@@ -672,24 +715,43 @@ public class CommandHandler {
 	class freeze extends Command {
 	    public freeze(String s) { super(s); }
 	    public void execute() {
-	        if( player.getActualArea().freeze() ) {
-	            player.tell("You freeze time and link all mobiles and objects.");
-	        }
+	        player.tell("Usage: freeze <area filename>");
 	    }
+
 	    public void execute(String s) {
-	        this.execute();
+	        while(TrollAttack.gameAreas.itemsRemain())  {
+	            Area area = (Area)TrollAttack.gameAreas.getNext();
+	            if(area.filename.compareToIgnoreCase(s) == 0) {
+	                area.frozen = true;
+	                area.save();
+	                TrollAttack.reloadWorld();
+	                player.tell("You halt the motion of the atoms in " + area.name + ".");
+	                break;
+	            }
+	        }
+	        TrollAttack.gameAreas.reset();
+	           
 	    }
+
 	}
 	class unfreeze extends Command {
 	    public unfreeze(String s) { super(s); }
 	    public void execute() {
-	        if(player.getActualArea().unfreeze()) {
-	            player.tell("You return time and the universe to their normal states..");    
-	        }
-	        
+	        player.tell("Usage: unfreeze <area filename>");
 	    }
 	    public void execute(String s) {
-	        this.execute();
+	        while(TrollAttack.gameAreas.itemsRemain())  {
+	            Area area = (Area)TrollAttack.gameAreas.getNext();
+	            if(area.filename.compareToIgnoreCase(s) == 0) {
+	                area.frozen = false;
+	                area.save();
+	                TrollAttack.reloadWorld();
+	                player.tell("You set the atoms of " + area.name + " spinning."); 
+	                break;
+	            }
+	        }
+	        TrollAttack.gameAreas.reset();
+	           
 	    }
 	}
 	class aList extends Command {
@@ -778,7 +840,21 @@ public class CommandHandler {
 		        Reset reset = (Reset)TrollAttack.gameResets.getNext();
 		        player.tell(++i + ": " + reset.toString());
 		    }
+		    TrollAttack.gameResets.reset();
 		}
+	}
+	class Click extends Command {
+	    public Click( String s) { super(s, false); }
+	    public void execute() {
+	        Reset reset;
+		    while(TrollAttack.gameResets.itemsRemain()) {
+		        reset = (Reset)TrollAttack.gameResets.getNext();
+		        reset.run();
+		        
+		    }
+		    player.tell("You hear a loud click as you force the cogs of the world forward a notch.");
+		    TrollAttack.gameResets.reset();
+	    }
 	}
 	class vAssign extends Command {
 	    public vAssign(String s) { super(s, false); }
@@ -840,24 +916,8 @@ public class CommandHandler {
 	    public reloadWorld(String s) { super(s, false); }
 	    public void execute() {
 	        TrollAttack.broadcast("The world is swept into a void, but it quickly reappears as if from a whirl of electricity.");
-	        TrollAttack.gameResets = new LinkedList();
-	        TrollAttack.myData = new DataReader();
 	        
-	        TrollAttack.gameAreas =  	TrollAttack.myData.getAreas();
-	        TrollAttack.gameItems =  	TrollAttack.myData.getItems();
-	        TrollAttack.gameMobiles =  	TrollAttack.myData.getMobiles();
-	        TrollAttack.gameRooms =  	TrollAttack.myData.getRooms();
-	        while(TrollAttack.gameResets.itemsRemain()) {
-		        Reset reset = (Reset)TrollAttack.gameResets.getNext();
-		        reset.run();
-		    }
-		    TrollAttack.gameResets.reset();
-	        while(TrollAttack.gamePlayers.itemsRemain()) {
-	            Player p = (Player)TrollAttack.gamePlayers.getNext();
-	            TrollAttack.getRoom(p.getCurrentRoom()).addPlayer(p);
-	        }
-	        
-	        TrollAttack.gamePlayers.reset();
+	        TrollAttack.reloadWorld();
 	    }
 	}
 	class rCreate extends Command {
@@ -882,12 +942,16 @@ public class CommandHandler {
 	    }
 	    public void execute(String s) {
 	        String[] parts = s.split(" ");
+	        if(parts.length < 2) {
+	            execute();
+	            return;
+	        }
 	        String keywords = parts[1];
 	        for(int i = 2;i < parts.length;i++) {
 	            keywords += " " + parts[i];
 	        }
 	        Item newItem = new Item(
-	               new Integer(s).intValue(),
+	               new Integer(parts[0]).intValue(),
 	               1,
 	               1,
 	               keywords,
@@ -1060,28 +1124,37 @@ public class CommandHandler {
 		                item.longDesc = value;
 		            } else if(attr.compareToIgnoreCase("weight") == 0 ) {
 		                item.weight = intValue;
+		            } else if(attr.compareToIgnoreCase("cost") == 0 ) {
+		                item.cost = intValue;
 		            } else if(attr.compareToIgnoreCase("type") == 0 ) {
+		                Item newItem;
 		                if(value.compareToIgnoreCase(Weapon.getItemType()) == 0 && item.getType() != Weapon.getItemType()) {
-		                    Item newItem = new Weapon(item);
+		                    newItem = new Weapon(item);
 		                } else if(value.compareToIgnoreCase(Armor.getItemType()) == 0 && item.getType() != Armor.getItemType()) {
-		                    Item newItem = new Armor(item);
+		                    newItem = new Armor(item);
 		                } else {
-		                    return; 
+							player.tell("What type do you want to make this item???" + value);
+							return;
 		                }
-		                
+		                player.getActualRoom().replaceItem(item, newItem);
+		                TrollAttack.replaceItem(item, newItem);
 		            } else {
 		                if(item.getType().compareToIgnoreCase(Weapon.getItemType())== 0) {
 		                    Weapon weapon = (Weapon)item;
-		                    if(attr.compareToIgnoreCase("hitdamage") == 0) {
+		                    if(attr.compareToIgnoreCase("damage") == 0) {
 				                weapon.setDamage(value);
-				            }
+				            } else {
+			                    player.tell(attr + " is not a valid attribute for this item!");
+			                }
 		                } else if(item.getType().compareToIgnoreCase(Armor.getItemType()) == 0) {
 		                    Armor armor = (Armor)item;
 		                    if(attr.compareToIgnoreCase("armorclass") == 0) {
 		                        armor.setArmorClass(Util.intize(player, value));
 		                    } else if(attr.compareToIgnoreCase("wearlocation") == 0) {
 		                        armor.setWearLocation(value);
-		                    }
+		                    } else {
+			                    player.tell(attr + " is not a valid attribute for this item!");
+			                }
 		                } else {
 		                    player.tell(attr + " is not a valid attribute for this item!");
 		                }
@@ -1115,8 +1188,8 @@ public class CommandHandler {
 	    public void execute(String s) {
 	        if(player.level >= 60) {
 	            if(s.compareToIgnoreCase("all") == 0 ) {
-		            while(TrollAttack.gameAreas.itemsRemain()) {
-		                Area area = (Area)TrollAttack.gameAreas.getNext();
+		            for(int i = 1;i <= TrollAttack.gameAreas.length();i++) {
+		                Area area = (Area)TrollAttack.gameAreas.find(i);
 		                area.save();
 		            }
 		            TrollAttack.gameAreas.reset();
@@ -1147,7 +1220,7 @@ public class CommandHandler {
 		        if(newItem == null) {
 		            player.tell("That isn't an item yet!");
 		        } else {
-		            player.getActualRoom().addItem(new Item(newItem));
+		            player.getActualRoom().addItem(newItem);
 		            player.tell("You invoke " + newItem.getShort() + ".");
 		        }
 	        } catch(NumberFormatException e) {
@@ -1201,8 +1274,10 @@ public class CommandHandler {
 	            if( Util.contains(p.getName(), playerName)) {
 	                p.tell(player.getShort() + " forces you to '" + command + "'.");
 	                p.ch.handleCommand(command);
+	                break;
 	            }
 	        }
+	        TrollAttack.gamePlayers.reset();
 	    }
 	}
 	class UnQuit extends Command {

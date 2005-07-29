@@ -1,6 +1,7 @@
 package TrollAttack;
 
 import TrollAttack.Items.Equipment;
+import TrollAttack.Items.Gold;
 import TrollAttack.Items.Item;
 
 /*
@@ -20,9 +21,9 @@ public class Being {
 	public int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, hitLevel, experience, level, favor, gold, weight;
 	int currentRoom, state = 0;
 	int strength, intelligence, wisdom, dexterity, constitution, charisma, luck;
-	LinkedList items = new LinkedList();
+	public LinkedList items = new LinkedList();
 	Room actualRoom = null;
-	private LinkedList equipment = new LinkedList();
+	public LinkedList equipment = new LinkedList();
 	
 	public Roll hitDamage;
 	public Roll hitSkill;
@@ -218,7 +219,15 @@ public class Being {
 	}
 	
 	public void addItem(Item i) {
-		items.add(i);
+		if(i.getClass() == Gold.class) {
+		    gold += i.cost;
+		} else {
+		    items.add(i);
+		}
+	}
+	public Gold dropGold(int amount) {
+	    gold -= amount;
+	    return new Gold(amount);
 	}
 	private String[] inventory() {
 		String[] itemList = new String[255];
@@ -244,14 +253,15 @@ public class Being {
 					tell( inv[i] );
 			}
 	}
-	public void pEquipment() {
-		tell("Your Equipment:");
+	public String equipmentToString() {
+		String results = "Your Equipment:\n";
 		Equipment currentItem;
 		while(equipment.itemsRemain()) {
 		    currentItem = (Equipment)equipment.getNext();
-		    tell(Util.uppercaseFirst(currentItem.getType()) + ": " + currentItem.getShort());
+		    results += Util.uppercaseFirst(currentItem.getWearLocation()) + ": " + currentItem.getShort() + "\n";
 		}
 		equipment.reset();
+		return results;
 	}
 	public Item dropItem(String name) {
 		Item newItem = null;
@@ -262,6 +272,7 @@ public class Being {
 			if(Util.contains( currentItem.name, name)) {
 				newItem = currentItem;
 				items.delete(currentItem);
+				return newItem;
 				//TrollAttack.message("Someone drops " + newItem.getShort() + ".");
 			} else {
 				//TrollAttack.error("looking at object i in room " + .getCurrentRoom());
@@ -284,23 +295,34 @@ public class Being {
 	    return null;
 	}
 	public String wearItem(Item newWear) {
-	    boolean success = false;
-        if(newWear.getClass() != Equipment.class) {
-            return "You don't know how to wear this!";
+	    Equipment newWearEquipment; 
+        try {
+           newWearEquipment = (Equipment)newWear;   
+        } catch(ClassCastException e) {
+            return "You don't know how to wear that (Can't make it a piece of eq)!";
         }
-        Equipment newWearEquipment = (Equipment)newWear;
+        
+        
         Equipment tmpEq;
         while(equipment.itemsRemain()) {
             tmpEq = (Equipment)equipment.getNext();
-            if(tmpEq.wearLocation.compareToIgnoreCase( newWearEquipment.wearLocation ) == 0 ) {
-            } else {
-                equipment.add(newWear);
-                items.delete(newWear);
-                return "You wear " + newWear.getShort();
+            if(tmpEq.wearLocation == null) {
+                return "The game can't figure out how to wear thing thing, wierd!";
             }
+            if(tmpEq
+                    .wearLocation
+                    .compareToIgnoreCase( newWearEquipment
+                            .wearLocation ) == 0 
+                    ) {
+                return "You are already wearing something where this would go!";
+            }
+                
         }
         equipment.reset();
-        return "You are already wearing something where this would go!";
+        equipment.add(newWear);
+        items.delete(newWear);
+        return "You wear " + newWear.getShort();
+        
 	}
 	public String removeItem(String name) {
 	    Item inHand = null;
@@ -322,8 +344,17 @@ public class Being {
 	    
 	}
 	public void dropAll() {
+	    
+	    //TrollAttack.message("Attempting to drop all.. " + items.getLength() + " left.");
 	    while(items.getLength() > 0 ) {
 	        getActualRoom().addItem(dropItem(""));
+	        //tell("Something hits the ground, hard.");
+	        //TrollAttack.message("Attempting to drop all.. " + items.getLength() + " left.");
 	    }
+	    if(gold > 0) {
+	        getActualRoom().addItem(new Gold(gold));
+	        gold = 0;
+	    }
+	    
 	}
 }

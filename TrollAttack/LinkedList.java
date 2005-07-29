@@ -145,6 +145,17 @@ public class LinkedList {
 		}
 		return current.getData();
 	}
+	// @todo this breaks no-duplicates because two things 
+	// could be replaced with the same thing...
+	public void replace(Object find, Object replace) {
+	    Node current = head;
+	    while(current.getPointer() != tail) {
+	        current = current.getPointer();
+	        if(find == current.getData()) {
+	            current.setData(replace);
+	        }
+	    }
+	}
         // counting from the start of the list, returns the *data* from the
         // nth node in the list; if the list is not at least n long, 
         // null is returned; find(1) returns the first data; 

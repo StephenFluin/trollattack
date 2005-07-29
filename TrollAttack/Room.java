@@ -23,6 +23,11 @@ public class Room {
 	 this.title = title;
 	 this.description = description;
 	// TrollAttack.message("Creating room with up and down: " + up + " and " + down + ".");
+	 while(roomExits.itemsRemain()) {
+	     Exit exit = (Exit)roomExits.getNext();
+	     exit.setRoom(this);
+	 }
+	 roomExits.reset();
 	}
 	
 	public String toString() {
@@ -178,7 +183,7 @@ public class Room {
 		 */
 		String[] objects = new String[roomItems.length()];
 		int n = 0;
-		for(int i = 0; i < roomItems.length(); i++) {
+		while(roomItems.itemsRemain()) {
 			//TrollAttack.error("About to get room " + i + " of " + roomItems[i]);
 			Item currentItem = (Item)roomItems.getNext();
 			objects[n] = Communication.GREEN + currentItem.getLong();
@@ -224,6 +229,10 @@ public class Room {
 	}
 	public void say(String s) {
 	    Being[] pBroadcast = {};
+	    say(s, pBroadcast);
+	}
+	public void say(String s, Player ignoreSinglePlayer) {
+	    Being[] pBroadcast = {ignoreSinglePlayer, ignoreSinglePlayer};
 	    say(s, pBroadcast);
 	}
 	// players works like this:
@@ -307,8 +316,11 @@ public class Room {
 	}
 	public int countExactItem(Item item) {
 	    int count = 0;
+	    //TrollAttack.message("There are " + roomItems.getLength() + " items in the room." + vnum);
 	    while(roomItems.itemsRemain()) {
+	        
 	        Item currentItem = (Item)roomItems.getNext();
+	        //TrollAttack.message("Looking at " + currentItem.getShort() + " for comparison.");
 	        if(currentItem == item) {
 	            count++;
 	        }
@@ -335,7 +347,7 @@ public class Room {
 	}
 	public Item getItem(String name, boolean remove) {
 		Item newItem;
-		for(int i = 0; i < roomItems.length(); i++) {
+		while(roomItems.itemsRemain()) {
 			Item currentItem = (Item)roomItems.getNext();
 		    if(Util.contains(currentItem.name, name)) {
 				newItem = currentItem;

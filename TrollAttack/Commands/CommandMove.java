@@ -63,6 +63,12 @@ public class CommandMove extends Command {
 			player.look();
 		} else {
 			player.tell("Alas, you cannot go that way.");
+			/*player.tell("Alas, you cannot go that way (" + name + ", " + direction + "), only exits are:");
+			while(player.getActualRoom().roomExits.itemsRemain()) {
+			    Exit tmp = (Exit) player.getActualRoom().roomExits.getNext();
+			    player.tell(tmp.getDirectionName() + ", " + tmp.getDirection());
+			}
+			player.getActualRoom().roomExits.reset();*/
 		}
 		//player.tell(player.getCurrentRoom() + "");
  

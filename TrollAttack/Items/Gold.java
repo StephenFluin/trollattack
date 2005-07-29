@@ -22,42 +22,33 @@ import TrollAttack.Util;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class Weapon extends Equipment {
-    public Weapon(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
+public class Gold extends Item {
+    public Gold(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);
-        setWearLocation("wielded");
     }
-    public Weapon(Item i) {
-        this(i.vnum, i.weight, i.cost, i.name, i.shortDesc, i.longDesc);
-    }
-    
-    public Roll damage = new Roll("0d0");
-    public LinkedList effects = new LinkedList();
-    
-    public void setDamage(String dmg) {
-        damage = new Roll(dmg);
-    }
-    public int getHitDamage() {
-        return damage.roll();
-    }
-    public void setEffects(LinkedList newEffects) {
-        effects = newEffects;
-    }
-    public void addEffect(Effect effect) {
-        effects.add(effect);
+    public Gold(int amount) {
+        this(0, 0, amount, "gold coins", amount + "gold coins", amount + " gold coins are piled here.");
+        if(amount > 1) {
+            name = "gold coins";
+            shortDesc = amount + " gold coins";
+            longDesc = amount + " gold coins are piled here.";
+        } else {
+            name = "gold coin";
+            shortDesc = "a gold coin";
+            longDesc = "A single gold coin lies here.";
+        }
     }
     public String getType() {
         return getItemType();
     }
     public static String getItemType() {
-        return "weapon";
+        return "gold";
     }
     public String getTypeData() {
-        return "Weapon-----------\nDamage:\t" + damage.toString();
+        return "------------GOLD-----------";
     }
     public Node getTypeNode(Document doc) {
         Node data = doc.createElement("typeData");
-        data.appendChild(Util.nCreate(doc, "damage", damage.toString() + ""));
         return data;
     }
 }

@@ -31,8 +31,8 @@ public class Roll {
             e.printStackTrace();
         }
         if(parts.length < 2) {
-            numberOfDice = 1;
-            sizeOfDice = new Integer(parts[0]).intValue();
+            numberOfDice = new Integer(parts[0]).intValue();;
+            sizeOfDice = 1;
             addition = 0;
         } else if(Util.contains(parts[1], ",")) {
             String[] tmpParts = parts[1].split(",");
@@ -40,9 +40,12 @@ public class Roll {
             sizeOfDice = new Integer(tmpParts[0]).intValue();
             addition = new Integer(tmpParts[1]).intValue();
         } else {
-            numberOfDice = new Integer(parts[0]).intValue();
+           try{ numberOfDice = new Integer(parts[0]).intValue();
             sizeOfDice = new Integer(parts[1]).intValue();
             addition = 0;
+           } catch(Exception e) {
+               // Bad number format, try and ignore.
+           }
         }
         
     }

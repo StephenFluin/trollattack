@@ -30,7 +30,7 @@ public class Area {
     public String filename, name;
     public boolean frozen = false;
     public int defaultClicks;
-    public LinkedList rooms;
+    public LinkedList areaRooms;
     public Area() {
         this(0,0,"uncategorized.xml","Uncategorized", 15, true);
     }
@@ -39,7 +39,7 @@ public class Area {
         high = highVnum;
         filename = areaFilename;
         name = areaName;
-        rooms = new LinkedList();
+        areaRooms = new LinkedList();
         defaultClicks = clicks;
         this.frozen = frozen;
     }
@@ -51,19 +51,19 @@ public class Area {
             return false;
         } else {
             frozen = true;
-	        while(rooms.itemsRemain()) {
-	            ((Room)rooms.getNext()).freeze();
+	        while(areaRooms.itemsRemain()) {
+	            ((Room)areaRooms.getNext()).freeze();
 	        }
-	        rooms.reset();
+	        areaRooms.reset();
 	        return true;
         }
     }
     public boolean unfreeze() {
         if(frozen == true) {
-            while(rooms.itemsRemain()) {
-	            ((Room)rooms.getNext()).unfreeze();
+            while(areaRooms.itemsRemain()) {
+	            ((Room)areaRooms.getNext()).unfreeze();
 	        }
-	        rooms.reset();
+	        areaRooms.reset();
 	        return true;
         } else {
             return false;
@@ -105,6 +105,7 @@ public class Area {
        Hashtable areasList = new Hashtable();
        Document doc = builder.newDocument();
 	    Room currentRoom = null;
+	    
 	    // Add all of the rooms to their appropriate file hashes.
 	    for(int i = 0; i < TrollAttack.gameRooms.length(); i++ ) {
 	        currentRoom = (Room)TrollAttack.gameRooms.getNext();
@@ -194,7 +195,7 @@ public class Area {
     static public Area testRoom(Room room) {
         Area currentArea;
         int vnum = room.vnum;
-        for(int i = 0;i < TrollAttack.gameAreas.length();i++) {
+        while(TrollAttack.gameAreas.itemsRemain()) {
             currentArea = (Area)TrollAttack.gameAreas.getNext();
             if(vnum >= currentArea.low && vnum <= currentArea.high) {
                 TrollAttack.gameAreas.reset();

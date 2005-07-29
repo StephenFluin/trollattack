@@ -18,6 +18,9 @@ public abstract class Reset {
     int limit = 1;
     int clicksMax = 0;
     int clicksRemaining = 0;
+    public Area area;
+    
+
     public Reset() {
        
     }
@@ -25,16 +28,26 @@ public abstract class Reset {
         
     }
     public void run() {
-        //TrollAttack.message("Running reset (" + clicksRemaining + " clicks left).");
-        if(clicksRemaining-- <= 0) {
-            execute();
-            clicksRemaining = clicksMax;
+        //TrollAttack.message("Running reset " + this.toString() + " (" + clicksRemaining + " clicks left).");
+        if(!isFrozen()) {
+	        if(clicksRemaining-- <= 0 ) {
+	            execute();
+	            clicksRemaining = clicksMax;
+	        } else {
+	            //TrollAttack.message(this.toString() + " has " + clicksRemaining + "left.");
+	        }
+        } else {
+            //TrollAttack.message(this.toString() + " is frozen...");
         }
+    }
+    public boolean isFrozen() {
+        return area.frozen;
     }
     public void setClicks(int amount) {
         clicksMax = amount;
         clicksRemaining = 0;
     }
+    
     public static class ItemReset extends Reset {
         Item item;
         Room room;
@@ -42,15 +55,19 @@ public abstract class Reset {
            item = nItem;
            room = nRoom;
            setClicks(clicks);
+           area = Area.testRoom(room);
         }
         public void execute() {
-            //TrollAttack.message("Adding " + item.getShort() + " to " + room.title);
+            //TrollAttack.message("executing an item reset.");
             if(room.countExactItem(item) < limit) {
+                //TrollAttack.message("Adding " + item.getShort() + " to " + room.title);
                 room.addItem(item);
+            } else {
+                //TrollAttack.message("Item can't be added because there are (" + room.countExactItem(item) + "/" + limit + ").");
             }
         }
         public String toString() {
-            return "Put (Item x " + limit + ")" + item.getShort() + " in " + room.title + ".";
+            return "Put (Item x " + limit + ") '" + item.getShort() + "' in (" + room.vnum + ") '" + room.title + "'.";
         }
     }
     public static class MobileReset extends Reset {
@@ -60,19 +77,19 @@ public abstract class Reset {
             mob = mobile;
             room = nRoom;
             setClicks(clicks);
+            area = Area.testMobile(mobile);
+            //TrollAttack.message("new Mobile reset is " + area.name + " and is " + area.frozen);
         }
         public void execute() {
-            //TrollAttack.message("Adding " + mob.getShort() + " to " + room.title);
             if(room.countExactMobile(mob) < limit) {
+                //TrollAttack.message("Adding " + mob.getShort() + " to " + room.title);
                 room.addMobile(mob);
                 mob.healAll();
-            } else if(TrollAttack.getTime() <= 1) {
-                limit++;
             }
             //TrollAttack.message("Done mobile Reset.");
         }
         public String toString() {
-            return "Put (Mobile x " + limit + ") " + mob.getShort() + " in " + room.title + ".";
+            return "Put (Mobile x " + limit + ") '" + mob.getShort() + "' in (" + room.vnum + ") '" + room.title + "'.";
         }
     }
     public static class ExitReset extends Reset {
@@ -84,6 +101,7 @@ public abstract class Reset {
             open = shouldBeOpen;
             locked = shouldBeLocked;
             setClicks(clicks);
+            area = Area.testRoom(ex.getRoom());
         }
         public void execute() {
             //TrollAttack.message("fixing an exit.");
@@ -97,7 +115,6 @@ public abstract class Reset {
             } else {
                 exit.unlock();
             }
-            
         }
         public String toString() {
             return "Make door " + (open ? "open" : "closed") + ".";

@@ -83,17 +83,19 @@ public class Fight extends Thread {
 		}
 		first.setBeingFighting(null);
 		second.setBeingFighting(null);
+
 	}
 	public void runRound(Being first, Being second) {
 		double damage;
+		pBroadcast[0] = pBroadcast[1] = first;
+		pBroadcast[2] = second;
 		if(first.hitSkill.roll() >= first.hitLevel) {
 		    damage = Math.floor( first.getHitDamage() );
 		    if(first.isPlayer) {
 		        first.increaseExperience((int)((second.level - first.level + 5)*damage));
 		    }
 			first.tell(Util.uppercaseFirst(first.getShort(first)) + " rend [" + (int)damage + "] " + second.getShort() + ".");
-			pBroadcast[0] = pBroadcast[1] = first;
-			pBroadcast[2] = second;
+			
 			fightRoom.say("%1 causes " + (int)damage + " damage to %2!", pBroadcast);
 			second.hitPoints = second.hitPoints - (int)damage;
 		} else {

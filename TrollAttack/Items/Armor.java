@@ -8,6 +8,11 @@
  */
 package TrollAttack.Items;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import TrollAttack.Util;
+
 /**
  * @author PeEll
  *
@@ -15,14 +20,15 @@ package TrollAttack.Items;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Armor extends Equipment {
+    
+    public int armorClass = 0;
     public Armor(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);
     }
     public Armor(Item i) {
         this(i.vnum, i.weight, i.cost, i.name, i.shortDesc, i.longDesc);
     }
-    public int armorClass = 0;
-    public String wearLocation = "";
+    
     public void setArmorClass(int newAC) {
         armorClass = newAC;
     }
@@ -39,5 +45,11 @@ public class Armor extends Equipment {
     }
     public String getTypeData() {
         return "Armor-----------\nAC:\t" + armorClass + "\tWear Location:\t" + wearLocation;
+    }
+    public Node getTypeNode(Document doc) {
+        Node data = doc.createElement("typeData");
+        data.appendChild(Util.nCreate(doc, "armorClass", armorClass + ""));
+        data.appendChild(Util.nCreate(doc, "wearLocation", wearLocation + ""));
+        return data;
     }
 }

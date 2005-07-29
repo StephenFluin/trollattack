@@ -9,7 +9,7 @@ import TrollAttack.LinkedList;
 import TrollAttack.Roll;
 import TrollAttack.Util;
 
-public class Item {
+public class Item implements Cloneable {
 	public int vnum, weight, cost;
 	public boolean takeable = true;
 	public String  shortDesc = "", longDesc = "", name = "";
@@ -106,7 +106,7 @@ public class Item {
 		    attribs.add(Util.nCreate(doc, "long", longDesc + ""));
 		    attribs.add(Util.nCreate(doc, "weight", weight + ""));
 		    attribs.add(Util.nCreate(doc, "type", getType() + ""));
-		    
+		    attribs.add(getTypeNode(doc));
 		    for(int i = 0; i < attribs.length(); i++) {
 		        
 		        Node newAttrib = (Node)attribs.getNext();
@@ -148,4 +148,17 @@ public class Item {
 	public void setName( String nom) {
 	    name = nom;
 	}
+    public Object clone() {
+        try {
+            return super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            // This should never happen
+            throw new InternalError(e.toString());
+        }
+    }
+    public Node getTypeNode(Document doc) {
+        Node data = doc.createElement("typeData");
+        return data;
+    }
 }

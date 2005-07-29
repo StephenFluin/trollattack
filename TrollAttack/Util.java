@@ -213,13 +213,15 @@ public class Util {
 	}
 
 	static public int intize(Player p, String s) {
-	    int result = Integer.MIN_VALUE;
+	    Roll die = new Roll(s);
+	    int result;
 	    try {
-	        result = new Integer(s).intValue();
+	        result = die.roll();
 	    } catch(Exception e) {
 	        if(p != null) {
 	            p.tell("'" + s + "' isn't a valid number.");
 	        }
+	        result = 0;
 	    }
 	    return result;
 	}

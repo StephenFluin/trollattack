@@ -39,7 +39,7 @@ public class TrollAttack {
 	public static LinkedList gameMobiles;
 	public static LinkedList gamePlayers;
 	public static LinkedList gameRooms;
-	public static LinkedList gameResets = new LinkedList();
+	public static LinkedList gameResets;
 	
 
 	public static boolean isGameOver() {
@@ -55,13 +55,10 @@ public class TrollAttack {
 		
 		String command;
 		
-		myData = new DataReader();
-		gameAreas = myData.getAreas();
-		gameItems = myData.getItems();
-		gameMobiles = myData.getMobiles();
-		gameRooms = myData.getRooms();
-
 		gamePlayers = new LinkedList();
+		
+		reloadWorld();
+		
 		io = new Communication();
 		
 		
@@ -209,5 +206,26 @@ public class TrollAttack {
 	       currentRoom.replaceItem(find, replace);
 	   }
 	   gameRooms.reset();
+	}
+	public static void reloadWorld() {
+	    TrollAttack.gameResets = new LinkedList();
+        TrollAttack.myData = new DataReader();
+        TrollAttack.gameAreas =  	TrollAttack.myData.getAreas();
+        TrollAttack.gameItems =  	TrollAttack.myData.getItems();
+        TrollAttack.gameMobiles =  	TrollAttack.myData.getMobiles();
+        TrollAttack.gameRooms =  	TrollAttack.myData.getRooms();
+        while(TrollAttack.gameResets.itemsRemain()) {
+	        Reset reset = (Reset)TrollAttack.gameResets.getNext();
+	        reset.run();
+	    }
+	    TrollAttack.gameResets.reset();
+        while(TrollAttack.gamePlayers.itemsRemain()) {
+            Player p = (Player)TrollAttack.gamePlayers.getNext();
+            TrollAttack.getRoom(
+                    p.getCurrentRoom()
+                    ).addPlayer(p);
+        }
+        
+        TrollAttack.gamePlayers.reset();
 	}
 }

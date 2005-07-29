@@ -42,12 +42,16 @@ public class Build {
         
         if(s.startsWith("exit")) {
             editExit(command, false);
+            player.tell("You forge a pathway in one direction.");
         } else if(s.startsWith("bexit")) {
            editExit(command, true);
+           player.tell("You forge a pathway in both directions.");
         } else if(s.startsWith("title")) {
             player.getActualRoom().title = command;
+            player.tell("You change the title of the room.");
         } else if(s.startsWith("desc")) {
             player.getActualRoom().description = command;
+            player.tell("You change the description of the room.");
         }
     }
     public void editExit(String s, boolean reciprocol) {
@@ -69,7 +73,7 @@ public class Build {
             }
             
             player.getActualRoom().setLink(direction, 0);
-            TrollAttack.message("Erasing link " + Exit.directionName(direction));
+            //TrollAttack.message("Erasing link " + Exit.directionName(direction));
         } else {
             Exit exit = player.getActualRoom().followLink(direction);
             if(exit == null) {
@@ -134,6 +138,40 @@ public class Build {
         player.tell("Item Type:\t" + item.getType());
         player.tell("Cost:\t" + item.cost + "\t" + "Weight:\t" + item.weight);
         player.tell(item.getTypeData());
+    }
+    public void aStat(Area area) {
+        player.tell("Information about:" + area.name);
+        player.tell("Name:\t" + area.name);
+        player.tell("Filename:\t" + area.filename);
+        player.tell("Vnums:\t" + area.low + "-" + area.high);
+        player.tell("Frozen:\t(" + (area.frozen ? "X" : " " ));
+    }
+    public void aSet(Area area, String command) {
+        String[] parts = command.split(" ");
+        String s = parts[0];
+        if(parts.length < 2) {
+            player.tell(command + " command needs more info.");
+            return;
+        }
+        command = parts[1];
+        for(int i = 2;i<parts.length;i++) {
+            command += " " + parts[i];
+        }
+        if(s.startsWith("name")) {
+            area.name = command;
+        } else if(s.startsWith("filename")) {
+            if(parts[1].endsWith(".xml")) {
+                area.filename = parts[1];
+            } else {
+                area.filename = parts[1] + ".xml";
+            }
+        } else if(s.startsWith("low")) {
+            area.low = Util.intize(player, command);
+        } else if(s.startsWith("high")) {
+            area.high = Util.intize(player, command);
+        }
+        
+        
     }
     public void area() {
         player.tell("Your area " + (player.getArea().frozen ? "<frozen>" : "") + ": " + player.getArea().filename + " " + player.getArea().name);

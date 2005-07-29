@@ -8,6 +8,8 @@
  */
 package TrollAttack.Items;
 
+import TrollAttack.TrollAttack;
+
 /**
  * @author PeEll
  *
@@ -25,5 +27,6 @@ public class Equipment extends Item {
     }
     public void setWearLocation(String newLocation) {
         wearLocation = newLocation;
+        //TrollAttack.message("Using new wearloc: " + newLocation);
     }
 }

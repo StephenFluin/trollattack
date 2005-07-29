@@ -147,7 +147,7 @@ public class Player extends Being {
 	    if (level > 60 || (getActualArea().low <= vnum && getActualArea().high >= vnum )) {
 	        return true;
 	    } else {
-	        tell("You don't have permissions to modify this area!");
+	        tell("You don't have permissions to modify this area, your vnum range is " + getActualArea().low + "-" + getActualArea().high + "!");
 	        return false;
 	    }
 	}
@@ -237,11 +237,14 @@ public class Player extends Being {
 	       itemList.appendChild(Util.nCreate(doc, "item", ( (Item)(playerItems.getNext()) ).vnum + ""));
 	    }
 	    attribs.add(itemList);*/
-	    for(int i = 0;i < items.getLength();i++) {
+	    while(items.itemsRemain()) {
 		       attribs.add(Util.nCreate(doc, "item", ( (Item)(items.getNext()) ).vnum + ""));
 		}
-	    
 	    items.reset();
+	    while(equipment.itemsRemain()) {
+		       attribs.add(Util.nCreate(doc, "equipment", ( (Item)(equipment.getNext()) ).vnum + ""));
+		}
+	    equipment.reset();
 	    boolean stillMore = true;
 	    while(stillMore) {
 	        Node newAttrib = (Node)attribs.getNext();
@@ -257,8 +260,7 @@ public class Player extends Being {
 	}
 	
 	public void roomSay(String string) {
-	    Being[] pBroadcast= {this};
-	    getActualRoom().say(Util.uppercaseFirst(string), pBroadcast);
+	    getActualRoom().say(Util.uppercaseFirst(string), this);
 	}
 	
 	public void closeConnection() {
@@ -271,13 +273,15 @@ public class Player extends Being {
 	    //TrollAttack.error("Reading player hit damage.");
 	    int hd = hitDamage.roll();
 	    Item currentItem;
-	    while(items.itemsRemain()) {
-	        currentItem = (Item)items.getNext();
+	    while(equipment.itemsRemain()) {
+	        currentItem = (Item)equipment.getNext();
             if(currentItem.getClass() == Weapon.class) {
-                hd += ((Weapon)currentItem).getHitDamage();
+                int adam = ((Weapon)currentItem).getHitDamage();
+                // TrollAttack.message("Player is wearing " + currentItem.getShort() + ", helping with " + adam + " damage.");
+                hd += adam;
             }
 	    }
-	    items.reset();
+	    equipment.reset();
 	    return hd;
 	}
 	public boolean isReady() {

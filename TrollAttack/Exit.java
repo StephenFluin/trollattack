@@ -17,12 +17,13 @@ import TrollAttack.Items.Item;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Exit {
+    private Room home;
     private int destination;
     private int direction;
     private boolean isDoor, isLockable;
     private boolean open, locked;
     private Item key;
-    public static String[] directionList = {"", "east", "west", "north", "south", "up", "down", "northeast", "northwest", "southeast", "southwest"};
+    public static String[] directionList = {"", "east", "west", "north", "south", "up", "down", "northeast", "southwest", "northwest", "southeast"};
     
     public Exit(int dest, int direction) {
         this(dest, direction, false, false, null);
@@ -146,6 +147,12 @@ public class Exit {
     }
     public int getDestination() {
         return destination;
+    }
+    public Room getRoom() {
+        return home;
+    }
+    public void setRoom(Room room) {
+        home = room;
     }
     public int getDirection() {
         return direction;
