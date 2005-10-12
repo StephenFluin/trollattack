@@ -1,7 +1,11 @@
 package TrollAttack;
 
-import TrollAttack.Items.Equipment;
-import TrollAttack.Items.Gold;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import TrollAttack.Commands.CommandHandler;
+import TrollAttack.Items.*;
 import TrollAttack.Items.Item;
 
 /*
@@ -17,13 +21,17 @@ import TrollAttack.Items.Item;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class Being {
+public class Being implements Cloneable {
 	public int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints, maxMovePoints, hitLevel, experience, level, favor, gold, weight;
-	int currentRoom, state = 0;
+	public int currentRoom = 1, state = 0, hunger = 0, thirst = 0;
 	int strength, intelligence, wisdom, dexterity, constitution, charisma, luck;
 	public LinkedList items = new LinkedList();
+	public Being switched = null;
 	Room actualRoom = null;
 	public LinkedList equipment = new LinkedList();
+	
+	// Allows mobiles to do anything a player can do, is this dangerous or memory hoggery?
+	public CommandHandler ch = null;
 	
 	public Roll hitDamage;
 	public Roll hitSkill;
@@ -35,7 +43,7 @@ public class Being {
 	 * 3 Sleeping
 	 */
 	
-	
+
 	public String shortDescription, name, longDesc;
 	boolean isPlayer = false;
 	Being beingFighting = null;
@@ -44,14 +52,29 @@ public class Being {
 		return currentRoom;
 	}
 	public Room getActualRoom() {
-	    return actualRoom;
+        Room result = TrollAttack.getRoom(currentRoom);
+        // can't optimize with actualRoom because reloadWorld can't update it..
+        if(result == null) {
+            TrollAttack.error("Being doesn't have a correct currentroom (" + currentRoom + ").");
+        }
+        return result;
 	}
 	public Area getActualArea() {
-	    return Area.test(currentRoom);
+	    return Area.test(currentRoom, TrollAttack.gameAreas);
 	}
 	public void setCurrentRoom(int r) {
 		currentRoom = r;
-		actualRoom = TrollAttack.getRoom(currentRoom);
+		if(TrollAttack.gameRooms != null) {
+		    actualRoom = TrollAttack.getRoom(currentRoom);
+		}
+		if(r == 0 ) {
+		    throw(new NullPointerException());
+		} else {
+		}
+	}
+	public void setCurrentRoom(Room r) {
+	    actualRoom = r;
+	    currentRoom = r.vnum;
 	}
 	
 	public int getState() {
@@ -94,7 +117,18 @@ public class Being {
 	    charisma = stats[5];
 	    luck = stats[6];
 	}
-	
+	public void look() {
+	    String[] looks = {};
+	    try {
+	        looks = getActualRoom().look(this);
+	        
+	    } catch(Exception e) {
+	        e.printStackTrace();
+	    }
+	    for(int i = 0; i < looks.length; i++ ) {
+			tell( looks[i] + "" );
+	    }
+	}
 	public boolean isPlayer() {
 	    return isPlayer;
 	}
@@ -161,7 +195,15 @@ public class Being {
 	    return manaPoints;
 	}
 	public void tell(String s) {
-	    
+	    if(switched != null) {
+		    Player sPlayer = null;
+	        try {
+		        sPlayer = (Player)switched;
+		    } catch( ClassCastException e) {
+		        TrollAttack.error("This should never happen, a being has been switched with a non-player!");
+		    }
+	        sPlayer.communication.print(s);
+	    }
 	}
 	public void healAll() {
 	    hitPoints = maxHitPoints;
@@ -246,22 +288,31 @@ public class Being {
 		return inventoryList;
 		
 	}
-	public void pInventory() {
+	public String getInventory() {
 			String[] inv = inventory();
-			tell("Your Inventory:");
+			String result = "Inventory:" + Util.wrapChar;
 			for(int i = 0; i < inv.length; i++ ) {
-					tell( inv[i] );
+					result += inv[i] + Util.wrapChar;
 			}
+			if(inv.length < 1) {
+			    result += Communication.PURPLE + "none" + Util.wrapChar;
+			}
+			return result;
 	}
-	public String equipmentToString() {
-		String results = "Your Equipment:\n";
+	public String getEquipment() {
+		String result = "Equipment:" + Util.wrapChar;
 		Equipment currentItem;
+		int count = 0;
 		while(equipment.itemsRemain()) {
 		    currentItem = (Equipment)equipment.getNext();
-		    results += Util.uppercaseFirst(currentItem.getWearLocation()) + ": " + currentItem.getShort() + "\n";
+		    result += Communication.GREEN + Util.uppercaseFirst(currentItem.getWearLocation()) + Communication.WHITE + ": " + currentItem.getShort() + Util.wrapChar;
+		    count++;
 		}
 		equipment.reset();
-		return results;
+		if(count < 1) {
+		    result += Communication.PURPLE + "none" + Util.wrapChar;
+		}
+		return result;
 	}
 	public Item dropItem(String name) {
 		Item newItem = null;
@@ -293,6 +344,78 @@ public class Being {
 	    }
 	    items.reset();
 	    return null;
+	}
+	public String eatItem( Item newEat ) {
+	    Food newEaty;
+	    try {
+	        newEaty = (Food)newEat;
+	    } catch(ClassCastException e) {
+	        return "You can't eat that!";
+	    }
+	    if(hunger < 1) {
+	        return "You are too full to eat that.";
+	    } else {
+	        hunger -= newEaty.getQuality();
+	        items.delete(newEaty);
+	        return "You eat " + newEat.getShort() + " and are now " + getHungerString() + ".";
+	        
+	    }
+	}
+	public String drinkItem( Item newDrink ) {
+	    DrinkContainer newDrinky;
+	    try {
+	        newDrinky = (DrinkContainer)newDrink;
+	    } catch(ClassCastException e) {
+	        try {
+	            Fountain fountain = (Fountain)newDrink;
+	            thirst -= 2;
+	            return "You drink from " + newDrink.getShort() + " and are now " + getThirstString() + ".";
+	        } catch(ClassCastException er) {
+	            return "You can't drink from that!";
+	        }
+	    }
+	    if(thirst < 1) {
+	        return "You are too full to take a drink.";
+	    } else {
+	        if(newDrinky.getVolume() > 0) {
+		        thirst -= 2;
+		        newDrinky.use();
+		        return "You drink from " + newDrink.getShort() + " and are now " + getThirstString() + ".";
+	        } else {
+	            return "There is nothing left in " + newDrink.getShort() + ".";
+	        }
+	        
+	    }
+	}
+	public String getHungerString() {
+	    switch( hunger ) {
+	    	case 0:
+		    case 1: return "completely stuffed";
+		    case 2:
+		    case 3: return "full";
+		    case 4:
+		    case 5: return "a little hungry";
+		    case 6:
+		    case 7: return "hungry";
+		    case 8:
+		    case 9: return "STARVING";
+		    default: return "unknowningly hungry";
+	    }
+	}
+	public String getThirstString() {
+	    switch( thirst ) {
+		    case 0:
+		    case 1: return "bloated";
+		    case 2:
+		    case 3: return "not thirsty";
+		    case 4:
+		    case 5: return "a little thirsty";
+		    case 6:
+		    case 7: return "thirsty";
+		    case 8:
+		    case 9: return "DYING OF THIRST";
+		    default: return "unknowningly thirsty";
+	    }
 	}
 	public String wearItem(Item newWear) {
 	    Equipment newWearEquipment; 
@@ -357,4 +480,148 @@ public class Being {
 	    }
 	    
 	}
+	public boolean isBuilder() {
+	    return false;
+	}
+	public void setLastActive(int i) {}
+	public void kill() {
+	    dropAll();
+	    getActualRoom().removeBeing(this);
+	}
+	public void kill(Being b) { 
+	    kill(); 
+	}
+	public void roomSay(String string) {
+	    if(getActualRoom() == null) {
+	        
+	    } else {
+	        getActualRoom().say(Util.uppercaseFirst(string), this);
+	    }
+	}
+	public void score() {
+	    tell("Mobiles can't score, yet!");
+	}
+	public void setTitle(String s) {
+	    tell("Mobiles don't have titles!");
+	}
+	public void name(String s) {
+	    tell("Mobiles don't have names!");
+	}
+	public void setPassword(String s) {
+	    tell("Mobiles don't have passwords!");
+	}
+	public boolean checkPassword(String s) {
+	    setPassword(s);
+	    return false;
+	}
+	public void save() {
+	    tell("Mobiles don't need to save, use savearea.");
+	}
+	public Communication getCommunication() {
+	    return null;
+	}
+	public boolean canEdit(int i) {
+	    return false;
+	}
+	public void setArea(Area a) {
+	    tell("Mobiles can't edit areas!");
+	}
+	public void setBuilder(boolean b) {
+	    tell("Mobiles can't be buidlers!");
+	}
+	public void rehash() {
+	    ch = new CommandHandler(this);
+	}
+	public Area getArea() {
+	    return null;
+	}
+	public void quit() {
+	    tell("Mobiles can't quit!");
+	}
+	public String showBeing() {
+	    String results = Communication.WHITE + Util.uppercaseFirst(getShort()) + "'s " + getInventory() +
+	    	Util.wrapChar + Communication.WHITE + Util.uppercaseFirst(getShort()) + "'s " + getEquipment();
+	    return results;
+	}
+	public Item getItem(String name, boolean remove) {
+
+	    Item newItem = null;
+		while(items.itemsRemain()) {
+		    Item currentItem = (Item)items.getNext();
+		
+		    if(Util.contains(currentItem.getName(), name)) {
+		        newItem = currentItem;
+		        if(remove == true) {
+		            items.delete(newItem);
+		        }
+		    } else {
+		    }
+		}
+		items.reset();
+		return newItem;
+	}
+	public boolean isMobile() {
+	    return false;
+	}
+	public void switchWith(Being b) {}
+	public double getTimePlayed() {return 0;}
+	public static void addEquipmentNodes(Document doc, Being being, Node beingNode) {
+	    while(being.items.itemsRemain()) {
+	        Item item = (Item)(being.items.getNext());
+	        Node itemNode = doc.createElement("item");
+	        Node[] attributes = item.getAttributeNodes(doc);
+	        for(int i = 0;i < attributes.length; i++) {
+	            try{
+	                itemNode.appendChild(attributes[i]);
+	            } catch( DOMException e ) {
+	                TrollAttack.error("Could not print the attributes of item " + item.toString());
+	            }
+	            //itemNode.getAttributes(attributes[i]);
+	            // Need to figure out how to create attributes using DOM @TODO!!!
+	            // @TODO!!! @@TODO@@@!!TODO!!!
+	        }
+	        if(attributes.length < 1) {
+	            itemNode.appendChild(doc.createTextNode(item.vnum + "" ));
+	        }
+	        beingNode.appendChild(itemNode);
+		}
+	    being.items.reset();
+	    while(being.equipment.itemsRemain()) {
+	        beingNode.appendChild(Util.nCreate(doc, "equipment", ( (Item)(being.equipment.getNext()) ).vnum + ""));
+		}
+	    being.equipment.reset();
+	    
+	}
+	public int countExactItem(Item item) {
+	    int count = 0;
+	    while(items.itemsRemain()) {
+	        if(item == items.getNext()) {
+	            count++;
+	        }
+	    }
+	    items.reset();
+	    return count;
+	}
+	public int countExactEquipment(Equipment item) {
+	    int count = 0;
+	    while(equipment.itemsRemain()) {
+	        if(item == equipment.getNext()) {
+	            count++;
+	        }
+	    }
+	    equipment.reset();
+	    return count;
+	}
+	public Object clone() {
+        try {
+            Object me = super.clone();
+            ((Being)me).ch = new CommandHandler((Being)me);
+            return me;
+            
+        }
+        catch (CloneNotSupportedException e) {
+            // This should never happen
+            throw new InternalError(e.toString());
+        }
+    }
 }

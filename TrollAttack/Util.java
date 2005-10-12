@@ -9,10 +9,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -36,6 +32,7 @@ import TrollAttack.Items.Item;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Util {
+    static String wrapChar = "\n";
 	static public boolean contains(String s, String d) {
 	    try {
 		    if( s.length() < d.length() ) {
@@ -57,7 +54,7 @@ public class Util {
 	// fileOut.writeBytes( player.getDocument() );
 	static public void savePlayer(Player player) {
 		try{
-		    XMLPrint(player.toDocument(), "Players/" + player.getShort() + ".txt");
+		    XMLPrint(player.toDocument(), "Players/" + player.getShort() + ".xml");
 		} catch(Exception e) {
 		    TrollAttack.error("There was a problem writing the player's file, or create the player's file.");
 		    e.printStackTrace();
@@ -211,8 +208,10 @@ public class Util {
 			}
 	    }
 	}
-
-	static public int intize(Player p, String s) {
+	static public int intize(String s) {
+	    return intize(null, s);
+	}
+	static public int intize(Being p, String s) {
 	    Roll die = new Roll(s);
 	    int result;
 	    try {
@@ -225,4 +224,31 @@ public class Util {
 	    }
 	    return result;
 	}
+	static public String mStat(Being mobile) {
+        String result = ( mobile.isPlayer() ? "" : ("#" + ((Mobile)mobile).vnum + "\t") ) + mobile.getShort() + "'s Information" + wrapChar;
+        result += "Name:\t\t" + mobile.getName() + wrapChar;
+        if( !mobile.isPlayer() ) {
+            result += "Original:\t\t(" + (mobile == TrollAttack.getMobile(new Integer(((Mobile)mobile).vnum)) ? "X" : " ") + ")" + wrapChar;
+            result += "Short Desc.:\t" + mobile.getShort() + wrapChar;
+            result += "Long Desc.:\t" + mobile.getLong() + wrapChar;
+            result += "Room:\t\t" + mobile.currentRoom + wrapChar;
+            
+        } else {
+            result += "Time Played:\t" + Math.round(mobile.getTimePlayed()) + " hours" + wrapChar;
+        }
+        result += "Hit Points:\t" + mobile.hitPoints + "/" + mobile.maxHitPoints + wrapChar;
+        result += "Mana Points:\t" + mobile.manaPoints + "/" + mobile.maxManaPoints + wrapChar;
+        result += "Move Points:\t" + mobile.movePoints + "/" + mobile.maxMovePoints + wrapChar;
+        result += "Level:\t" + mobile.level + "\t" + "Gold:\t" + mobile.gold + wrapChar;
+        result += "Damage Dice:\t" + mobile.hitDamage.toString() + "\t" + "Hit Dice:\t" + mobile.hitSkill.toString() + wrapChar;
+        result += "Hit Level (Minimum roll to hit):\t" + mobile.hitLevel + wrapChar;
+        result += "Experience:\t" + mobile.experience + "\t" + "Favor:\t" + mobile.favor + wrapChar;
+        if(!mobile.isPlayer()) {
+            result += "Clicks:\t" + ((Mobile)mobile).getClicks() + wrapChar;
+        } else {
+    	    result += "You are " + mobile.getHungerString() + wrapChar;
+    	    result += "You are " + mobile.getThirstString() + wrapChar;
+        }
+        return result;
+    }
 }

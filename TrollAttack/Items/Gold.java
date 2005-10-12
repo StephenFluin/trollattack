@@ -11,10 +11,6 @@ package TrollAttack.Items;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import TrollAttack.Effect;
-import TrollAttack.LinkedList;
-import TrollAttack.Roll;
-import TrollAttack.Util;
 
 /**
  * @author PeEll

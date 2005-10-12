@@ -21,12 +21,12 @@ package TrollAttack;
  * damager's level + 5)* Damage
  */
 public class Fight extends Thread {
-    private Player first;
+    private Being first;
     private Being second;
 	private Boolean results = null;
 	private Room fightRoom = null;
 	private Being[] pBroadcast = new Being[3];
-	public Fight(Player a, Being b) {
+	public Fight(Being a, Being b) {
 		first = a;
 		second = b;
 		fightRoom = a.getActualRoom();

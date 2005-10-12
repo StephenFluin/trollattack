@@ -1,18 +1,17 @@
 Todo List / Ideas:
 
-3. Item Building System.
-4. Food and Drink System
-Movement points
-Blindness / sleep state...
-
+Convert .are files to my xml format.
 Fix Experience System
 5. Pets and Mountable Mobiles
+new spell system
 6. Swimming and Water
-Convert .are files to my xml format.
-
-7. Guilds and Orders
-8. Better Item Handling
-9. Speech
+Movement points
+Guilds and Orders
+Better Item Handling (in build system)
+Speech
 
 Known Bugs:
 There has to be at least 2 items, mobiles, and rooms in the game.
+
+Programming Things to fix:
+handling of 1 / multiple items needs to be done seperately now... (fixed partially)

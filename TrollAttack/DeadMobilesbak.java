@@ -9,8 +9,7 @@ package TrollAttack;
 /**
  * @author PeEll
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * THIS IS NO LONGER USED, just some cool code for resurrecting things after they are destroyed.
  */
 
 public class DeadMobilesbak {
@@ -39,7 +38,7 @@ public class DeadMobilesbak {
 				    mobs[i].hitPoints = mobs[i].maxHitPoints;
 				    mobs[i].manaPoints = mobs[i].maxManaPoints;
 				    mobs[i].movePoints = mobs[i].maxMovePoints;
-					TrollAttack.getRoom(roms[i]).addMobile( mobs[i] );
+					TrollAttack.getRoom(roms[i]).addBeing( mobs[i] );
 					//TrollAttack.error("A mobile returns from the netherworld");
 					mobs[i] = null;
 				}

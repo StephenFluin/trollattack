@@ -14,7 +14,7 @@ package TrollAttack.Commands;
  */
 public abstract class Command {
 	String name;
-	boolean peaceful = true;
+	boolean peaceful = false;
 	public Command() {}
 	public String toString() {
 		return name;

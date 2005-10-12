@@ -20,12 +20,13 @@ import TrollAttack.Util;
  */
 public class CommandMove extends Command {
 	int direction;
-	Player player;
+	Being player;
 	public CommandMove() {}
-	public CommandMove(Player play, String n, int d) {
+	public CommandMove(Being play, String n, int d) {
 		direction = d;
 		name = n;
 		player = play;
+		peaceful = true;
 	}
 	
 
@@ -35,7 +36,7 @@ public class CommandMove extends Command {
 		this.execute();
 	}
 	public void execute() {
-	    //TrollAttack.error("Attempting to go!");
+	    //TrollAttack.debug("Attempting to go " + name + "!");
 		Exit results = null;
 		Room previousRoom = player.getActualRoom();
 		
@@ -57,20 +58,13 @@ public class CommandMove extends Command {
 		        e.printStackTrace();
 		    }
 		    player.setCurrentRoom(results.getDestination());
-			previousRoom.removePlayer(player);
+			previousRoom.removeBeing(player);
 			previousRoom.say(Util.uppercaseFirst(player.getShort()) + " leaves to the " + name);
-			nextRoom.addPlayer(player);
+			nextRoom.addBeing(player);
 			player.look();
 		} else {
 			player.tell("Alas, you cannot go that way.");
-			/*player.tell("Alas, you cannot go that way (" + name + ", " + direction + "), only exits are:");
-			while(player.getActualRoom().roomExits.itemsRemain()) {
-			    Exit tmp = (Exit) player.getActualRoom().roomExits.getNext();
-			    player.tell(tmp.getDirectionName() + ", " + tmp.getDirection());
-			}
-			player.getActualRoom().roomExits.reset();*/
 		}
-		//player.tell(player.getCurrentRoom() + "");
  
 	}
 }

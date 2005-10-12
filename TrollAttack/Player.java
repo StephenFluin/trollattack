@@ -26,28 +26,18 @@ import TrollAttack.Items.Weapon;
  */
 public class Player extends Being {
 	//String prompt = "&G<&R%h&G/&R%H&G-&z%x&G> %T";
-	
+	private CommandHandler backupCH = null;
 	
 	private String password = "";
 	public String title = "the newbie";
 	Communication communication = null;
-	public CommandHandler ch = null;
+	
 	private int lastActive = 0;
 	private boolean builder = false;
 	private Area area;
 	public boolean authenticated = false;
-
-	public void look() {
-	    String[] looks = {};
-	    try {
-	        looks = TrollAttack.getRoom(getCurrentRoom()).look(this);
-	    } catch(Exception e) {
-	        e.printStackTrace();
-	    }
-	    for(int i = 0; i < looks.length; i++ ) {
-			tell( looks[i] + "" );
-	    }
-	}
+	public double timePlayed = 0;
+	
 	   
 	public Player(Communication com) {
 		// Set the default player values here.
@@ -68,12 +58,13 @@ public class Player extends Being {
 		setCurrentRoom( 1  );
 		ch = new CommandHandler(this);
 		isPlayer = true;
+		timePlayed = 0;
 		
 		
 	}
 	public Player(int gold, int hp, int mhp, int mp, int mmp, int vp, int mvp, 
 	        int playerHitLevel, String hitSkillString, String hitDamageString, 
-	        int lev, int room, int exp, boolean isBuilder, Area myArea, String shortd, String pass) {
+	        int lev, int room, int exp, boolean isBuilder, String title, double timePlayed, Area myArea, int hunger, int thirst, String shortd, String pass) {
 	    this.gold = gold;
 	    hitPoints = hp;
 	    maxHitPoints = mhp;
@@ -88,11 +79,15 @@ public class Player extends Being {
 	    setCurrentRoom( room );
 	    experience = exp;
 	    builder = isBuilder;
+	    this.timePlayed = timePlayed;
+	    this.title = title;
 	    setArea(myArea);
 	    shortDescription = shortd;
 	    ch = new CommandHandler(this);
 	    password = pass;
 	    isPlayer = true;
+	    this.hunger = hunger;
+	    this.thirst = thirst;
 	    //TrollAttack.message("New player has password '" + password + "'.");
 	    
 	}
@@ -112,6 +107,8 @@ public class Player extends Being {
 	    ch = p.ch;
 	    password = p.password;
 	    isPlayer = true;
+	    timePlayed = p.timePlayed;
+	    title = p.title;
 	}
 	public void setCommunication(Communication com) {
 	    communication = com;
@@ -120,7 +117,11 @@ public class Player extends Being {
 	    return communication;
 	}
 	public void tell(String s) {
-	    communication.print(s);
+	    if(switched != null) {
+	        communication.print("BODY:" + s);
+	    } else {
+	        communication.print(s);
+	    }
 	}
 	public void name(String newName) {
 	    shortDescription = newName;
@@ -137,8 +138,17 @@ public class Player extends Being {
 	public boolean canEdit(Mobile mobile) {
 	    return canEdit(mobile.vnum);
 	}
-	public void rehash() {
-	    ch = new CommandHandler(this);
+	public void switchWith(Being being) {
+	    if(being == this  && switched != null && backupCH != null) {
+	        switched.switched = null;
+	        switched = null;
+	        ch = backupCH;
+	    } else {
+	        backupCH = ch;
+	        ch = being.ch;
+	        being.switched = this;
+	        switched = being;
+	    }
 	}
 	public boolean canEdit(Item item) {
 	    return canEdit(item.vnum);
@@ -155,7 +165,7 @@ public class Player extends Being {
 	    Util.savePlayer(this);
 	}
 	public void quit() {
-		getActualRoom().removePlayer(this);
+		getActualRoom().removeBeing(this);
 		TrollAttack.gamePlayers.delete(this);
 	    closeConnection();
 	}
@@ -230,6 +240,12 @@ public class Player extends Being {
 	    attribs.add(Util.nCreate(doc, "experience", experience + ""));
 	    attribs.add(Util.nCreate(doc, "password", password + ""));
 	    attribs.add(Util.nCreate(doc, "builder", this.builder + ""));
+	    attribs.add(Util.nCreate(doc, "timePlayed", timePlayed + ""));
+	    attribs.add(Util.nCreate(doc, "hunger", hunger + ""));
+	    attribs.add(Util.nCreate(doc, "thirst", thirst + ""));
+	    attribs.add(Util.nCreate(doc, "gold", gold + ""));
+	    attribs.add(Util.nCreate(doc, "title", title + ""));
+
 	    if(getArea() != null) attribs.add(Util.nCreate(doc, "area",  getArea().filename + ""));
 	    /*Node itemList = doc.createElement("itemList");
 	    
@@ -237,14 +253,8 @@ public class Player extends Being {
 	       itemList.appendChild(Util.nCreate(doc, "item", ( (Item)(playerItems.getNext()) ).vnum + ""));
 	    }
 	    attribs.add(itemList);*/
-	    while(items.itemsRemain()) {
-		       attribs.add(Util.nCreate(doc, "item", ( (Item)(items.getNext()) ).vnum + ""));
-		}
-	    items.reset();
-	    while(equipment.itemsRemain()) {
-		       attribs.add(Util.nCreate(doc, "equipment", ( (Item)(equipment.getNext()) ).vnum + ""));
-		}
-	    equipment.reset();
+	    
+	    
 	    boolean stillMore = true;
 	    while(stillMore) {
 	        Node newAttrib = (Node)attribs.getNext();
@@ -255,13 +265,12 @@ public class Player extends Being {
 	            
 	        }
 	    }
+	    Being.addEquipmentNodes(doc, this, m);
 	    
 	    return doc;
 	}
 	
-	public void roomSay(String string) {
-	    getActualRoom().say(Util.uppercaseFirst(string), this);
-	}
+
 	
 	public void closeConnection() {
 	    communication.close();
@@ -290,9 +299,9 @@ public class Player extends Being {
 	
 
 	public void kill(Being killer) {
+	    kill();
 	    tell( killer.getShort() + " kills you!");
-	    dropAll();
-	    getActualRoom().removePlayer(this);
+
 	    setCurrentRoom(1);
 	    hitPoints = manaPoints = movePoints = 1;
 	    save();
@@ -300,11 +309,13 @@ public class Player extends Being {
 //	    communication.authenticate(this);
 	    closeConnection();
 	}
+	public void score() {
+	    tell(Util.mStat(this));
 
-	
-	
-	
-	
-	
+	    
+	}
+	public double getTimePlayed() {
+	    return timePlayed;
+	}
 	
 }

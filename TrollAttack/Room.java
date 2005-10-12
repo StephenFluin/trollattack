@@ -3,6 +3,7 @@ package TrollAttack;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import TrollAttack.Items.Fountain;
 import TrollAttack.Items.Item;
 
 public class Room {
@@ -46,8 +47,8 @@ public class Room {
 	    Node m = doc.createElement("room");
 	    LinkedList attribs = new LinkedList();
 	    attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
-	    attribs.add(Util.nCreate(doc, "description", description + ""));
 	    attribs.add(Util.nCreate(doc, "title", title));
+	    attribs.add(Util.nCreate(doc, "description", description + ""));
 	    while(roomExits.itemsRemain()) {
 	        Exit exit = (Exit)roomExits.getNext();
 	        Node n = doc.createElement(exit.getDirectionName());
@@ -68,7 +69,10 @@ public class Room {
 	    for(int i = 0;i < roomBeings.getLength();i++) {
 		    roomBeing = (Being)roomBeings.getNext();
 		    if(!roomBeing.isPlayer()) {
-		        attribs.add(Util.nCreate(doc, "mobile", ((Mobile)(roomBeing)).vnum + ""));
+		        Node mobile = doc.createElement("mobile");
+		        mobile.appendChild(Util.nCreate(doc, "vnum", ((Mobile)(roomBeing)).vnum + ""));
+		        Being.addEquipmentNodes(doc, roomBeing, mobile);
+		        attribs.add(mobile);
 		    }
 		}
 	    roomBeings.reset();
@@ -161,7 +165,7 @@ public class Room {
 	public String[] look() {
 	    return look(null);
 	}
-	public String[] look(Player player) {
+	public String[] look(Being player) {
 		String exits = "Exits: ";
 		while(roomExits.itemsRemain()) {
 		    if(exits.length() > 7) {
@@ -186,7 +190,13 @@ public class Room {
 		while(roomItems.itemsRemain()) {
 			//TrollAttack.error("About to get room " + i + " of " + roomItems[i]);
 			Item currentItem = (Item)roomItems.getNext();
-			objects[n] = Communication.GREEN + currentItem.getLong();
+			String color;
+			if(currentItem.getType() == Fountain.getItemType()) {
+			    color = Communication.BLUE;
+			} else {
+			    color = Communication.GREEN;
+			}
+			objects[n] = color + currentItem.getLong();
 			n++;
 			
 		}
@@ -197,18 +207,18 @@ public class Room {
 		 * get all mobs from the room, and write their longdesc (as well as any players).
 		 */
 		String[] mobiles = new String[roomBeings.length() - 1 ];
-		// TrollAttack.error("Printing mobiles...");
+		//TrollAttack.debug("Printing " + roomBeings.length() + " mobiles...");
 		int m = 0;
-		Being currentBeing = (Being)roomBeings.getNext();
-		while(currentBeing != null) {
-		    //TrollAttack.error("Found mobile " + roomMobiles[i].vnum + " at position " + m + ", also known as " + roomMobiles[i].getLong());
+		
+		while(roomBeings.itemsRemain()) {
+		    Being currentBeing = (Being)roomBeings.getNext();
+		    //TrollAttack.debug("Found mobile " + currentBeing.toString());
 			if(currentBeing != player) {
 			    mobiles[m] = Communication.PURPLE + currentBeing.getLong();
 			
 				//TrollAttack.error("Adding "+ mobiles[i] + " to print queue.");
 				m++;
 			}
-			currentBeing = (Being)roomBeings.getNext();
 			
 		}
 		roomBeings.reset();
@@ -221,17 +231,17 @@ public class Room {
 		System.arraycopy(mobiles, 0, myReturn, firsts.length + n, m);
 		return myReturn;
 	}
-	public void addPlayer(Player player) {
+	/*public void addPlayer(Player player) {
 	    roomBeings.add(player);
 	}
 	public void removePlayer(Player player) {
 	    roomBeings.delete(player);
-	}
+	}*/
 	public void say(String s) {
 	    Being[] pBroadcast = {};
 	    say(s, pBroadcast);
 	}
-	public void say(String s, Player ignoreSinglePlayer) {
+	public void say(String s, Being ignoreSinglePlayer) {
 	    Being[] pBroadcast = {ignoreSinglePlayer, ignoreSinglePlayer};
 	    say(s, pBroadcast);
 	}
@@ -342,6 +352,9 @@ public class Room {
 	public Item getItem(String name) {
 	    return getItem(name, false);
 	}
+	public Item findItem(String name) {
+	    return getItem(name);
+	}
 	public Item removeItem(String name) {
 	    return getItem(name, true);
 	}
@@ -361,25 +374,33 @@ public class Room {
 		roomItems.reset();
 		return null; 
 	}
-	public Being getBeing(String name, boolean remove, Player ignorePlayer) {
+	public Being getBeing(String name, boolean remove, Being actor) {
+
 	    Being newMobile;
-		for(int i = 0; i < roomBeings.getLength();i++) {
+	    roomBeings.reset();
+	    //TrollAttack.debug("About to search through " + roomBeings.length() + " items in room " + vnum);
+		while(roomBeings.itemsRemain()) {
 		    Being currentBeing = (Being)roomBeings.getNext();
 		
-		    if(currentBeing != ignorePlayer && Util.contains(currentBeing.getName(), name)) {
+		    if(currentBeing != actor && Util.contains(currentBeing.getName(), name)) {
 		        newMobile = (Being)currentBeing;
+		        
 		        if(remove == true) {
 		            roomBeings.delete(newMobile);
 		        }
 		        roomBeings.reset();
 		        return newMobile;
+		    } else {
 		    }
 		}
 		roomBeings.reset();
 		return null;
 	}
-	public Being getBeing(String name, Player player) {
-		return this.getBeing(name, false, player);
+	public Being getBeing(String name, Being actor) {
+	    if(name.compareToIgnoreCase("self") == 0 ) {
+	        return actor;
+	    }
+	    return this.getBeing(name, false, actor);
 	}
 	public Being removeBeing(String name) {
 		return this.getBeing(name, true, null);
@@ -395,9 +416,12 @@ public class Room {
 	    }
 	    return null;
 	}
-	public void addMobile( Mobile m) {
-		roomBeings.add(m);
+	public void addBeing( Being being) {
+	    roomBeings.add(being);
 	}
+	/*public void addMobile( Mobile m) {
+		roomBeings.add(m);
+	}*/
 	public void addItem(Item i) {
 		    roomItems.add(i);
 	}
@@ -412,13 +436,20 @@ public class Room {
 	public void healBeings() {
 	    Mobile m;
 	    Being currentBeing = (Being)roomBeings.getNext();
-	    int strength = 1;
+	    int strength;
 	    while(currentBeing != null ) {
-	       // TrollAttack.message("Healing " + currentBeing.getShort() + ".");
-	       currentBeing.increaseHitPoints(strength + currentBeing.getState());
-           currentBeing.increaseManaPoints(strength + currentBeing.getState());
-           currentBeing.increaseMovePoints(strength + currentBeing.getState());
-	        currentBeing = (Being)roomBeings.getNext();
+	       strength = 1 + currentBeing.getState();
+	       if(currentBeing.thirst > 8 ) {
+	          strength = strength / 2;
+	       }
+	       if(currentBeing.hunger > 8 ) {
+	           strength = strength / 2;
+	       }
+	       //TrollAttack.message("Increasing health of " + currentBeing.getShort() + " by " + strength + ".");
+	       currentBeing.increaseHitPoints(strength);
+           currentBeing.increaseManaPoints(strength);
+           currentBeing.increaseMovePoints(strength);
+	       currentBeing = (Being)roomBeings.getNext();
 	    }
 	    roomBeings.reset();
 	}

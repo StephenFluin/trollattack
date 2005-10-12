@@ -24,7 +24,6 @@ public class Background extends Thread {
 			// Mobile routines
 			/**
 			 * Every 60 seconds, CLICK!
-			 * (2 seconds for testing purposes)
 			 */
 			if(time % 60 == 0 ) {
 			    Reset reset;
@@ -36,7 +35,6 @@ public class Background extends Thread {
 			}
 			
 			/**
-			 * Every 60 seconds, refresh mobiles that are gone.
 			 * Every 10 seconds, increase healths by 2.
 			 */
 			
@@ -47,8 +45,14 @@ public class Background extends Thread {
 			if(time % 10 == 0) {
 			    TrollAttack.healBeings();
 			}
+			if(time % (60 * 10) == 0) {
+			    TrollAttack.hungerStrike(6);
+			}
+			if(time % (60 * 6) == 0) {
+			    TrollAttack.agePlayers(.1);
+			}
 			
-			// Punt players idle for more than 20 minutes every 10 minutes.
+			// Punt players idle for more than 20 minutes every 1 minute.
 			if(time % (60 ) == 0 ) {
 			    TrollAttack.puntIdlePlayers(60*20);
 			}

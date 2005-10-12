@@ -3,7 +3,7 @@ package TrollAttack;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import TrollAttack.Items.Item;
+import TrollAttack.Commands.CommandHandler;
 
 /*
  * Created on May 5, 2005
@@ -18,7 +18,7 @@ import TrollAttack.Items.Item;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class Mobile extends Being {
+public class Mobile extends Being implements Cloneable {
 	public int vnum, clicks;
 	
 	public Mobile(int v, int leve, String n, int h, int mh, int hLevel, String hSkill, String hDamage, int mClicks, String s, String l) {
@@ -34,6 +34,7 @@ public class Mobile extends Being {
 		shortDescription = s;
 		longDesc = l;
 		clicks = mClicks;
+		ch = new CommandHandler(this);
 		//TrollAttack.error("Creating mobile #" + v);
 		this.setPrompt("<%h>");
 	}
@@ -54,6 +55,7 @@ public class Mobile extends Being {
 	    setPrompt("<%h>");
 	    isPlayer = m.isPlayer;
 	    level = m.level;
+	    ch = new CommandHandler(this);
 	}
 	public String toString() {
 		return vnum + ":" +
@@ -75,6 +77,7 @@ public class Mobile extends Being {
 	public int getClicks() {
 		return clicks;
 	}
+
 	public Node toNode(Document doc) {
 		   
 		    Node m = doc.createElement("mobile");
@@ -95,13 +98,7 @@ public class Mobile extends Being {
 		    attribs.add(Util.nCreate(doc, "hitskill", hitSkill + ""));
 		    attribs.add(Util.nCreate(doc, "hitdamage", hitDamage.toString() + ""));
 		    
-		    Item roomItem;
-		    for(int i = 0;i < items.getLength();i++) {
-		        roomItem = (Item)items.getNext();
-		        attribs.add(Util.nCreate(doc, "item", roomItem.vnum + ""));
-		    }
-		    items.reset();
-		    
+	    
 		    for(int i = 0; i < attribs.length(); i++) {
 		        
 		        Node newAttrib = (Node)attribs.getNext();
@@ -110,4 +107,7 @@ public class Mobile extends Being {
 		    
 		    return m;
 		}
+	public boolean isMobile() {
+	    return true;
+	}
 }

@@ -6,6 +6,8 @@
  */
 package TrollAttack;
 
+import TrollAttack.LinkedList;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Hashtable;
@@ -90,8 +92,12 @@ public class Area {
  		}
 
  
- 		
- 	public void save() {
+ 	/** 
+ 	 * Saving works by loading everything in the game into hashtables and linkedlists, and
+ 	 *	then saving only the files that we wanted to change/update.
+ 	 *
+ 	 */
+ 	public void save(LinkedList gameRooms,LinkedList gameMobiles,LinkedList gameItems) {
  	   DocumentBuilderFactory factory = 
            DocumentBuilderFactory.newInstance();
 
@@ -107,27 +113,27 @@ public class Area {
 	    Room currentRoom = null;
 	    
 	    // Add all of the rooms to their appropriate file hashes.
-	    for(int i = 0; i < TrollAttack.gameRooms.length(); i++ ) {
-	        currentRoom = (Room)TrollAttack.gameRooms.getNext();
+	    for(int i = 0; i < gameRooms.length(); i++ ) {
+	        currentRoom = (Room)gameRooms.getNext();
 	        //TrollAttack.message("Adding " + currentRoom.vnum + "room to new file...");
 	        Area.addToList(doc, areasList, currentRoom);
 	        
 	    }
-	    TrollAttack.gameRooms.reset();
+	    gameRooms.reset();
 	    
 	    Mobile currentMobile = null;
-	    for(int i = 0; i < TrollAttack.gameMobiles.length();i++) {
-	        currentMobile = (Mobile)TrollAttack.gameMobiles.getNext();
+	    for(int i = 0; i < gameMobiles.length();i++) {
+	        currentMobile = (Mobile)gameMobiles.getNext();
 	        Area.addToList(doc, areasList, currentMobile);
 	    }
-	    TrollAttack.gameMobiles.reset();
+	    gameMobiles.reset();
 	    
 	    Item currentItem = null;
-	    for(int i = 0; i < TrollAttack.gameItems.length();i++) {
-	        currentItem = (Item)TrollAttack.gameItems.getNext();
+	    for(int i = 0; i < gameItems.length();i++) {
+	        currentItem = (Item)gameItems.getNext();
 	        Area.addToList(doc, areasList, currentItem);
 	    }
-	    TrollAttack.gameItems.reset();
+	    gameItems.reset();
 	    
 	    /* Deleting old files... */
 	    File dir = new File("Areas");
@@ -138,7 +144,7 @@ public class Area {
        };
        File[] children = dir.listFiles(filter);
        if (children == null) {
-           TrollAttack.error("Couldn't find area files.");
+           throw(new Error("Couldn't find area files."));
            // Either dir does not exist or is not a directory
        } else {
            for (int i=0; i<children.length; i++) {
@@ -156,15 +162,16 @@ public class Area {
 		} catch(Exception ex) {
 		    TrollAttack.message("Problem with area " + filename + ".");
 		    Util.XMLSprint((Document)areasList.get(filename));
-		    TrollAttack.error("There was a problem writing the area file.");
 		    ex.printStackTrace();
+		    throw(new Error("There was a problem writing the area file."));
+		    
 		}
  	}
  		
-    static public Area findArea(String s) {
+    static public Area findArea(String s, LinkedList gameAreas) {
         Area currentArea;
-        while(TrollAttack.gameAreas.itemsRemain()) {
-            currentArea = (Area)TrollAttack.gameAreas.getNext();
+        while(gameAreas.itemsRemain()) {
+            currentArea = (Area)gameAreas.getNext();
             if(s == null) {
                 s = "";
             }
@@ -173,66 +180,66 @@ public class Area {
                     .compareToIgnoreCase(
                             s
                             ) == 0) {
-                TrollAttack.gameAreas.reset();
+                gameAreas.reset();
                 return currentArea;
             }
         }
-        TrollAttack.gameAreas.reset();
+        gameAreas.reset();
         return null;
     }
-    static public Area test(int vnum) {
+    static public Area test(int vnum, LinkedList gameAreas) {
         Area currentArea;
-        while(TrollAttack.gameAreas.itemsRemain()) {
-            currentArea = (Area)TrollAttack.gameAreas.getNext();
+        while(gameAreas.itemsRemain()) {
+            currentArea = (Area)gameAreas.getNext();
             if(vnum >= currentArea.low && vnum <= currentArea.high) {
-                TrollAttack.gameAreas.reset();
+                gameAreas.reset();
                 return currentArea;
             }
         }
-        TrollAttack.gameAreas.reset();
+        gameAreas.reset();
         return new Area();
     }
-    static public Area testRoom(Room room) {
+    static public Area testRoom(Room room, LinkedList gameAreas) {
         Area currentArea;
         int vnum = room.vnum;
-        while(TrollAttack.gameAreas.itemsRemain()) {
-            currentArea = (Area)TrollAttack.gameAreas.getNext();
+        while(gameAreas.itemsRemain()) {
+            currentArea = (Area)gameAreas.getNext();
             if(vnum >= currentArea.low && vnum <= currentArea.high) {
-                TrollAttack.gameAreas.reset();
+                gameAreas.reset();
                 return currentArea;
             }
         }
-        TrollAttack.gameAreas.reset();
+        gameAreas.reset();
         return new Area();
     }
-    static public Area testMobile(Mobile room) {
+    static public Area testMobile(Mobile room, LinkedList gameAreas) {
         Area currentArea;
         int vnum = room.vnum;
-        for(int i = 0;i < TrollAttack.gameAreas.length();i++) {
-            currentArea = (Area)TrollAttack.gameAreas.getNext();
+        for(int i = 0;i < gameAreas.length();i++) {
+            currentArea = (Area)gameAreas.getNext();
             if(vnum >= currentArea.low && vnum <= currentArea.high) {
-                TrollAttack.gameAreas.reset();
+                gameAreas.reset();
                 return currentArea;
             }
         }
-        TrollAttack.gameAreas.reset();
+        gameAreas.reset();
         return new Area();
     }
-    static public Area testItem(Item room) {
+    static public Area testItem(Item room, LinkedList gameAreas) {
         Area currentArea;
         int vnum = room.vnum;
-        for(int i = 0;i < TrollAttack.gameAreas.length();i++) {
-            currentArea = (Area)TrollAttack.gameAreas.getNext();
+        for(int i = 0;i < gameAreas.length();i++) {
+            currentArea = (Area)gameAreas.getNext();
             if(vnum >= currentArea.low && vnum <= currentArea.high) {
-                TrollAttack.gameAreas.reset();
+                gameAreas.reset();
                 return currentArea;
             }
         }
-        TrollAttack.gameAreas.reset();
+        gameAreas.reset();
         return new Area();
     }
     static public void addToList(Document doc, Hashtable hash, Room room) {
-        Area roomArea = Area.testRoom(room);
+        Area roomArea = Area.testRoom(room, TrollAttack.gameAreas);
         String filename = roomArea.filename;
         Object rooms = hash.get(filename);
         Node n;
@@ -265,7 +272,7 @@ public class Area {
         
     }
     static public void addToList(Document doc, Hashtable hash, Mobile room) {
-        Area roomArea = Area.testMobile(room);
+        Area roomArea = Area.testMobile(room, TrollAttack.gameAreas);
         String filename = roomArea.filename;
         Object rooms = hash.get(filename);
         Node n;
@@ -281,7 +288,7 @@ public class Area {
         n.appendChild(room.toNode(((Document)rooms)));
     }
     static public void addToList(Document doc, Hashtable hash, Item room) {
-        Area roomArea = Area.testItem(room);
+        Area roomArea = Area.testItem(room, TrollAttack.gameAreas);
         String filename = roomArea.filename;
         Object rooms = hash.get(filename);
         Node n;
@@ -291,10 +298,20 @@ public class Area {
     	    doc.appendChild(n);
     	    n.appendChild(roomArea.toNode(doc));
     	    hash.put(filename, doc);
+    	    
+    	    // This fixes a null pointer exception.
+    	    rooms = doc;
         } else {
             n = ((Document)rooms).getFirstChild();
         }
+        // How does this command work???? causes a null pointer
+        // because (Document)rooms is null,, 7/9/05 (USF)
+        if((Document)rooms == null) {
+            throw(new Error("The 'rooms' variable is null when saving area " + filename + "!"));
+        } else {
+        }
         n.appendChild(room.toNode(((Document)rooms)));
+        //n.appendChild(room.toNode(doc));
     }
     
 }

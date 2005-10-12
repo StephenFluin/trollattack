@@ -13,6 +13,7 @@ import java.util.Hashtable;
 import org.w3c.dom.Document;
 
 import TrollAttack.Items.*;
+import TrollAttack.Items.Item;
 
 /**
  * @author PeEll
@@ -68,7 +69,7 @@ public class DataReader {
         if(playerName.length() < 2) {
             return null;
         }
-	    Document doc = Util.xmlize("Players/" + playerName + ".txt");
+	    Document doc = Util.xmlize("Players/" + playerName + ".xml");
 	   if(doc == null) {
 	       return null;
 	   }
@@ -84,7 +85,14 @@ public class DataReader {
 	    if(hash.get("name") == null) {
 	        hash.put("name", playerName + "");
 	    }
+	    if(hash.get("hunger") == null) {
+	        hash.put("hunger", 0 + "");
+	    }
+	    if(hash.get("thirst") == null ) {
+	        hash.put("thirst", 0 + "");
+	    }
 	   // TrollAttack.message("About to createa new player (Area " + (String)hash.get("area") + "...");
+	    
 	    Player p = null;
         p = new Player(
             
@@ -102,25 +110,49 @@ public class DataReader {
             new Integer((String)hash.get("room")).intValue(),
             new Integer((String)hash.get("experience")).intValue(),
             new Boolean((String)hash.get("builder")).booleanValue(),
-            Area.findArea((String)hash.get("area")),
+            (hash.get("title") != null ? (String)hash.get("title") : ""),
+            (hash.get("timePlayed") != null ? new Double((String)hash.get("timePlayed")).doubleValue() : 0),
+            Area.findArea((String)hash.get("area"), TrollAttack.gameAreas),
+            Util.intize((String)hash.get("hunger")),
+            Util.intize((String)hash.get("thirst")),
             (String)hash.get("name"),
             (String)hash.get("password")
             );
+        
         //TrollAttack.message("ZIZZAPED PLAYER " + p.getShort());
 	    Object tmpRooms = hash.get("item");
+	    // This is going to get complicated until I figure out attributes,
+	    // TODO because I am going to have to deal with 4 cases, single
+	    // item with attributes, without attributes, multiple items with
+	    // attributes, and multiple without, ack!
+	    //if(tmpRooms != null) TrollAttack.debug(tmpRooms.toString());
 	    if(tmpRooms == null) {
 	        // No items
 	    } else if(tmpRooms.getClass() == LinkedList.class) {
-	        //TrollAttack.message("linked list of items found.");
+	        // linked list of items found, indicating more than one item found.
 	        LinkedList items = (LinkedList)(tmpRooms);
+	        items.reset();
 	        for(int i = 0; i < items.length();i++) {
-	            Item newItem = TrollAttack.getItem(new Integer((String)items.getNext()));
-	            p.addItem((Item)newItem.clone());
+	            Object current = items.getNext();
+	            if(current == null) {
+	                TrollAttack.error("Current object is a NULL!");
+	            } else {
+	                //TrollAttack.debug("Current object is a " + current.getClass());
+	                Item newItem = getItemFromObject(current);
+		            //Item newItem = TrollAttack.getItem(new Integer((String)items.getNext()));
+		            //addItemDataToPlayer(newItem);
+		            p.addItem((Item)newItem.clone());
+	            }
+	            
 	        }
 	    } else {
-	        //TrollAttack.message("single item found");
-	        p.addItem((Item)TrollAttack.getItem(new Integer((String)tmpRooms)).clone());
+	        TrollAttack.debug("single item found");
+	        Item newItem = getItemFromObject(tmpRooms);
+	        //Item newItem = (Item)TrollAttack.getItem(new Integer((String)tmpRooms));
+	        //addItemDataToPlayer(newItem);
+	        p.addItem((Item)newItem.clone());
 	    }
+	    
 	    Object tmpItems = hash.get("equipment");
 	    if(tmpItems == null) {
 	        // No equipment
@@ -177,11 +209,11 @@ public class DataReader {
 
             vnum = new Integer((String)item.get("vnum")).intValue();
             if(item.get("cost") != null) cost = new Integer((String)item.get("cost")).intValue();
-            shortDesc = (String)item.get("short");
-            longDesc = (String)item.get("long");
+            if(item.get("short") != null) shortDesc = (String)item.get("short");
+            if(item.get("long") != null) longDesc = (String)item.get("long");
             
-            weight = new Integer((String)item.get("weight")).intValue();
-            itemName = (String)item.get("name");
+            if(item.get("weight") != null) weight = new Integer((String)item.get("weight")).intValue();
+            if(item.get("name") != null) itemName = (String)item.get("name");
             
             type = (String)item.get("type");
             if(type == null) {
@@ -200,6 +232,24 @@ public class DataReader {
 		    Hashtable arm = (Hashtable)item.get("typeData");
 		    newArmor.setupArmor(new Integer((String)arm.get("armorClass")).intValue(), (String)arm.get("wearLocation"));
 		    newItem = newArmor;
+		} else if(type.compareToIgnoreCase(Food.getItemType()) == 0 ) {
+		    Food newFood = new Food(vnum, weight, cost, itemName, shortDesc, longDesc);
+		    Hashtable food = (Hashtable)item.get("typeData");
+		    newFood.setQuality(Util.intize(null, (String)food.get("quality")));
+		    newItem = newFood;
+		} else if(type.compareToIgnoreCase(DrinkContainer.getItemType()) == 0 ) {
+		    DrinkContainer newDrink = new DrinkContainer(vnum, weight, cost, itemName, shortDesc, longDesc);
+		    Hashtable drink = (Hashtable)item.get("typeData");
+		    newDrink.setup( Util.intize(null, (String)drink.get("volume")), Util.intize(null, (String)drink.get("capacity")));
+		    newItem = newDrink;
+		} else if(type.compareToIgnoreCase(Gold.getItemType()) == 0 ) {
+		    Hashtable gold = (Hashtable)item.get("typeData");
+		    Gold coin = new Gold(Util.intize(null, (String)gold.get("amount")));
+		    
+		    newItem = coin;
+		} else if(type.compareToIgnoreCase(Fountain.getItemType()) == 0 ) {
+		    Fountain fountain = new Fountain(vnum, weight, cost, itemName, shortDesc, longDesc);
+		    newItem = fountain;
 		} else {
 		    newItem = new Item(vnum, weight, cost, itemName, shortDesc, longDesc);
 		}
@@ -211,28 +261,31 @@ public class DataReader {
         TrollAttack.message("Loaded " + items.length() + " items.");
 		return items;
 	}
+	
+	// This function creates a linked list of hashes and linked lists
+	// that contain all of the data for rooms, as well as all of the 
+	// information for mobile in room, door, item, give, and wear resets.
 	public static LinkedList readRoomData(LinkedList roomList) {
 	    Room newRoom;
-	    LinkedList rooms = new LinkedList();
 	    
+	    LinkedList rooms = new LinkedList();
 	    int vnum = 0;
-	    //Exit east = null, west = null, north = null, south = null, northEast = null, northWest = null, southEast = null, southWest = null, up = null, down = null;
 	    LinkedList exits = new LinkedList();
 	    String title = "", description = "";
-	    // Defaults aren't necessary with null checks.
-	    //String[] defaultNames = {"east", "west", "north", "south", "northEast", "northWest", "southEast", "southWest", "up", "down"};
-	    //String[] defaultValues = {"0", "0", "0", "0", "0", "0", "0", "0", "0", "0"};
 	    
+	    // Cycle through each of the rooms in the linked list.
         for(int j = 0;j < roomList.length(); j++) {
             exits = new LinkedList();
-            //east = west = north = south = northEast = northWest = southEast = southWest = up = down = null;
+            
+            // puts all of the data about a room in the 'room' variable.
             Hashtable room = (Hashtable)roomList.getNext();
-            //Util.fillDefaults(room, defaultNames, defaultValues);
+            
             vnum = new Integer((String)room.get("vnum")).intValue();
             title = (String)room.get("title");
             description = (String)room.get("description");
             newRoom = new Room( vnum, title, description, exits);
             rooms.add(newRoom);
+            // Goes through all known exits and checks the hash for them.
             for(int i = 1;i < Exit.directionList.length;i++) {
                 //TrollAttack.message("looping " + i);
                 if((Exit.directionList[i] != null) && room.get(Exit.directionList[i]) != null) {
@@ -244,7 +297,7 @@ public class DataReader {
                         thisExit.setRoom(newRoom);
                         if(exitData.get("door") != null) {
                             thisExit.setDoor(true);
-                            if(Area.test(vnum).frozen) {
+                            if(Area.test(vnum, TrollAttack.gameAreas).frozen) {
                                 if(((String)exitData.get("door")).compareToIgnoreCase("open") == 0) {
                                     thisExit.open(false);
                                 } else {
@@ -274,66 +327,96 @@ public class DataReader {
                     }
                 }
             }
+            // End of finding exits.
             
+            // Ads each room to a linkedlist in its appropriate area.
+            Area.test(vnum, TrollAttack.gameAreas).areaRooms.add( newRoom );
             
-            Area.test(vnum)
-            .areaRooms
-            .add(
-                    newRoom
-                    );
-            Object tmpRooms = room.get("item");
-    	    if(tmpRooms == null) {
-    	        // No items
-    	    } else if(tmpRooms.getClass() == LinkedList.class) {
-    	        // If I am inside this loop, there are more than 1 items in the game.
-    	        //TrollAttack.message("linked list of items found.");
-    	        LinkedList items = (LinkedList)(tmpRooms);
-    	        for(int i = 0; i < items.length();i++) {
-    	            Item resetItem = TrollAttack.getItem(new Integer((String)items.getNext()));;
-    	            if(Area.testItem(resetItem).frozen) {
-        	            newRoom.addItem(resetItem);
-        	        } else {
-        	            TrollAttack.gameResets.add(new Reset.ItemReset((Item)resetItem.clone(), newRoom, 8));
-        	        }
-    	        }
-    	    } else {
-    	        // If I am inside this loop, there is only 1 item in game.
-    	        Item resetItem = TrollAttack.getItem(new Integer((String)tmpRooms));
-    	        if(Area.testItem(resetItem).frozen) {
+            // Loads all information about items into the 'tmpRooms' variable, and
+            // Creates item resets or placements.
+            // It is a bad variable name, but too much work to change.
+            Object tmpItems = room.get("item");
+            LinkedList roomItems = linkedListify(tmpItems);
+    	    
+	        for(int i = 0; i < roomItems.length();i++) {
+	            Integer ivnum = new Integer((String)roomItems.getNext());
+	            Item resetItem = TrollAttack.getItem(ivnum);
+	            if(resetItem == null) {
+	                TrollAttack.error("The item we are attempting to load is null.");
+	                TrollAttack.error(ivnum.toString());
+	            } else {
+	                //TrollAttack.error("loaded an item");
+	            }
+	            if(Area.testItem(resetItem, TrollAttack.gameAreas).frozen) {
     	            newRoom.addItem(resetItem);
     	        } else {
-    	            TrollAttack.gameResets.add(new Reset.ItemReset((Item)(resetItem.clone()), newRoom, 8));
+    	            TrollAttack.gameResets.add(new Reset.ItemReset((Item)resetItem.clone(), newRoom, 8));
     	        }
-    	    }
+	        }
+	        
+    	    // Finished creating all resets and placements for items that belong
+    	    // in the room.
+    	    
+    	    // Starting to create all resets for mobiles, and mobile wear
+    	    // or give resets and placements.
     	    Object tmpMobiles = room.get("mobile");
-    	    Mobile resetMobile = null;
-    	    if(tmpMobiles == null) {
-    	        // No Mobiles
-    	    } else if(tmpMobiles.getClass() == LinkedList.class) {
-    	        // More than 1 mobile in the room.
-    	        
-    	        LinkedList mobiles = (LinkedList)(tmpMobiles);
-    	        for(int i = 0; i < mobiles.length();i++) {
-    	            resetMobile = TrollAttack.getMobile(new Integer((String)mobiles.getNext()));
-    	            if(Area.testMobile(resetMobile).frozen) {
-        	            newRoom.addMobile(resetMobile);
-        	            //TrollAttack.message("Found mobile in frozen area. (" + resetMobile.getShort());
-        	        } else {
-        	            TrollAttack.gameResets.add(new Reset.MobileReset(new Mobile(resetMobile), newRoom, 1));
-        	            //TrollAttack.message("Found mobile in unfrozen area. (" + resetMobile.getShort());
-        	        }
-    	        }
-    	        mobiles.reset();
-    	    } else {
-    	        // Only 1 mobile in the room.
-    	        resetMobile = TrollAttack.getMobile(new Integer((String)tmpMobiles));
-    	        if(Area.testMobile(resetMobile).frozen) {
-    	            newRoom.addMobile(resetMobile);
+    	    LinkedList mobiles = linkedListify(tmpMobiles);
+    	        //TrollAttack.debug("List has " + mobiles.length() + "elements");
+	        while(mobiles.itemsRemain()) {
+	            Mobile resetMobile;
+	            
+	            // 'hash' contains all data about a mobile reset or placement.
+	            Hashtable hash = (Hashtable)mobiles.getNext();
+	            if(hash == null) {
+	                TrollAttack.error("The hash that should contain all of the information for this mobile is null!");
+	                continue;
+	                // This shouldn't happen.
+	            }
+	            
+	            resetMobile = TrollAttack.getMobile(new Integer((String)hash.get("vnum")));
+	            
+	            // The area of the mobile is frozen, so don't create resets.
+	            if(Area.testMobile(resetMobile, TrollAttack.gameAreas).frozen) {
+    	            newRoom.addBeing(resetMobile);
+    	            resetMobile.setCurrentRoom(newRoom.vnum);
+    	            
+    	            
+    	            Object itemsOfMobile = hash.get("item");
+    	            LinkedList mobileItems = linkedListify(itemsOfMobile);
+    	    	    
+	    	        while(mobileItems.itemsRemain()) {
+	    	            Item newItem = getItemFromObject(mobileItems.getNext());
+	    	            resetMobile.addItem((Item)newItem);
+	    	        }
+	    	        
+    	    	    tmpItems = hash.get("equipment");
+    	    	    mobileItems = linkedListify(tmpItems);
+	    	        while(mobileItems.itemsRemain()) {
+	    	            Item newItem = TrollAttack.getItem(new Integer((String)mobileItems.getNext()));
+	    	            resetMobile.wearItem((Item)newItem);
+	    	        }
+	    	        
     	        } else {
-    	            TrollAttack.gameResets.add(new Reset.MobileReset(new Mobile(resetMobile), newRoom, 5));
+    	            resetMobile = (Mobile)resetMobile.clone();
+    	            TrollAttack.gameResets.add(new Reset.MobileReset(resetMobile, newRoom, 1));
+    	           
+    	            Object itemsOfMobile = hash.get("item");
+    	            LinkedList mobileItems = linkedListify(itemsOfMobile);
+    	    	    
+	    	        while(mobileItems.itemsRemain()) {
+	    	            Item newItem = getItemFromObject(mobileItems.getNext());
+	    	            TrollAttack.gameResets.add( new Reset.GiveReset( (Item)newItem.clone() , resetMobile , 1) );
+	    	        }
+	    	        
+    	    	    tmpItems = hash.get("equipment");
+    	    	    mobileItems = linkedListify(tmpItems);
+	    	        while(mobileItems.itemsRemain()) {
+	    	            Item newItem = TrollAttack.getItem(new Integer((String)mobileItems.getNext()));
+	    	            TrollAttack.gameResets.add( new Reset.WearReset( (Equipment)newItem.clone() , resetMobile , 1) );
+	    	        }
     	        }
-    	        //newRoom.addMobile(new Mobile(TrollAttack.getMobile(new Integer((String)tmpMobiles))));
-    	    }
+	        }
+    	    mobiles.reset();
             
         }
         TrollAttack.message("Loaded " + rooms.length() + " rooms.");
@@ -374,5 +457,47 @@ public class DataReader {
         TrollAttack.message("Loaded " + mobiles.length() + " mobiles.");
 		return mobiles;
 
+	}
+	public static Item getItemFromObject(Object newItem) {
+	    Item resultingItem = null;
+	    //TrollAttack.debug("Trying to get item from object: " + newItem.toString());
+	    try {
+	        int vnum = Util.intize((String)newItem);
+	        resultingItem = TrollAttack.getItem(new Integer(vnum));
+	    } catch( ClassCastException e) {
+	        // Was not a string (not directly a vnum, so we need to use the 
+	        // hashtable to grab the vnum, and then once we have loaded the item, 
+	        // check the rest of the hashtable for which attributes to set on 
+	        // the item.  We do this so that containers and wands and junk don't
+	        // get refilled when you save and quit.
+	        Hashtable hash = (Hashtable)newItem;
+	        Integer vnum = new Integer((String)hash.get("vnum"));
+	        if(vnum == null) {
+	            TrollAttack.error("An item in a players file did not have a vnum!");
+	            throw( new NullPointerException() );
+	            
+	            
+	        }
+	        resultingItem = TrollAttack.getItem(vnum);
+	        resultingItem.setAttributesFromHash(hash);
+	    }
+       return resultingItem;
+	}
+	
+	// Takes data generated by my xmlizer (combination of linked lists
+	// and hashtables and data) and makes the data into a linked list
+	// of length 0 for null, 1 for direct data, and x for things
+	// that are already linked lists.
+	public static LinkedList linkedListify(Object wannabeList) {
+	    if(wannabeList == null) {
+	        return new LinkedList();
+	    } else if(wannabeList.getClass() == LinkedList.class) {
+	        return (LinkedList)wannabeList;
+	    } else {
+	        LinkedList ll = new LinkedList();
+	        ll.add(wannabeList);
+	        return ll;
+	        
+	    }
 	}
 }

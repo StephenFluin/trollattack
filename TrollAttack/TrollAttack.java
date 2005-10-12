@@ -45,8 +45,6 @@ public class TrollAttack {
 	public static boolean isGameOver() {
 	    return gameOver;
 	}
-	// SHOULD BE HANDLED BY RESETS NOW
-	//static DeadMobiles deadies = new DeadMobiles();
 	
 	
 	public static CommandHandler ch;
@@ -96,11 +94,13 @@ public class TrollAttack {
 	    //io.print(string, shouldWrap);
 	}
 	static public void error(String string) {
-	    System.out.println(string);
+	    System.out.println("ERROR:" + string);
+	}
+	static public void debug(String string) {
+	    System.out.println("DEBUG:" + string);
 	}
 	static public void message(String string) {
-	   // System.out.println(cal.MONTH + "/" + cal.DAY_OF_MONTH + "/" + cal.YEAR + " " + cal.HOUR + ":" + cal.MINUTE + ((cal.AM == 0) ? "PM" : "AM") + " " + string);
-	    error(string);
+	    System.out.println("SYSTEM:" + string);
 	}
 	static public Player getPlayer(String s) {
 	    Player p;
@@ -169,6 +169,43 @@ public class TrollAttack {
 	    }
 	    gameRooms.reset();
 	}
+	static public void agePlayers(double amount) {
+	    while(gamePlayers.itemsRemain()) {
+	        Player player = (Player)gamePlayers.getNext();
+	        player.timePlayed += amount;
+	    }
+	    gamePlayers.reset();
+	}
+	static public void hungerStrike(int strength) {
+	    while(gamePlayers.itemsRemain()) {
+	        Player p = (Player)gamePlayers.getNext();
+	        if(++p.hunger >= 9) {
+	            p.hunger = 9;
+	            p.hitPoints -= strength;
+	            p.tell("You are " + p.getHungerString() + ", and your rampant hunger causes you " + strength + " damage.");
+	            p.prompt();
+	            
+	        } else {
+	            if( p.hunger % 2 == 0 ) {
+	                p.tell("Your stomach feels a little emptier and you are now " + p.getHungerString());
+	            }
+	        }
+	    }
+	    gamePlayers.reset();
+	    while( gamePlayers.itemsRemain() ) {
+	        Player p = (Player)gamePlayers.getNext();
+	        if(++p.thirst >= 9) {
+	            p.thirst = 9;
+	            p.hitPoints -= strength;
+	            p.tell("You are " + p.getThirstString() + ", and your rampant thirst causes you " + strength + " damage.");
+	        } else {
+	            if( p.thirst % 2 == 0 ) {
+	                p.tell("Your mouth feels drier and you are now " + p.getThirstString());
+	            }
+	        }
+	    }
+	    gamePlayers.reset();
+	}
 	
 	static public void endGame() {
 	    gameOver = true;
@@ -223,7 +260,8 @@ public class TrollAttack {
             Player p = (Player)TrollAttack.gamePlayers.getNext();
             TrollAttack.getRoom(
                     p.getCurrentRoom()
-                    ).addPlayer(p);
+                    ).addBeing(p);
+            p.setCurrentRoom(p.getCurrentRoom());
         }
         
         TrollAttack.gamePlayers.reset();

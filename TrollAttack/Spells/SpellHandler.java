@@ -18,8 +18,8 @@ import TrollAttack.Player;
  */
 public class SpellHandler {
 	LinkedList spellList;
-	public Player player;
-	public SpellHandler(Player play) {
+	public Being player;
+	public SpellHandler(Being play) {
 		spellList = new LinkedList(false, 0);
 		player = play;
 		

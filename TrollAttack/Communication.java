@@ -100,7 +100,7 @@ public class Communication extends Thread {
                  player.setCommunication(this);
                  TrollAttack.broadcast(PURPLE + player.getShort() + " has joined our ranks.");
                  TrollAttack.addPlayer(player);
-                 player.getActualRoom().addPlayer(player);
+                 player.getActualRoom().addBeing(player);
                  Player[] pBroadcast = {player};
                  player.getActualRoom().say(WHITE + player.getShort() + " enters the room.", pBroadcast);
                  
@@ -133,7 +133,7 @@ public class Communication extends Thread {
             try {
                 player.tell(Communication.WHITE + "What is your name (or type " + Communication.CYAN + "new" + Communication.WHITE + " for a new character)?");
                 name = in.readLine();
-                TrollAttack.message("Read name " + name + ".");
+                //TrollAttack.message("Read name " + name + ".");
                 if(name == null) {
                     continue;
                 }
@@ -180,6 +180,9 @@ public class Communication extends Thread {
             } catch(IOException e) {
                 e.printStackTrace();
                 return null;
+            } catch(Exception e) {
+                e.printStackTrace();
+                return null;
             }
         }
         player = tmpPlayer;
@@ -216,12 +219,21 @@ public class Communication extends Thread {
 
     }
     public int colorLessLength(String string) {
+        // Each occurence of \033 means that a color is in the string, and
+        // 13 non-content characters are added to the length, so remove them.
         String[] colors = string.split("\033");
         return string.length() - ( (colors.length - 1) * 13);
     }
     public String wordwrap(String string) {
+        // Pattern that only allows strings of up to the wrapLength
+        // into the first capture group.
         String pattern = "^(.{0," + wrapLength + "}[\\s])(.*)$";
-        String[] lines = string.split("\n\r");
+        
+        // Find all of the intended lines in the string and put them in
+        // the lines variable.
+        String[] lines = string.split(Util.wrapChar);
+        
+        // For each line that we find, wrap it if it is too long.
         for(int i = 0;i < lines.length; i++ ) {
             if(colorLessLength(lines[i]) > wrapLength) {
                 String tmp = lines[i];
@@ -229,18 +241,30 @@ public class Communication extends Thread {
                 Pattern p = Pattern.compile(pattern);
                 Matcher  m = p.matcher(tmp);
                 while(tmp.length() > 0 && m.matches()) {
-                    lines[i] += m.group(1) + "\n\r";
+                    lines[i] += m.group(1) + Util.wrapChar;
+                    TrollAttack.debug(tmp);
                     tmp = m.group(2);
+                    
                     m = p.matcher(tmp);
+                    
                 }
-                lines[i] = lines[i].substring(0, lines[i].length() - 2);
-                lines[i] += tmp;
+                // Handles the last word of lines.
+                if(!m.matches() && tmp.length() > 0) {
+                    lines[i] = lines[i].substring(0, lines[i].length() - 2);
+                    lines[i] += " " + tmp;
+                }
+                if(lines[i].length() < 2) {
+                    TrollAttack.error("Attempting to parse a line that has fewer than two characters, this is bad.");
+                    TrollAttack.error("The line is: '" + lines[i] + "'");
+                }
+                
             }
         }
         String result = "";
-        for(int i = 0;i < lines.length;i++) {
-            result += lines[i];
+        for(int i = 0;i < lines.length - 1;i++) {
+            result += lines[i] + Util.wrapChar;
         }
+        result += lines[lines.length - 1];
         return result;
         
        

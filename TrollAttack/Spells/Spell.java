@@ -1,4 +1,5 @@
 package TrollAttack.Spells;
+import TrollAttack.Being;
 import TrollAttack.Player;
 /*
  * Created on May 29, 2005
@@ -48,7 +49,7 @@ public abstract class Spell {
 	}
 	public boolean run() {return false;}
 	public boolean run(String s) {return false;}
-	public boolean execute(Player player) {
+	public boolean execute(Being player) {
 	    if(Math.random() < this.getProbability()) {
 	        return this.run();
 	    } else {
@@ -56,7 +57,7 @@ public abstract class Spell {
 	        return false;
 	    }
 	}
-	public boolean execute(Player player, String s) {
+	public boolean execute(Being player, String s) {
 	    if(Math.random() < this.getProbability()) {
 	        return this.run(s);
 	    } else {

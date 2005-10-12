@@ -2,6 +2,8 @@
 
 package TrollAttack.Items;
 
+import java.util.Hashtable;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -95,6 +97,13 @@ public class Item implements Cloneable {
 		shortDesc + "," +
 		longDesc;
 					
+	}
+	public Node[] getAttributeNodes(Document doc) {
+	    Node[] attributes = new Node[0];
+	    return attributes;
+	}
+	public void setAttributesFromHash(Hashtable hash) {
+	    return;
 	}
 	public Node toNode(Document doc) {
 		   

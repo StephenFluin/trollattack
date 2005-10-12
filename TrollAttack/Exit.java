@@ -49,6 +49,10 @@ public class Exit {
 	SOUTHWEST = 8,
 	SOUTHEAST = 10;
     
+    public static LinkedList sortExitList(LinkedList exitList) {
+     return exitList;   
+    }
+    
     /*directionList[EAST] = "east";
     directionList[WEST] = "west";
     directionList[NORTH] = "north";
@@ -177,6 +181,13 @@ public class Exit {
 	        return direction - 1;
 	    } else {
 	        return direction + 1;
+	    }
+	}
+	public String toString() {
+	    if(direction > 9) {
+	        return direction + "";
+	    } else {
+	        return "0" + direction;
 	    }
 	}
 }

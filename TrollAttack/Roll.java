@@ -27,11 +27,15 @@ public class Roll {
         try {
             parts = value.split("d");
         } catch(Exception e) {
-            TrollAttack.error("Invalid roll type given");
+            TrollAttack.error("Invalid roll type given - " + value);
             e.printStackTrace();
         }
         if(parts.length < 2) {
-            numberOfDice = new Integer(parts[0]).intValue();;
+            if(parts.length < 1) {
+                numberOfDice = 0;
+            } else {
+                numberOfDice = new Integer(parts[0]).intValue();
+            }
             sizeOfDice = 1;
             addition = 0;
         } else if(Util.contains(parts[1], ",")) {
