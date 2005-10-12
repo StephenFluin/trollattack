@@ -1,0 +1,38 @@
+This file is an attempt by Stephen Fluin to describe how spells 
+should work once I have coded them correctly.
+
+The spell/skill object:
+(* indicates optional functionality)
+
+New Objects:
+Activity
+	float talent
+	int adept
+	String Name
+	String successMessage;
+	String failureMessage;
+	String successMessageAround;
+	String failureMessageAround;
+	Requirement requirements
+	void action(Being, Victim)
+	false = isSpell()
+	
+Requirement
+	HP requirement
+	Mana requirement
+	Move requirement
+	Level requirement
+	*Classes that can use - requirement
+	boolean meetsRequirement(Being)
+	String requirementProblem(Being)
+	void use(Being)
+
+Skill extends Activity
+	
+Spell extends Activity
+	true = isSpell();
+	
+	
+	
+	
+	
