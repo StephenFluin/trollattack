@@ -8,77 +8,79 @@ package TrollAttack;
 
 /**
  * @author PeEll
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * TODO To change the template for this generated type comment go to Window -
+ * Preferences - Java - Code Style - Code Templates
  */
 public class Background extends Thread {
-	int time = 0;
-	public void run() {
-		while(!TrollAttack.gameOver) {
-			// Item routines
-			for(int i = 0;i < TrollAttack.gameItems.getLength(); i++) {
-				
-			}
-			//TrollAttack.message("Starting item background.");
-			// Mobile routines
-			/**
-			 * Every 60 seconds, CLICK!
-			 */
-			if(time % 60 == 0 ) {
-			    Reset reset;
-			    while(TrollAttack.gameResets.itemsRemain()) {
-			        reset = (Reset)TrollAttack.gameResets.getNext();
-			        reset.run();
-			    }
-			    TrollAttack.gameResets.reset();
-			}
-			
-			/**
-			 * Every 10 seconds, increase healths by 2.
-			 */
-			
-			/*if(time % 30 == 0) {
-			    TrollAttack.deadies.handleResurrection();
-			}*/
-			//TrollAttack.message("Starting healing background.");
-			if(time % 10 == 0) {
-			    TrollAttack.healBeings();
-			}
-			if(time % (60 * 10) == 0) {
-			    TrollAttack.hungerStrike(6);
-			}
-			if(time % (60 * 6) == 0) {
-			    TrollAttack.agePlayers(.1);
-			}
-			
-			// Punt players idle for more than 20 minutes every 1 minute.
-			if(time % (60 ) == 0 ) {
-			    TrollAttack.puntIdlePlayers(60*20);
-			}
-			
-			//TrollAttack.message("Starting room background.");
-			// Who cares what happens in rooms
-			//for(int i = 0;i < TrollAttack.gameRooms.length; i++) {
-			//	
-			//}
-			if(time % (60 * 5) == 0) {
-			    //TrollAttack.broadcast("A healing wind continues to blow accross the realm.");
-			}
-			
+    int time = 0;
 
-			try{
-			    Thread.sleep(1000);
-			} catch( Exception e ) {
-			   TrollAttack.message("Can't sleep, clowns will eat me.");
-			   e.printStackTrace();
-			}
-			time++;
-			//TrollAttack.message("Slept all the way to " + time + ".");
-		}
-	}
-	public int getTime() {
-	    return time;
-	    
-	}
+    public void run() {
+        while (!TrollAttack.gameOver) {
+            // Item routines
+            for (int i = 0; i < TrollAttack.gameItems.getLength(); i++) {
+
+            }
+            //TrollAttack.message("Starting item background.");
+            // Mobile routines
+            /**
+             * Every 60 seconds, CLICK!
+             */
+            if (time % 60 == 0) {
+                Reset reset;
+                while (TrollAttack.gameResets.itemsRemain()) {
+                    reset = (Reset) TrollAttack.gameResets.getNext();
+                    reset.run();
+                }
+                TrollAttack.gameResets.reset();
+            }
+
+            /**
+             * Every 10 seconds, increase healths by 2.
+             */
+
+            /*
+             * if(time % 30 == 0) { TrollAttack.deadies.handleResurrection(); }
+             */
+            //TrollAttack.message("Starting healing background.");
+            if (time % 10 == 0) {
+                TrollAttack.healBeings();
+            }
+            if (time % (60 * 30) == 0) {
+                TrollAttack.hungerStrike(6);
+            }
+            if (time % (60 * 6) == 0) {
+                TrollAttack.agePlayers(.1);
+            }
+
+            // Punt players idle for more than 20 minutes every 1 minute.
+            if (time % (60) == 0) {
+                TrollAttack.puntIdlePlayers(60 * 20);
+            }
+
+            //TrollAttack.message("Starting room background.");
+            // Who cares what happens in rooms
+            //for(int i = 0;i < TrollAttack.gameRooms.length; i++) {
+            //	
+            //}
+            if (time % (60 * 5) == 0) {
+                //TrollAttack.broadcast("A healing wind continues to blow
+                // accross the realm.");
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                TrollAttack.message("Can't sleep, clowns will eat me.");
+                e.printStackTrace();
+            }
+            time++;
+            //TrollAttack.message("Slept all the way to " + time + ".");
+        }
+    }
+
+    public int getTime() {
+        return time;
+
+    }
 }
