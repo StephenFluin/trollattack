@@ -1,7 +1,11 @@
 Todo List / Ideas:
 
 Convert .are files to my xml format.
+Make each area aware of all of its own rooms, mobiles, items, and players (for saving
+	so we don't always have to scan all of the junk in the game)
+Make int minposition work, instead of boolean mustBePeaceful
 Fix Experience System
+get rid of all instances of my LinkedList class so we can just import it instead of using java.util.LinkedList<Exit> all the time.
 5. Pets and Mountable Mobiles
 new spell system
 6. Swimming and Water
