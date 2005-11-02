@@ -27,6 +27,9 @@ public abstract class Command {
 	public boolean isPeaceful() {
 	    return peaceful;
 	}
-	public void execute() {}
-	public void execute(String s) { this.execute(); }
+    public boolean equals(Command command) {
+        return command.name.compareToIgnoreCase(name) == 0;
+    }
+	public boolean execute() { return false; }
+	public boolean execute(String s) { return this.execute(); }
 }
