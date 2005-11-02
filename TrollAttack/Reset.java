@@ -1,159 +1,200 @@
+package TrollAttack;
 /*
  * Created on Jul 3, 2005
  *
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package TrollAttack;
 
 import TrollAttack.Items.Equipment;
 import TrollAttack.Items.Item;
 
 /**
  * @author PeEll
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * TODO To change the template for this generated type comment go to Window -
+ * Preferences - Java - Code Style - Code Templates
  */
 public abstract class Reset {
     int limit = 1;
+
     int clicksMax = 0;
+
     int clicksRemaining = 0;
+
     public Area area;
-    
 
     public Reset() {
-       
+
     }
+
     public void execute() {
-        
+
     }
+
     public void run() {
-        //TrollAttack.message("Running reset " + this.toString() + " (" + clicksRemaining + " clicks left).");
-        if(!isFrozen()) {
-	        if(clicksRemaining-- <= 0 ) {
-	            execute();
-	            clicksRemaining = clicksMax;
-	        } else {
-	            //TrollAttack.message(this.toString() + " has " + clicksRemaining + "left.");
-	        }
+        //TrollAttack.message("Running reset " + this.toString() + " (" +
+        // clicksRemaining + " clicks left).");
+        if (!isFrozen()) {
+            if (clicksRemaining-- <= 0) {
+                execute();
+                clicksRemaining = clicksMax;
+            } else {
+                //TrollAttack.message(this.toString() + " has " +
+                // clicksRemaining + "left.");
+            }
         } else {
             //TrollAttack.message(this.toString() + " is frozen...");
         }
     }
+
     public boolean isFrozen() {
         return area.frozen;
     }
+
     public void setClicks(int amount) {
         clicksMax = amount;
         clicksRemaining = 0;
     }
-    
+
     public static class ItemReset extends Reset {
         Item item;
+
         Room room;
+
         public ItemReset(Item nItem, Room nRoom, int clicks) {
-           item = nItem;
-           room = nRoom;
-           setClicks(clicks);
-           area = Area.testRoom(room, TrollAttack.gameAreas);
+            item = nItem;
+            room = nRoom;
+            setClicks(clicks);
+            area = Area.testRoom(room, TrollAttack.gameAreas);
         }
+
         public void execute() {
             //TrollAttack.message("executing an item reset.");
-            if(room.countExactItem(item) < limit) {
-                //TrollAttack.message("Adding " + item.getShort() + " to " + room.title);
+            if (room.countExactItem(item) < limit) {
+                //TrollAttack.message("Adding " + item.getShort() + " to " +
+                // room.title);
                 room.addItem(item);
             } else {
-                //TrollAttack.message("Item can't be added because there are (" + room.countExactItem(item) + "/" + limit + ").");
+                //TrollAttack.message("Item can't be added because there are ("
+                // + room.countExactItem(item) + "/" + limit + ").");
             }
         }
+
         public String toString() {
-            return "Put (Item x " + limit + ") '" + item.getShort() + "' in (" + room.vnum + ") '" + room.title + "'.";
+            return "Put (Item x " + limit + ") '" + item.getShort() + "' in ("
+                    + room.vnum + ") '" + room.title + "'.";
         }
     }
+
     public static class MobileReset extends Reset {
         Mobile mob;
+
         Room room;
+
         public MobileReset(Mobile mobile, Room nRoom, int clicks) {
             mob = mobile;
             room = nRoom;
             setClicks(clicks);
             area = Area.testMobile(mobile, TrollAttack.gameAreas);
-            //TrollAttack.message("new Mobile reset is " + area.name + " and is " + area.frozen);
+            //TrollAttack.message("new Mobile reset is " + area.name + " and is
+            // " + area.frozen);
         }
+
         public void execute() {
-            if(room.countExactMobile(mob) < limit) {
+            if (room.countExactMobile(mob) < limit) {
                 room.addBeing(mob);
                 mob.setCurrentRoom(room.vnum);
                 mob.healAll();
             }
             //TrollAttack.message("Done mobile Reset.");
         }
+
         public String toString() {
-            return "Put (Mobile x " + limit + ") '" + mob.getShort() + "' in (" + room.vnum + ") '" + room.title + "'.";
+            return "Put (Mobile x " + limit + ") '" + mob.getShort() + "' in ("
+                    + room.vnum + ") '" + room.title + "'.";
         }
     }
+
     public static class GiveReset extends Reset {
         Item item;
+
         Mobile mobile;
+
         public GiveReset(Item ite, Mobile mob, int clicks) {
             item = ite;
             mobile = mob;
             setClicks(clicks);
             area = Area.testMobile(mobile, TrollAttack.gameAreas);
         }
+
         public void execute() {
-            if(mobile.countExactItem(item) < limit) {
+            if (mobile.countExactItem(item) < limit) {
                 mobile.addItem(item);
             }
         }
+
         public String toString() {
-            return "Give (Item x " + limit + ") '" + item.getShort() + "' to (" + mobile.vnum + ") '" + mobile.getShort() + "'.";
+            return "Give (Item x " + limit + ") '" + item.getShort() + "' to ("
+                    + mobile.vnum + ") '" + mobile.getShort() + "'.";
         }
     }
+
     public static class WearReset extends Reset {
         Equipment item;
+
         Mobile mobile;
+
         public WearReset(Equipment ite, Mobile mob, int clicks) {
             item = ite;
             mobile = mob;
             setClicks(clicks);
             area = Area.testMobile(mobile, TrollAttack.gameAreas);
         }
+
         public void execute() {
-            if(mobile.countExactEquipment(item) < limit) {
+            if (mobile.countExactEquipment(item) < limit) {
                 mobile.wearItem(item);
             } else {
             }
         }
+
         public String toString() {
-            return "Wear (Item x " + limit + ") '" + item.getShort() + "' on (" + mobile.vnum + ") '" + mobile.getShort() + "'.";
+            return "Wear (Item x " + limit + ") '" + item.getShort() + "' on ("
+                    + mobile.vnum + ") '" + mobile.getShort() + "'.";
         }
     }
+
     public static class ExitReset extends Reset {
         Exit exit;
+
         boolean open;
+
         boolean locked;
-        public ExitReset(Exit ex, boolean shouldBeOpen, boolean shouldBeLocked, int clicks){
+
+        public ExitReset(Exit ex, boolean shouldBeOpen, boolean shouldBeLocked,
+                int clicks) {
             exit = ex;
             open = shouldBeOpen;
             locked = shouldBeLocked;
             setClicks(clicks);
             area = Area.testRoom(ex.getRoom(), TrollAttack.gameAreas);
         }
+
         public void execute() {
             //TrollAttack.message("fixing an exit.");
-            if(open) {
+            if (open) {
                 exit.open();
             } else {
                 exit.close();
             }
-            if(locked) {
+            if (locked) {
                 exit.lock();
             } else {
                 exit.unlock();
             }
         }
+
         public String toString() {
             return "Make door " + (open ? "open" : "closed") + ".";
         }

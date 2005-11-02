@@ -1,9 +1,5 @@
 package TrollAttack.Commands;
 import TrollAttack.*;
-import TrollAttack.Player;
-import TrollAttack.Room;
-import TrollAttack.TrollAttack;
-import TrollAttack.Util;
 /*
  * Created on May 7, 2005
  *
@@ -29,23 +25,17 @@ public class CommandMove extends Command {
 		peaceful = true;
 	}
 	
-
-
-	
-	public void execute(String s) {
-		this.execute();
-	}
-	public void execute() {
+	public boolean execute() {
 	    //TrollAttack.debug("Attempting to go " + name + "!");
 		Exit results = null;
 		Room previousRoom = player.getActualRoom();
 		
 		//player.tell(player.getCurrentRoom() + "");
-		results = previousRoom.followLink(direction);
+		results = previousRoom.getExit(direction);
 		if(results != null) {
 		    if(!results.isOpen()) {
 		        player.tell("The door is closed.");
-		        return;
+		        return false;
 		    }
 		    Room nextRoom = TrollAttack.getRoom(results.getDestination());
 		    try{
@@ -64,7 +54,9 @@ public class CommandMove extends Command {
 			player.look();
 		} else {
 			player.tell("Alas, you cannot go that way.");
+            return false;
 		}
+        return true;
  
 	}
 }

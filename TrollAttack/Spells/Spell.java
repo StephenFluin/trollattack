@@ -1,6 +1,7 @@
 package TrollAttack.Spells;
 import TrollAttack.Being;
 import TrollAttack.Player;
+import TrollAttack.Commands.Ability;
 /*
  * Created on May 29, 2005
  *
@@ -14,15 +15,10 @@ import TrollAttack.Player;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public abstract class Spell {
-	String name;
-	
-	private int cost;
+public class Spell extends Ability {
+	private int manaCost;
 	private double probability = .8;
-	boolean peaceful = true;
-	public String toString() {
-		return name;
-	}
+    
 	public Spell( String spellName, int c) { 
 	    this( spellName, c, true);
     }
@@ -34,15 +30,11 @@ public abstract class Spell {
 	 * @param b Is the command restricted to peaceful casting.
 	 */
 	public Spell( String spellName, int cost, boolean peacefulOnly) {
-	    name = spellName; 
-	    this.cost = cost; 
-	    peaceful = peacefulOnly;
+        super( spellName , "You fail to cast " + spellName + "." , "You succeed in casting " + spellName + ".", "%1 casts " + spellName + "." );
+	    this.manaCost = cost; 
     }
-	public boolean isPeaceful() {
-	    return peaceful;
-	}
 	public int getCost() {
-	    return cost;
+	    return manaCost;
 	}
 	public double getProbability() {
 	    return probability;

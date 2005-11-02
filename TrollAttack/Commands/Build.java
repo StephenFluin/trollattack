@@ -8,13 +8,15 @@
  */
 package TrollAttack.Commands;
 
+import TrollAttack.Area;
+import TrollAttack.Being;
+import TrollAttack.Roll;
+import TrollAttack.Util;
+
+import java.io.File;
+
 import TrollAttack.*;
-import TrollAttack.Exit;
-import TrollAttack.Player;
-import TrollAttack.Room;
-import TrollAttack.TrollAttack;
 import TrollAttack.Items.*;
-import TrollAttack.Items.Item;
 
 /**
  * @author PeEll
@@ -53,6 +55,12 @@ public class Build {
         } else if(s.startsWith("desc")) {
             player.getActualRoom().description = command;
             player.tell("You change the description of the room.");
+        } else if(s.startsWith("destroy")) {
+            player.getActualArea().areaRooms.delete(player.getActualRoom());
+            TrollAttack.gameRooms.delete(player.getActualRoom());
+            player.setCurrentRoom(1);
+            TrollAttack.getRoom(1).addBeing(player);
+            
         }
     }
     public void editExit(String s, boolean reciprocol) {
@@ -69,14 +77,14 @@ public class Build {
         if(parts.length == 1) {
             Room destRoom;
             if(reciprocol) {
-                destRoom = TrollAttack.getRoom(player.getActualRoom().followLink(direction).getDestination());
+                destRoom = player.getActualRoom().getLink(direction);
                 destRoom.setLink(Exit.directionOpposite(direction), 0);
             }
             
             player.getActualRoom().setLink(direction, 0);
             //TrollAttack.message("Erasing link " + Exit.directionName(direction));
         } else {
-            Exit exit = player.getActualRoom().followLink(direction);
+            Exit exit = player.getActualRoom().getExit(direction);
             if(exit == null) {
                 int destination = Util.intize(player, parts[1]);
                 //TrollAttack.message("Found destination " + destination + " from part '" + parts[0] + "'.");
@@ -84,7 +92,7 @@ public class Build {
                     TrollAttack.getRoom(destination).setLink(Exit.directionOpposite(direction), player.getCurrentRoom());
                 }
                 player.getActualRoom().setLink(direction, destination);
-                exit = player.getActualRoom().followLink(direction);
+                exit = player.getActualRoom().getExit(direction);
             }
             Exit bexit = exit.getOtherExit();
             if(Util.contains(s, "nodoor")) {
@@ -141,7 +149,7 @@ public class Build {
         String[] parts = command.split(" ");
         String s = parts[0];
         if(parts.length < 2) {
-            player.tell(command + " command needs more info.");
+            area();
             return;
         }
         command = parts[1];
@@ -150,22 +158,79 @@ public class Build {
         }
         if(s.startsWith("name")) {
             area.name = command;
+            player.tell("Area name changed to '" + command + "'");
         } else if(s.startsWith("filename")) {
-            if(parts[1].endsWith(".xml")) {
-                area.filename = parts[1];
+            if(parts[1].length() < 3) {
+                player.tell("Area filename must be at least 3 characters long.");
             } else {
-                area.filename = parts[1] + ".xml";
+                if(!parts[1].endsWith(".xml")) {
+                    parts[1] += ".xml";
+                }
+                String oldFilename = area.filename;
+                area.filename = parts[1];
+                area.save(TrollAttack.gameRooms, TrollAttack.gameMobiles, TrollAttack.gameItems);
+                File oldFile = new File("Areas/" + oldFilename);
+                TrollAttack.message("Deleting file Areas/" + oldFilename + ".");
+                oldFile.delete();
+                
+                
+                player.tell("Area filename changed to '" + parts[1] + "'");
             }
         } else if(s.startsWith("low")) {
             area.low = Util.intize(player, command);
+            player.tell("Area range changed to " + area.low + "-" + area.high + ".");
         } else if(s.startsWith("high")) {
             area.high = Util.intize(player, command);
+            player.tell("Area range changed to " + area.low + "-" + area.high + ".");
+        }  else {
+            player.tell("Usage: area <command> <value>");
+            player.tell("Possible Commands:");
+            player.tell("\tfilename <new file name>");
+            player.tell("\tname <new name>");
+            player.tell("\thigh <new high vnum>");
+            player.tell("\tlow <new low vnum>");
+            return;
         }
         
         
     }
+    public void area(String s) {
+        String[] parts = s.split(" ");
+        if(parts.length == 1) {
+            player.tell("Usage: area <command> <value>");
+            player.tell("Possible Commands:");
+            player.tell("\tfilename <new file name>");
+            player.tell("\tname <new name>");
+            player.tell("\thigh <new high vnum>");
+            player.tell("\tlow <new low vnum>");
+        } else {
+            if(parts[0].compareToIgnoreCase("filename") == 0) {
+                if(parts[1].length() < 3) {
+                    player.tell("Area filename must be at least 3 characters long.");
+                } else {
+                    if(!parts[1].endsWith(".xml")) {
+                        parts[1] += ".xml";
+                    }
+                    player.getArea().filename = parts[1];
+                    player.tell("Area filename changed to '" + parts[1] + "'");
+                    
+                }
+            } else if(parts[0].compareToIgnoreCase("name") == 0) {
+                String areaName = parts[1];
+                for(int i = 2;i<parts.length;i++) {
+                    areaName += " " + parts[i];
+                }
+                player.getArea().name = areaName;
+                player.tell("Area name changed to '" + areaName + "'");
+            }
+            
+        }
+    }
     public void area() {
-        player.tell("Your area " + (player.getArea().frozen ? "<frozen>" : "") + ": " + player.getArea().filename + " " + player.getArea().name);
+
+        player.tell("Your area " + (player.getArea().frozen ? "<frozen>" : "") + ": " + player.getArea().filename + "\n" + player.getArea().name);
+        player.tell("Vnum range:\t" + player.getArea().low + "-" + player.getArea().high);
+        
     }
     public void iSet(String[] parts) {
         Item item = null;
@@ -252,5 +317,67 @@ public class Build {
             player.tell("You don't see that here!");
             return;
         }
+    }
+    public void mSet(String[] parts) {
+
+        Being mobile = null;
+        try {
+           mobile = (Being)player.getActualRoom().getBeing(parts[0], player);
+        } catch(Exception e) {
+            TrollAttack.error("Possilbe attempt to change player with mset.");
+            e.printStackTrace();
+        }
+        if(mobile != null) {
+            String attr = parts[1];
+            String value = parts[2];
+            for(int i = 3;i < parts.length;i++) {
+                value += " " + parts[i];
+            }
+            int intValue = 0;
+            try {
+               intValue  = new Integer(value).intValue();
+            } catch(Exception e) {
+                
+            }
+            if(attr.compareToIgnoreCase("hp") == 0) {
+                mobile.hitPoints = intValue;
+            } else if(attr.compareToIgnoreCase("hp") == 0) {
+                mobile.hitPoints = intValue;
+            } else if(attr.compareToIgnoreCase("maxhp") == 0) {
+                mobile.maxHitPoints = intValue;
+            } else if(attr.compareToIgnoreCase("mana") == 0) {
+                mobile.manaPoints = intValue;
+            } else if(attr.compareToIgnoreCase("maxmana") == 0) {
+                mobile.maxManaPoints = intValue;
+            } else if(attr.compareToIgnoreCase("move") == 0) {
+                mobile.movePoints = intValue;
+            } else if(attr.compareToIgnoreCase("maxmove") == 0) {
+                mobile.maxMovePoints = intValue;
+            } else if(attr.compareToIgnoreCase("name") == 0) {
+                mobile.name = value;
+            } else if(attr.compareToIgnoreCase("short") == 0) {
+                mobile.shortDescription = value;
+            } else if(attr.compareToIgnoreCase("long") == 0) {
+                mobile.longDesc = value;
+            } else if(attr.compareToIgnoreCase("gold") == 0) {
+                mobile.gold = intValue;
+            } else if(attr.compareToIgnoreCase("damagedice") == 0) {
+                mobile.hitDamage = new Roll(value);
+            } else if(attr.compareToIgnoreCase("hitdice") == 0) {
+                mobile.hitSkill = new Roll(value);
+            } else if(attr.compareToIgnoreCase("hitlevel") == 0) {
+                mobile.hitLevel = intValue;
+            } else if(attr.compareToIgnoreCase("level") == 0) {
+                mobile.level = intValue;
+            } else if(attr.compareToIgnoreCase("trainer") == 0) {
+                mobile.canTeachMagic = new Boolean(value).booleanValue();
+            } else {
+                player.tell(attr + " is not a valid attribute for a mobile!");
+                return;
+            }
+            player.tell("You set the '" + attr + "' attribute of " + mobile.getShort() + ".");
+        } else {
+            player.tell("You don't see that here!");
+            }
     }
 }
