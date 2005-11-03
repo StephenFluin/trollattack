@@ -160,16 +160,7 @@ public class Being implements Cloneable {
         look(getActualRoom());
     }
     public void look(Room room) {
-        String[] looks = {};
-        try {
-            looks = room.look(this);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        for (int i = 0; i < looks.length; i++) {
-            tell(looks[i] + "");
-        }
+        tell(room.look(this), false);
     }
 
     public boolean isPlayer() {
@@ -264,6 +255,9 @@ public class Being implements Cloneable {
                 currentRoom,
                 gold);
     }
+    public void prompt(String s) {
+        
+    }
 
     public String getPrompt() {
         return myPrompt.getPrompt();
@@ -313,7 +307,7 @@ public class Being implements Cloneable {
         return manaPoints;
     }
 
-    public void tell(String s) {
+    public void tell(String s, boolean wrapAtEnd) {
         if (switched != null) {
             Player sPlayer = null;
             try {
@@ -322,8 +316,14 @@ public class Being implements Cloneable {
                 TrollAttack
                         .error("This should never happen, a being has been switched with a non-player!");
             }
-            sPlayer.communication.print(s);
+            sPlayer.communication.print(s + (wrapAtEnd ? Util.wrapChar : ""));
         }
+    }
+    public void tell() {
+        tell("", true);
+    }
+    public void tell(String s) {
+        tell(s, true);
     }
 
     public void healAll() {
@@ -902,16 +902,11 @@ public class Being implements Cloneable {
        AbilityData classData = getBeingClass().getAbilityData().get(ability);
         if(data.proficiency < classData.maxProficiency) {
             // Can learn more still.
-            tell("Prof is " + data.proficiency);
             float increase = (float)(success ? .9 : 0.3);
             data.proficiency += increase;
-            //tell("Prof is " + data.proficiency);
             data.proficiency *= 10;
-            //tell("Prof is " + data.proficiency);
             data.proficiency = Math.round(data.proficiency);
-            //tell("Prof is " + data.proficiency);
             data.proficiency /= 10;
-            //tell("Prof is " + data.proficiency);
             tell(Communication.GREEN + 
                     "You learn from your " + (success ? "sucess" : "failure") + ", and " + 
                     ability.toString() + " rises by " + 

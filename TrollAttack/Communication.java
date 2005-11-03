@@ -27,6 +27,17 @@ public class Communication extends Thread {
     static int port = 4000;
 
     static int ID;
+    static final char ESCAPE = '\033';
+    static final char X = '\377';
+    static final String TELOPT_ECHO =   X + "\001"; //01
+    static final String GA =            X + "\371"; //F9
+    static final String SB =            X + "\372"; //FA
+    static final String WILL =          X + "\373"; //FB
+    static final String WONT =          X + "\374"; //FC
+    static final String DO   =          X + "\375"; //FD
+    static final String DONT =          X + "\376"; //FE
+    static final String IAC =           X + "\377"; //FF
+    
 
     Player player;
 
@@ -131,6 +142,7 @@ public class Communication extends Thread {
                             pBroadcast);
 
             player.look();
+            player.tell();
             player.tell(player.prompt());
             
             // Main loop of entire game for each player.
@@ -169,27 +181,29 @@ public class Communication extends Thread {
                     continue;
                 }
                 if (name.compareToIgnoreCase("new") == 0) {
+                    pass = player.interactiveNewPlayer();
                     tmpPlayer = player;
-                    while (name.compareToIgnoreCase("new") == 0) {
-                        player.tell("Pick a name:");
-                        name = in.readLine();
-                        if (DataReader.readPlayerData(name) != null) {
-                            name = "new";
-                            player.tell("That name is taken!");
-                        }
-                    }
-
-                    player.shortDescription = name;
-                    player.tell("Pick a password:");
-                    pass = in.readLine();
-                    player.setPassword(pass);
-                    player.authenticated = true;
+                   
                 } else {
 
                     player.tell(name + "'s password:");
                     pass = in.readLine();
                     tmpPlayer = DataReader.readPlayerData(name);
                     if (tmpPlayer != null) {
+                        Player offendingPlayer = null;
+                        for(Player p : TrollAttack.gamePlayers) {
+                            if(p.equals(tmpPlayer)) {
+                                offendingPlayer = p;
+                                break;
+                            } else {
+                               // TrollAttack.debug("Found a player " + p.getShort() + ", but he is not " + tmpPlayer.getShort());
+                            }
+                        }
+                        if(offendingPlayer != null) {
+                            offendingPlayer.tell("You are attempting to log in, that means you are OUT OF HERE!");
+                            offendingPlayer.save();
+                            offendingPlayer.quit();
+                        }
                         tmpPlayer.authenticated = true;
                         TrollAttack.message("Created player "
                                 + tmpPlayer.getShort());
@@ -238,10 +252,11 @@ public class Communication extends Thread {
             if (shouldWrap) {
                 string = wordwrap(string);
             }
-            out.writeBytes(color);
+            //out.writeBytes(color);
 
             out.writeBytes(string);
-            out.writeBytes("\033[0m\n\r");
+            //System.out.print(string);
+            //out.writeBytes("\033[0m" + Util.wrapChar);
         } catch (IOException e) {
             player.quit();
             // TrollAttack.error("Player quit unexpectedly (" + e.getMessage() +
@@ -257,9 +272,9 @@ public class Communication extends Thread {
 
     public int colorLessLength(String string) {
         // Each occurence of \033 means that a color is in the string, and
-        // 13 non-content characters are added to the length, so remove them.
+        // 7 non-content characters are added to the length, so remove them.
         String[] colors = string.split("\033");
-        return string.length() - ((colors.length - 1) * 13);
+        return string.length() - ((colors.length - 1) * 7);
     }
 
     public String wordwrap(String string) {
@@ -269,7 +284,7 @@ public class Communication extends Thread {
 
         // Find all of the intended lines in the string and put them in
         // the lines variable.
-        String[] lines = string.split(Util.wrapChar);
+        String[] lines = string.split(Util.wrapChar, -1);
 
         // For each line that we find, wrap it if it is too long.
         for (int i = 0; i < lines.length; i++) {
@@ -288,7 +303,7 @@ public class Communication extends Thread {
                 }
                 // Handles the last word of lines.
                 if (!m.matches() && tmp.length() > 0) {
-                    lines[i] = lines[i].substring(0, lines[i].length() - 2);
+                    lines[i] = lines[i].substring(0, lines[i].length() - (Util.wrapChar.length() + 1));
                     lines[i] += " " + tmp;
                 }
                 if (lines[i].length() < 2) {
@@ -303,7 +318,9 @@ public class Communication extends Thread {
         for (int i = 0; i < lines.length - 1; i++) {
             result += lines[i] + Util.wrapChar;
         }
-        result += lines[lines.length - 1];
+        if(lines.length > 0) {
+            result += lines[lines.length - 1];
+        }
         return result;
 
     }
@@ -311,36 +328,36 @@ public class Communication extends Thread {
     // Server server = new Server();
     // server.start();
     // public
-    public static String GREY = "\033[1:30:40m";
+    public static String GREY = ESCAPE + "[1;30m";
 
-    public static String RED = "\033[1;31;40m";
+    public static String RED = ESCAPE + "[1;31m";
 
-    public static String GREEN = "\033[1;32;40m";
+    public static String GREEN = ESCAPE + "[1;32m";
 
-    public static String YELLOW = "\033[1;33;40m";
+    public static String YELLOW = ESCAPE + "[1;33m";
 
-    public static String BLUE = "\033[1;34;40m";
+    public static String BLUE = ESCAPE + "[1;34m";
 
-    public static String PURPLE = "\033[1;35;40m";
+    public static String PURPLE = ESCAPE + "[1;35m";
 
-    public static String CYAN = "\033[1;36;40m";
+    public static String CYAN = ESCAPE + "[1;36m";
 
-    public static String WHITE = "\033[1;37;40m";
+    public static String WHITE = ESCAPE + "[1;37m";
 
-    public static String DARKGREY = "\033[0:30:40m";
+    public static String DARKGREY = ESCAPE + "[0:30m";
 
-    public static String DARKRED = "\033[0;31;40m";
+    public static String DARKRED = ESCAPE + "[0;31m";
 
-    public static String DARKGREEN = "\033[0;32;40m";
+    public static String DARKGREEN = ESCAPE + "[0;32m";
 
-    public static String DARKYELLOW = "\033[0;33;40m";
+    public static String DARKYELLOW = ESCAPE + "[0;33m";
 
-    public static String DARKBLUE = "\033[0;34;40m";
+    public static String DARKBLUE = ESCAPE + "[0;34m";
 
-    public static String DARKPURPLE = "\033[0;35;40m";
+    public static String DARKPURPLE = ESCAPE + "[0;35m";
 
-    public static String DARKCYAN = "\033[0;36;40m";
+    public static String DARKCYAN = ESCAPE + "[0;36m";
 
-    public static String DARKWHITE = "\033[0;37;40m";
+    public static String DARKWHITE = ESCAPE + "[0;37m";
 
 }

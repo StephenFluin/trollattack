@@ -1,5 +1,7 @@
 package TrollAttack;
 
+import java.io.IOException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -134,12 +136,16 @@ public class Player extends Being {
         return communication;
     }
 
-    public void tell(String s) {
+    public void tell(String s, boolean wrapAtEnd) {
         if (switched != null) {
-            communication.print("BODY:" + s);
+            communication.print("BODY:" + s + (wrapAtEnd ? Util.wrapChar : ""));
         } else {
-            communication.print(s);
+            communication.print(s + (wrapAtEnd ? Util.wrapChar : ""));
         }
+    }
+    public void prompt(String s) {
+        tell(Util.wrapChar + s, false);
+        //System.out.println("Attempting to print:" + Util.wrapChar + s);
     }
 
     public void name(String newName) {
@@ -199,7 +205,7 @@ public class Player extends Being {
 
     public void quit() {
         getActualRoom().removeBeing(this);
-        TrollAttack.gamePlayers.delete(this);
+        TrollAttack.gamePlayers.remove(this);
         closeConnection();
     }
 
@@ -365,7 +371,78 @@ public class Player extends Being {
     public double getTimePlayed() {
         return timePlayed;
     }
+    
+    public boolean equals(Player player) {
+        return getShort().compareToIgnoreCase(player.getShort()) == 0;
+    }
 
+    public String interactiveNewPlayer() throws IOException {
+        name = "new";
+        tell();
+        tell(Communication.WHITE + "Picking a name is one of the most important parts of starting to play.  Once you have created your character, you will not be able to change your name, so choose wisely!  Immortals may change your name if they deem it inappropiriate or offensive.");
+        tell();
+        while (name.compareToIgnoreCase("new") == 0) {
+            tell(Communication.WHITE + "Pick a name:");
+            name = communication.in.readLine();
+            if (DataReader.readPlayerData(name) != null) {
+                name = "new";
+                tell(Communication.WHITE + "That name is taken!");
+            }
+        }
+        tell();
+        tell();
+        shortDescription = name;
+        tell(Communication.WHITE + "Pick a password:");
+        setPassword(communication.in.readLine());
+        authenticated = true;
+        tell();
+        tell();
+        boolean finishedWithStep = true;
+        while(getClassName() == Class.Classes.Unclassed) {
+            if(!finishedWithStep) {
+                tell(Communication.GREEN + "That is not a valid class.");
+                tell();
+            }
+            tell(Communication.WHITE + "What class would you like to be?");
+            tell(Communication.WHITE + "Options:");
+            for(Class.Classes option : Class.Classes.values()) {
+                if(option != Class.Classes.Unclassed) {
+                    tell(Communication.CYAN + option + "");
+                }
+            }
+            setBeingClass(communication.in.readLine());
+            finishedWithStep = false;
+        }
+        
+        
+        while(!finishedWithStep) {
+            tell();
+            tell();
+            Roll stat = new Roll("3d6");
+            strength = stat.roll();
+            wisdom = stat.roll();
+            constitution = stat.roll();
+            charisma = stat.roll();
+            dexterity = stat.roll();
+            intelligence = stat.roll();
+            tell(Communication.WHITE + "You rolled the following:");
+            tell(Communication.WHITE + strength + "\tStrength");
+            tell(Communication.WHITE + wisdom + "\tWisdom");
+            tell(Communication.WHITE + constitution + "\tConstitution");
+            tell(Communication.WHITE + charisma + "\tCharisma");
+            tell(Communication.WHITE + dexterity +  "\tDexterity");
+            tell(Communication.WHITE + intelligence + "\tIntelligence");
+            tell(Communication.CYAN + "Keep these? (Y/n)");
+            String read = communication.in.readLine();
+            if(read.startsWith("y") || read.startsWith("Y")) {
+                finishedWithStep = true;
+            }
+        }
+        
+        tell(Communication.CYAN + "Welcome to Troll Attack!  We hope you enjoy your time here.  If you have any questions, send an email to questions@trollattack.com.");
+        return password;
+    }
+    
 
 
 }

@@ -46,7 +46,7 @@ public class TrollAttack {
 
     public static LinkedList gameMobiles;
 
-    public static LinkedList gamePlayers;
+    public static java.util.LinkedList<Player> gamePlayers;
 
     public static LinkedList gameRooms;
 
@@ -63,7 +63,7 @@ public class TrollAttack {
 
         String command;
 
-        gamePlayers = new LinkedList();
+        gamePlayers = new java.util.LinkedList<Player>();
 
         reloadWorld();
 
@@ -93,13 +93,9 @@ public class TrollAttack {
     }
 
     public static void broadcast(String message) {
-        //TrollAttack.message("Broadcasting: " + message);
-        Player currentPlayer;
-        for (int i = 1; i <= gamePlayers.length(); i++) {
-            currentPlayer = (Player) gamePlayers.getNext();
+        for (Player currentPlayer : gamePlayers) {
             currentPlayer.tell(message);
         }
-        gamePlayers.reset();
     }
 
     static public void print(String string, boolean shouldWrap) {
@@ -119,17 +115,14 @@ public class TrollAttack {
     }
 
     static public Player getPlayer(String s) {
-        Player p;
         Player returnPlayer = null;
-        while (gamePlayers.itemsRemain()) {
-            p = (Player) gamePlayers.getNext();
+        for(Player p : gamePlayers) {
             if (p.getName().compareToIgnoreCase(s) == 0) {
                 returnPlayer = p;
             } else {
                 //TrollAttack.message(s + " != " + p.getName());
             }
         }
-        gamePlayers.reset();
         return returnPlayer;
     }
 
@@ -193,16 +186,13 @@ public class TrollAttack {
     }
 
     static public void agePlayers(double amount) {
-        while (gamePlayers.itemsRemain()) {
-            Player player = (Player) gamePlayers.getNext();
+        for (Player player : gamePlayers) {
             player.timePlayed += amount;
         }
-        gamePlayers.reset();
     }
 
     static public void hungerStrike(int strength) {
-        while (gamePlayers.itemsRemain()) {
-            Player p = (Player) gamePlayers.getNext();
+        for(Player p : gamePlayers) {
             if (++p.hunger >= 9) {
                 p.hunger = 9;
                 p.hitPoints -= strength;
@@ -219,9 +209,7 @@ public class TrollAttack {
                 }
             }
         }
-        gamePlayers.reset();
-        while (gamePlayers.itemsRemain()) {
-            Player p = (Player) gamePlayers.getNext();
+        for(Player p : gamePlayers) {
             if (++p.thirst >= 9) {
                 p.thirst = 9;
                 p.hitPoints -= strength;
@@ -235,7 +223,6 @@ public class TrollAttack {
                 }
             }
         }
-        gamePlayers.reset();
     }
 
     static public void endGame() {
@@ -251,13 +238,7 @@ public class TrollAttack {
     }
 
     static public void puntIdlePlayers(int time) {
-        Player currentPlayer;
-
-        while (gamePlayers.itemsRemain()) {
-
-            currentPlayer = (Player) gamePlayers.getNext();
-            //message(currentPlayer.getShort() + ": idle " +
-            // currentPlayer.getIdleTime() + " seconds.");
+        for(Player currentPlayer : gamePlayers) {
             if (currentPlayer.getIdleTime() > time) {
                 message("Punting player " + currentPlayer.getShort()
                         + " for idleness.");
@@ -271,7 +252,6 @@ public class TrollAttack {
                 // currentPlayer.getIdleTime() + " seconds.");
             }
         }
-        gamePlayers.reset();
     }
 
     public static void replaceItem(Item find, Item replace) {
@@ -296,12 +276,10 @@ public class TrollAttack {
             reset.run();
         }
         TrollAttack.gameResets.reset();
-        while (TrollAttack.gamePlayers.itemsRemain()) {
-            Player p = (Player) TrollAttack.gamePlayers.getNext();
+        for(Player p : gamePlayers) {
             TrollAttack.getRoom(p.getCurrentRoom()).addBeing(p);
             p.setCurrentRoom(p.getCurrentRoom());
         }
 
-        TrollAttack.gamePlayers.reset();
     }
 }

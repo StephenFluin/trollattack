@@ -218,8 +218,7 @@ public class CommandHandler {
 			}
 			
 		}
-        player.tell("");
-		player.tell( player.prompt() );
+		player.prompt( player.prompt() );
 		if(command == null) {
 		    return null;
 		} else {
@@ -282,7 +281,7 @@ public class CommandHandler {
 			} else {
 			    player.tell("You slay " + mob.getShort() + " in cold blood.");
 			    Being[] pBroadcast = {player, player, mob};
-			    player.getActualRoom().say("%1 slays %2 in cold blood.", pBroadcast);
+			    player.getActualRoom().say(Communication.RED + "%1 slays %2 in cold blood.", pBroadcast);
 			}
             return true;
 	    }
@@ -712,8 +711,8 @@ public class CommandHandler {
             return false;
 	    }
 	    public boolean execute(String phrase) {
-	        player.tell("You say, \"" + phrase + "\".");
-	        player.roomSay(player.getShort() + " says, \"" + phrase + "\".");
+	        player.tell(Communication.CYAN + "You say, \"" + phrase + "\".");
+	        player.roomSay(Communication.CYAN + player.getShort() + " says, \"" + phrase + "\".");
             return true;
 	    }
 	}
@@ -880,11 +879,9 @@ public class CommandHandler {
 	    public Who(String s) { super(s, false); }
 	    public boolean execute() {
 	        player.tell(Communication.CYAN + "Current Players:");
-	        while(TrollAttack.gamePlayers.itemsRemain()) {
-	            Player p = (Player)TrollAttack.gamePlayers.getNext();
+	        for(Player p  : TrollAttack.gamePlayers) {
 	            player.tell(Communication.GREEN + p.level+ "\t" + p.getName() + " " + p.title);
 	        }
-	        TrollAttack.gamePlayers.reset();
             return true;
 	       
 	        
@@ -896,13 +893,11 @@ public class CommandHandler {
 	    public boolean execute() {
 	        Area myArea = player.getActualArea();
 	        player.tell(Communication.CYAN + "Current Players in " + player.getActualArea().name + ":");
-	        while(TrollAttack.gamePlayers.itemsRemain()) {
-	            Player p = (Player)TrollAttack.gamePlayers.getNext();
+	        for(Player p : TrollAttack.gamePlayers) {
 	            if(p.getActualArea() == myArea) {
 	                player.tell(Communication.GREEN + p.level+ "\t" + p.getName() + " " + p.title);
 	            }
 	        }
-	        TrollAttack.gamePlayers.reset();
             return true;
 	    }
 	}
@@ -1563,18 +1558,15 @@ public class CommandHandler {
 	        for(int i = 2; i < parts.length; i++) {
 	            command += " " + parts[i];
 	        }
-	        while( TrollAttack.gamePlayers.itemsRemain() ) {
-	            Player p = (Player)TrollAttack.gamePlayers.getNext();
+	        for(Player p : TrollAttack.gamePlayers) {
 	            if( Util.contains(p.getName(), playerName)) {
 	                String commandResult = p.ch.handleCommand(command);
 	                p.tell(player.getShort() + " forces you to '" + command + "'.");
 	                player.tell("You force " + p.getShort() + " to '" + command + "' " + (commandResult == null ? "(Invalid Command)" : "") + ".");
 	                
-	                TrollAttack.gamePlayers.reset();
 	                return true;
 	            }
 	        }
-	        TrollAttack.gamePlayers.reset();
 	        Being victim = player.getActualRoom().getBeing(playerName, player);
 	        if(victim == null) {
 	            player.tell("You don't see that!");

@@ -32,7 +32,7 @@ import TrollAttack.Items.Item;
  * Preferences - Java - Code Style - Code Templates
  */
 public class Util {
-    static public String wrapChar = "\n";
+    static public String wrapChar = "\n\r";
 
     static public boolean contains(String s, String d) {
         try {

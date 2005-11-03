@@ -180,11 +180,11 @@ public class Room {
         }
     }
 
-    public String[] look() {
+    public String look() {
         return look(null);
     }
 
-    public String[] look(Being player) {
+    public String look(Being player) {
         String exits = "Exits: ";
         for(Exit exit : roomExits) {
             if (exits.length() > 7) {
@@ -202,11 +202,9 @@ public class Room {
          * Show Items get all of the items in the room, and write their
          * longdesc.
          */
-        String[] objects = new String[roomItems.length()];
+        String objects = "";
         int n = 0;
         while (roomItems.itemsRemain()) {
-            //TrollAttack.error("About to get room " + i + " of " +
-            // roomItems[i]);
             Item currentItem = (Item) roomItems.getNext();
             String color;
             if (currentItem.getType() == Fountain.getItemType()) {
@@ -214,7 +212,8 @@ public class Room {
             } else {
                 color = Communication.GREEN;
             }
-            objects[n] = color + currentItem.getLong();
+            objects += color + currentItem.getLong();
+            objects += Util.wrapChar;
             n++;
 
         }
@@ -224,36 +223,26 @@ public class Room {
          * Show Mobs get all mobs from the room, and write their longdesc (as
          * well as any players).
          */
-        String[] mobiles = new String[roomBeings.size()];
+        String mobiles = "";
         //TrollAttack.debug("Printing " + roomBeings.length() + " mobiles...");
-        int m = 0;
         //boolean removeMe = false;
         Iterator<Being> eachBeing = roomBeings.iterator();
         while (eachBeing.hasNext()) {
             Being currentBeing = eachBeing.next();
             //TrollAttack.debug("Found mobile " + currentBeing.toString());
             if (currentBeing != player) {
-                mobiles[m] = Communication.PURPLE + currentBeing.getLong();
-
-                //TrollAttack.error("Adding "+ mobiles[i] + " to print
-                // queue.");
-                
-                m++;
+                mobiles += Communication.PURPLE + currentBeing.getLong();
+                mobiles += Util.wrapChar;
             } else {
-                //removeMe = true;
             }
 
         }
-        String[] firsts = { Communication.WHITE + title,
-                Communication.YELLOW + description, Communication.WHITE + exits };
-        //TrollAttack.error("3 firsts, " + i + " objects.");
-        String[] myReturn = new String[n + m + firsts.length];
-        //TrollAttack.error(firsts.length + " title + desc lines, " + n + "
-        // item lines, " + m + " mob lines.");
-        System.arraycopy(firsts, 0, myReturn, 0, firsts.length);
-        System.arraycopy(objects, 0, myReturn, firsts.length, n);
-        System.arraycopy(mobiles, 0, myReturn, firsts.length + n, m);
-        return myReturn;
+        String look = Communication.WHITE + title + Util.wrapChar +
+                    Communication.YELLOW + description + Util.wrapChar +
+                    Communication.WHITE + exits + Util.wrapChar + 
+                    objects +
+                    mobiles;
+        return look;
     }
 
     /*

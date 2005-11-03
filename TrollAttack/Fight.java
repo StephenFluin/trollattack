@@ -59,6 +59,8 @@ public class Fight extends Thread {
             }
             runRound(first, second);
             runRound(second, first);
+            first.tell("");
+            second.tell("");
             first.tell(first.prompt());
             second.tell(second.prompt());
 
@@ -80,16 +82,12 @@ public class Fight extends Thread {
                 ((Player) second).kill(first);
             } else {
                 // SHOULD BE HANDLED BY RESETS!!!!
-                //TrollAttack.deadies.add( (Mobile)second,
-                // first.getCurrentRoom() );
             }
             second.dropAll();
-            int exp = first.getExperience();
+            int experienceIncrease = (int) (second.getAverageHitDamage() * second.maxHitPoints);
             first
-                    .increaseExperience((int) (second.getAverageHitDamage() * second.maxHitPoints));
-            //TrollAttack.error("Experience was " + exp + " and became " +
-            // TrollAttack.player.getExperience());
-
+                    .increaseExperience(experienceIncrease);
+            first.tell(Communication.WHITE + "You have gained " + Communication.CYAN + experienceIncrease + Communication.WHITE + " experience points from this kill.");
         } else {
             first.kill(second);
 
@@ -112,12 +110,12 @@ public class Fight extends Thread {
             first.tell(Util.uppercaseFirst(first.getShort(first)) + " rend ["
                     + (int) damage + "] " + second.getShort() + ".");
 
-            fightRoom.say("%1 causes " + (int) damage + " damage to %2!",
+            fightRoom.say(Communication.WHITE + "%1 causes " + (int) damage + " damage to %2!",
                     pBroadcast);
             second.hitPoints = second.hitPoints - (int) damage;
         } else {
-            first.tell("You miss " + second.getShort());
-            fightRoom.say("%1 misses %2!", pBroadcast);
+            first.tell(Communication.WHITE + "You miss " + second.getShort());
+            fightRoom.say(Communication.WHITE + "%1 misses %2!", pBroadcast);
         }
 
     }
