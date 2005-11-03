@@ -1,6 +1,7 @@
-Guide to adding new mobile attribute:
+Guide to adding new being attribute:
 	Add the attribute to Being or Mobile object.
 	Add the attribute to mset command.
 	Add the attribute to Being or Mobile xml generation.
-	Add the attribute to mstat command.
+	Add the attribute to mstat command (Util.java).
 	Add the attribute to DataReader.java.
+	
