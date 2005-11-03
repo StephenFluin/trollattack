@@ -1,14 +1,17 @@
 package TrollAttack;
 
-import java.util.Iterator;
+import java.util.*;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+
+import TrollAttack.Classes.*;
+import TrollAttack.Classes.Class;
+import TrollAttack.Classes.Class.*;
 import TrollAttack.Commands.Ability;
 import TrollAttack.Commands.CommandHandler;
-import TrollAttack.Commands.abilities.Scry;
 import TrollAttack.Items.*;
 
 /*
@@ -38,12 +41,17 @@ public class Being implements Cloneable {
 
     public Being switched = null;
 
-    public boolean canTeachMagic = false;
+    public boolean canTeach = false;
+    
+    private Class beingClass = null;
 
     Room actualRoom = null;
 
-    private java.util.LinkedList<Ability> beingAbilities = new java.util.LinkedList<Ability>();
-
+    private Hashtable<Ability, AbilityData> abilitiesData = new Hashtable<Ability, AbilityData>();
+    
+    public Hashtable<Ability, AbilityData> getAbilitiesData() {
+        return abilitiesData;
+    }
     public LinkedList equipment = new LinkedList();
 
     // Allows mobiles to do anything a player can do, is this dangerous or
@@ -149,9 +157,12 @@ public class Being implements Cloneable {
     }
 
     public void look() {
+        look(getActualRoom());
+    }
+    public void look(Room room) {
         String[] looks = {};
         try {
-            looks = getActualRoom().look(this);
+            looks = room.look(this);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -186,6 +197,52 @@ public class Being implements Cloneable {
         return name;
     }
 
+    public Class getBeingClass() {
+        return beingClass;
+    }
+    public Class.Classes getClassName() {
+        if(beingClass == null) {
+            return Class.Classes.Unclassed;
+        } else {
+            return beingClass.getName();
+        }
+    }
+    
+    public void setBeingClass(Class newClass) {
+        beingClass = newClass;
+    }
+    public void setBeingClass(Class.Classes className) {
+        switch(className) {
+        case Wizard:
+            setBeingClass(new Wizard());
+            //TrollAttack.debug("Setting to be a wiz.");
+            break;
+        case Warrior:
+            setBeingClass(new Warrior());
+            //TrollAttack.debug("Setting to be a war.");
+            break;
+        case Thief:
+            setBeingClass(new Thief());
+            //TrollAttack.debug("Setting to be a thief.");
+            break;
+        default:
+            //TrollAttack.error("Couldn't figure out what class this being is to be!!!");
+        }
+    }
+    public String setBeingClass(String value) {
+        for(Classes classType : Class.Classes.values()) {
+            if((classType.toString()).toLowerCase().startsWith(value.toLowerCase())) {
+                setBeingClass(classType);
+                //TrollAttack.debug("MATCH - Setting " + getShort() + " to be a " + getClassName() + " because of string " + value + ".");
+                return "Setting " + getShort() + " to be a " + getClassName() + ".";
+            } else {
+                //TrollAttack.debug((classType.toString()).toLowerCase() + " did not start with '" + value + "'.");
+            }
+        }
+        //TrollAttack.debug("Setting " + getShort() + " to be a " + getClassName() + " because of string " + value + ".");
+        return "Setting " + getShort() + " to be a " + getClassName() + ".";
+    }
+    
     public int getHitDamage() {
         return hitDamage.roll();
     }
@@ -195,10 +252,17 @@ public class Being implements Cloneable {
     }
 
     public String prompt() {
-        return myPrompt.showPrompt(hitPoints, maxHitPoints, manaPoints,
-                maxManaPoints, movePoints, maxMovePoints, experience, Util
-                        .experienceLevel(level + 1)
-                        - experience);
+        return myPrompt.showPrompt(
+                hitPoints, 
+                maxHitPoints, 
+                manaPoints,
+                maxManaPoints, 
+                movePoints, 
+                maxMovePoints, 
+                experience, 
+                Util.experienceLevel(level + 1) - experience,
+                currentRoom,
+                gold);
     }
 
     public String getPrompt() {
@@ -322,6 +386,7 @@ public class Being implements Cloneable {
             hitDamage.addition++;
             hitSkill.sizeOfDice += (int) (Math.random() * 1) + dexterity
                     - ((dexterity / 2) < 2 ? 0 : dexterity / 2 - 2);
+            rehash();
         }
     }
 
@@ -696,6 +761,16 @@ public class Being implements Cloneable {
     public double getTimePlayed() {
         return 0;
     }
+    
+    public static void addAbilityNodes(Document doc, Player player, Node beingNode) {
+       for(Ability ability : player.getAbilitiesData().keySet()) {
+           Node abilityNode = doc.createElement("ability");
+           abilityNode.appendChild(Util.nCreate(doc, "name", ability.toString()));
+           abilityNode.appendChild(Util.nCreate(doc, "proficiency", player.getProficiency(ability) + ""));
+           beingNode.appendChild(abilityNode);
+       }
+        
+    }
 
     public static void addEquipmentNodes(Document doc, Being being,
             Node beingNode) {
@@ -761,9 +836,13 @@ public class Being implements Cloneable {
         }
     }
 
-    public int getProficiency(Scry scry) {
-        // TODO Auto-generated method stub
-        return 0;
+    public double getProficiency(Ability ability) {
+        AbilityData data = abilitiesData.get(ability);
+        if(data == null) {
+            return 0;
+        } else {
+            return data.proficiency;
+        }
     }
     
     public boolean close(String direction) {
@@ -796,4 +875,58 @@ public class Being implements Cloneable {
             return true;
         }
     }
+
+    public Set<Ability> getAbilityList() {
+        return abilitiesData.keySet();
+    }
+    public void practice(Ability ability) {
+        practice(ability, 6, true);
+    }
+    public void practice(Ability ability, float proficiency) {
+        practice(ability, proficiency, true);
+    }
+    public void practice(Ability ability, float proficiency, boolean safety) {
+        if(abilitiesData.containsKey(ability)) {
+            // already know this skill
+            if(!safety) {
+                abilitiesData.put(ability, new AbilityData(proficiency));
+            }
+            return;
+        }
+        AbilityData data = new AbilityData(proficiency);
+        abilitiesData.put(ability, data);
+    }
+
+    public void learnFromPractice(boolean success, Ability ability) {
+       AbilityData data = abilitiesData.get(ability);
+       AbilityData classData = getBeingClass().getAbilityData().get(ability);
+        if(data.proficiency < classData.maxProficiency) {
+            // Can learn more still.
+            tell("Prof is " + data.proficiency);
+            float increase = (float)(success ? .9 : 0.3);
+            data.proficiency += increase;
+            //tell("Prof is " + data.proficiency);
+            data.proficiency *= 10;
+            //tell("Prof is " + data.proficiency);
+            data.proficiency = Math.round(data.proficiency);
+            //tell("Prof is " + data.proficiency);
+            data.proficiency /= 10;
+            //tell("Prof is " + data.proficiency);
+            tell(Communication.GREEN + 
+                    "You learn from your " + (success ? "sucess" : "failure") + ", and " + 
+                    ability.toString() + " rises by " + 
+                    increase + " to " + 
+                    data.proficiency);
+        }
+    }
+
+    public boolean isSuccess(Ability ability) {
+        float probability = 100 * new Random().nextFloat();
+        AbilityData data = abilitiesData.get(ability);
+        return (data.proficiency > probability);
+    }
+
+
+
+
 }

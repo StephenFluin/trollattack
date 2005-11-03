@@ -9,7 +9,7 @@ import org.w3c.dom.Node;
 
 import TrollAttack.Commands.Ability;
 import TrollAttack.Commands.CommandHandler;
-import TrollAttack.Commands.abilities.Scry;
+import TrollAttack.Classes.Class;
 import TrollAttack.Items.Item;
 import TrollAttack.Items.Weapon;
 
@@ -41,7 +41,7 @@ public class Player extends Being {
     private boolean builder = false;
 
     private Area area;
-
+    
     public boolean authenticated = false;
 
     public double timePlayed = 0;
@@ -65,6 +65,7 @@ public class Player extends Being {
         communication = com;
         setCurrentRoom(1);
         ch = new CommandHandler(this);
+
         isPlayer = true;
         timePlayed = 0;
 
@@ -72,9 +73,9 @@ public class Player extends Being {
 
     public Player(int gold, int hp, int mhp, int mp, int mmp, int vp, int mvp,
             int playerHitLevel, String hitSkillString, String hitDamageString,
-            int lev, int room, int exp, boolean isBuilder, String title,
+            int lev, int room, int exp, boolean isBuilder, String title, String prompt,
             double timePlayed, Area myArea, int hunger, int thirst,
-            String shortd, String pass) {
+            String shortd, String pass, String className) {
         this.gold = gold;
         hitPoints = hp;
         maxHitPoints = mhp;
@@ -91,13 +92,16 @@ public class Player extends Being {
         builder = isBuilder;
         this.timePlayed = timePlayed;
         this.title = title;
+        this.setPrompt(prompt);
         setArea(myArea);
         shortDescription = shortd;
-        ch = new CommandHandler(this);
+        
         password = pass;
         isPlayer = true;
         this.hunger = hunger;
         this.thirst = thirst;
+        setBeingClass(className);
+        ch = new CommandHandler(this);
         //TrollAttack.message("New player has password '" + password + "'.");
 
     }
@@ -282,6 +286,8 @@ public class Player extends Being {
         attribs.add(Util.nCreate(doc, "thirst", thirst + ""));
         attribs.add(Util.nCreate(doc, "gold", gold + ""));
         attribs.add(Util.nCreate(doc, "title", title + ""));
+        attribs.add(Util.nCreate(doc, "prompt", getPrompt()));
+        attribs.add(Util.nCreate(doc, "class", getClassName() + ""));
         
 
         if (getArea() != null)
@@ -305,7 +311,7 @@ public class Player extends Being {
             }
         }
         Being.addEquipmentNodes(doc, this, m);
-
+        Being.addAbilityNodes(doc, this, m);
         return doc;
     }
 

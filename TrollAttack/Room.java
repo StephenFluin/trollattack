@@ -18,7 +18,7 @@ public class Room {
 
     private LinkedList roomItems = new LinkedList();
 
-    public LinkedList roomBeings = new LinkedList();
+    public java.util.LinkedList<Being> roomBeings = new java.util.LinkedList<Being>();
 
     public java.util.LinkedList<Exit> roomExits = new java.util.LinkedList<Exit>();
 
@@ -81,9 +81,7 @@ public class Room {
          * itemList.appendChild(Util.nCreate(doc, "item", (
          * (Item)(playerItems.getNext()) ).vnum + "")); } attribs.add(itemList);
          */
-        Being roomBeing;
-        for (int i = 0; i < roomBeings.getLength(); i++) {
-            roomBeing = (Being) roomBeings.getNext();
+        for(Being roomBeing : roomBeings ) {
             if (!roomBeing.isPlayer()) {
                 Node mobile = doc.createElement("mobile");
                 mobile.appendChild(Util.nCreate(doc, "vnum",
@@ -92,7 +90,6 @@ public class Room {
                 attribs.add(mobile);
             }
         }
-        roomBeings.reset();
 
         Item roomItem;
         for (int i = 0; i < roomItems.getLength(); i++) {
@@ -122,19 +119,21 @@ public class Room {
 
         }
         try {
-            Integer[] mobileVnums = new Integer[roomBeings.length()];
-            LinkedList roomMobiles = new LinkedList();
-            for (int i = 0; i < roomBeings.length(); i++) {
-                Being tmp = (Being) roomBeings.getNext();
+            Integer[] mobileVnums = new Integer[roomBeings.size()];
+            java.util.LinkedList<Being> roomMobiles = new java.util.LinkedList<Being>();
+            int i = 0;
+            Iterator<Being> eachBeing = roomBeings.iterator();
+            while(eachBeing.hasNext()) {
+                Being tmp = eachBeing.next();
                 if (tmp.isPlayer()) {
                     roomMobiles.add(tmp);
                 } else {
                     mobileVnums[i] = new Integer(((Mobile) tmp).vnum);
                 }
             }
-            roomBeings.reset();
             roomBeings = roomMobiles;
-            for (int i = 0; i < mobileVnums.length; i++) {
+            
+            for (i = 0; i < mobileVnums.length; i++) {
                 if (mobileVnums[i] != null) {
                     roomBeings.add(TrollAttack.getMobile(mobileVnums[i]));
                 }
@@ -157,19 +156,18 @@ public class Room {
             roomItems.add(new Item(TrollAttack.getItem(roomVnums[i])));
         }
         try {
-            Integer[] mobileVnums = new Integer[roomBeings.length()];
-            LinkedList roomMobiles = new LinkedList();
-            for (int i = 0; i < roomBeings.length(); i++) {
-                Being tmp = (Being) roomBeings.getNext();
+            Integer[] mobileVnums = new Integer[roomBeings.size()];
+            java.util.LinkedList<Being> roomMobiles = new java.util.LinkedList<Being>();
+            int i = 0;
+            for (Being tmp : roomBeings) {
                 if (tmp.isPlayer()) {
                     roomMobiles.add(tmp);
                 } else {
                     mobileVnums[i] = new Integer(((Mobile) tmp).vnum);
                 }
             }
-            roomBeings.reset();
             roomBeings = roomMobiles;
-            for (int i = 0; i < mobileVnums.length; i++) {
+            for (i = 0; i < mobileVnums.length; i++) {
                 if (mobileVnums[i] != null) {
                     roomBeings.add(new Mobile(TrollAttack
                             .getMobile(mobileVnums[i])));
@@ -226,23 +224,26 @@ public class Room {
          * Show Mobs get all mobs from the room, and write their longdesc (as
          * well as any players).
          */
-        String[] mobiles = new String[roomBeings.length() - 1];
+        String[] mobiles = new String[roomBeings.size()];
         //TrollAttack.debug("Printing " + roomBeings.length() + " mobiles...");
         int m = 0;
-
-        while (roomBeings.itemsRemain()) {
-            Being currentBeing = (Being) roomBeings.getNext();
+        //boolean removeMe = false;
+        Iterator<Being> eachBeing = roomBeings.iterator();
+        while (eachBeing.hasNext()) {
+            Being currentBeing = eachBeing.next();
             //TrollAttack.debug("Found mobile " + currentBeing.toString());
             if (currentBeing != player) {
                 mobiles[m] = Communication.PURPLE + currentBeing.getLong();
 
                 //TrollAttack.error("Adding "+ mobiles[i] + " to print
                 // queue.");
+                
                 m++;
+            } else {
+                //removeMe = true;
             }
 
         }
-        roomBeings.reset();
         String[] firsts = { Communication.WHITE + title,
                 Communication.YELLOW + description, Communication.WHITE + exits };
         //TrollAttack.error("3 firsts, " + i + " objects.");
@@ -276,11 +277,9 @@ public class Room {
     // Any player that matches who they are talking to
     // is replaced with you.
     public void say(String s, Being[] players) {
-        Being person;
         try {
-            for (int i = 1; i <= roomBeings.length(); i++) {
+            for (Being person : roomBeings) {
                 // TrollAttack.message("Found a being...");
-                person = (Being) roomBeings.getNext();
                 String message = s;
                 if (players.length < 1 || person != players[0]) {
 
@@ -298,8 +297,6 @@ public class Room {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            roomBeings.reset();
         }
     }
 
@@ -362,13 +359,11 @@ public class Room {
 
     public int countExactMobile(Mobile mobile) {
         int count = 0;
-        while (roomBeings.itemsRemain()) {
-            Being currentMobile = (Being) roomBeings.getNext();
+        for(Being currentMobile : roomBeings) {
             if (currentMobile == mobile) {
                 count++;
             }
         }
-        roomBeings.reset();
         return count;
     }
 
@@ -404,25 +399,21 @@ public class Room {
     public Being getBeing(String name, boolean remove, Being actor) {
 
         Being newMobile;
-        roomBeings.reset();
         //TrollAttack.debug("About to search through " + roomBeings.length() +
         // " items in room " + vnum);
-        while (roomBeings.itemsRemain()) {
-            Being currentBeing = (Being) roomBeings.getNext();
+        for(Being currentBeing : roomBeings) {
 
             if (currentBeing != actor
                     && Util.contains(currentBeing.getName(), name)) {
                 newMobile = (Being) currentBeing;
 
                 if (remove == true) {
-                    roomBeings.delete(newMobile);
+                    roomBeings.remove(newMobile);
                 }
-                roomBeings.reset();
                 return newMobile;
             } else {
             }
         }
-        roomBeings.reset();
         return null;
     }
 
@@ -438,11 +429,9 @@ public class Room {
     }
 
     public Being removeBeing(Being being) {
-        Being currentBeing = null;
-        for (int i = 0; i < roomBeings.length(); i++) {
-            currentBeing = (Being) roomBeings.getNext();
+        for(Being currentBeing : roomBeings ) {
             if (currentBeing == being) {
-                roomBeings.delete(being);
+                roomBeings.remove(being);
                 return being;
             }
         }
@@ -470,9 +459,8 @@ public class Room {
 
     public void healBeings() {
         Mobile m;
-        Being currentBeing = (Being) roomBeings.getNext();
         int strength;
-        while (currentBeing != null) {
+        for(Being currentBeing : roomBeings) {
             strength = 1 + currentBeing.getState();
             if (currentBeing.thirst > 8) {
                 strength = strength / 2;
@@ -485,9 +473,7 @@ public class Room {
             currentBeing.increaseHitPoints(strength);
             currentBeing.increaseManaPoints(strength);
             currentBeing.increaseMovePoints(strength);
-            currentBeing = (Being) roomBeings.getNext();
         }
-        roomBeings.reset();
     }
 
     public void replaceItem(Item find, Item replace) {
@@ -518,6 +504,10 @@ public class Room {
             }
         }
         return null;
+    }
+
+    public java.util.LinkedList<Being> getRoomBeings() {
+        return roomBeings;
     }
 
 }

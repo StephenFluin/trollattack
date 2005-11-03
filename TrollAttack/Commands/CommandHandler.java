@@ -13,21 +13,23 @@ package TrollAttack.Commands;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 
+
+import java.util.Hashtable;
+import java.util.Set;
+
 import TrollAttack.*;
+import TrollAttack.Classes.AbilityData;
 import TrollAttack.Items.*;
-import TrollAttack.Spells.SpellHandler;
 
 
 public class CommandHandler {
 	LinkedList commandList;
-	SpellHandler sh;
 	Build builder;
 	Being player;
 	public CommandHandler(Being p) {
 		commandList = new LinkedList(false, 0);
 		player = p;
 		//player.tell("Starting command handler.");
-		sh = new SpellHandler(player);
 		builder = new Build(player);
 		//player.tell("Starting command registration...");
 		registerCommand(new CommandMove(player, "north", Exit.NORTH));
@@ -70,6 +72,7 @@ public class CommandHandler {
 		registerCommand(new Say("say"));
 		registerCommand(new Emote("emote"));
 		registerCommand(new Title("title"));
+        registerCommand(new Practice("practice"));
 		registerCommand(new ChangeState("wake", 0));
 		registerCommand(new ChangeState("stand", 0));
 		registerCommand(new ChangeState("sit", 1));
@@ -92,6 +95,9 @@ public class CommandHandler {
 		
 		registerCommand(new Quit("quit"));
 		registerCommand(new Quit("exit"));
+        
+
+        
 		/* Immortal Commands */
 		if(player.level > 55 || player.isMobile()) {
 		    registerCommand(new vAssign("vassign"));
@@ -100,6 +106,7 @@ public class CommandHandler {
 		    registerCommand(new unfreeze("unfreeze"));
 		    registerCommand(new UnQuit("unquit"));
 		    registerCommand(new Switch("switch"));
+            registerCommand(new sSet("sset"));
 
 		}
 		
@@ -130,10 +137,22 @@ public class CommandHandler {
 			registerCommand(new InvokeItem("iinvoke"));
 			registerCommand(new InvokeMobile("minvoke"));
 		}
+        if(player.getBeingClass() != null) {
+            registerAbilityList(player.getAbilityList());
+        }
 		
 	}
 
-	public void registerCommand( Command c) {
+	public void registerAbilityList(Set<Ability> abilityList) {
+        for(Ability ability : abilityList) {
+            if(!ability.isSpell()) {
+                registerCommand(ability);
+            }
+        }
+        
+    }
+
+    private void registerCommand( Command c) {
 		/*
 		 if(c == null) {
 		    player.tell("c is null!");
@@ -172,14 +191,22 @@ public class CommandHandler {
 			    if(commandParts.length > 1) {
 	
 				        try {
-				            command.execute(commandParameter);
+				            if(command.needsPlayer) {
+				                command.execute(player, commandParameter);
+                            } else {
+                                command.execute(commandParameter);
+                            }
 				        } catch(Exception e) {
 				            e.printStackTrace();
 				        }
 					
 				} else {
 				    try {
-				        command.execute();
+                        if(command.needsPlayer) {
+                            command.execute(player);
+                        } else {
+                            command.execute();
+                        }
 				    } catch(Exception e) {
 			            e.printStackTrace();
 			        }
@@ -440,9 +467,9 @@ public class CommandHandler {
             player.tell("Cast what?"); 
             return false;
         }
-	    public boolean execute(String s) {
+	    public boolean execute(String spellName) {
 	        try {
-	            sh.handleSpell( s );
+	            handleSpell( player, spellName );
 	        } catch(Exception e) {
 	            e.printStackTrace();
                 return false;
@@ -722,6 +749,112 @@ public class CommandHandler {
             return true;
 	    }
 	}
+    class sSet extends Command {
+        public sSet(String s) { super(s,false); }
+        public boolean execute() {
+            player.tell("Usage: sset <ability> <proficiency>");
+            player.tell("       sset all 100");
+            player.tell("       sset scan 80");
+            return false;
+        }
+        public boolean execute(String command) {
+            String[] parts = command.split(" ");
+            if(parts.length != 2) {
+                return execute();
+            }
+            if(parts[0].compareToIgnoreCase("all") == 0) {
+                for(Ability ability : player.getBeingClass().getAbilityList()) {    
+                    player.practice(ability, new Float(parts[1]), false);
+                }
+            } else {
+                Ability ability = player.getBeingClass().findAbility(parts[0]);
+                player.practice(ability, new Float(parts[1]), false);
+            }
+            player.rehash();
+            return true;
+        }
+    }
+    class Practice extends Command {
+        public Practice(String s) { super(s,true); }
+        public boolean execute() {
+            if(player.getBeingClass() == null) {
+                player.tell("Unclassed players can't learn skills.");
+                return false;
+            }
+            
+            // SKILLS
+            player.tell(Communication.BLUE +    "--------------" +
+                    Communication.CYAN + "Skills" +
+                    Communication.BLUE +        "--------------");
+            
+            Hashtable<Ability, AbilityData> data = player.getBeingClass().getAbilityData();
+            Set<Ability> list = data.keySet();
+            int count = 0;
+            for(Ability ability : list) {
+                if( ( data.get(ability).level <= player.level || player.level > 60 ) && !ability.isSpell()) {
+                    player.tell(Communication.GREEN + ability.name + "\t\t" + player.getProficiency(ability));
+                    count++;
+                }
+            }
+            if(count == 0 ) {
+                player.tell("  " + Communication.BLUE + "(none)");
+            }
+            
+            // SPELLS
+            player.tell(Communication.BLUE +    "--------------" +
+                    Communication.CYAN + "Spells" +
+                    Communication.BLUE +        "--------------");
+            
+            data = player.getBeingClass().getAbilityData();
+            count = 0;
+            for(Ability ability : data.keySet()) {
+                if( ( data.get(ability).level <= player.level || player.level > 60 ) && ability.isSpell()) {
+                    player.tell(Communication.GREEN + ability.name + "\t\t" + player.getProficiency(ability));
+                    count++;
+                }
+            }
+            if(count == 0 ) {
+                player.tell("  " + Communication.BLUE + "(none)");
+            }
+            return false;
+            
+        }
+        public boolean execute(String command) {
+            if(player.getBeingClass() == null) {
+                return execute();
+            }
+            Being trainer = null;
+            java.util.LinkedList<Being> beings = player.getActualRoom().getRoomBeings();
+            for(Being being : beings) {
+                if(being.canTeach) {
+                    trainer = being;
+                    break;
+                }
+            }
+            if(trainer == null) {
+                player.tell("There is no one here to teach you.");
+                return false;
+            }
+            Hashtable<Ability, AbilityData> data = player.getBeingClass().getAbilityData();
+            Set<Ability> list = data.keySet();
+            for(Ability ability : list) {
+                if(data.get(ability).level <= player.level && ability.name.startsWith(command)) {
+                    if(player.getProficiency(ability) > 0) {
+                        trainer.ch.handleCommand("say I'm sorry " + player.getShort() + ", but there is nothing more I can teach you about this.");
+                        return false;
+                    } else {
+                        player.practice(ability);
+                        player.tell("You learn " + ability.name + ".");
+                        trainer.ch.handleCommand("say I have taught you everything I can about this " + player.getShort() + ", use this knowledge wisely.");
+                        player.rehash();
+                        return true;
+                    }
+                }
+            }
+            player.tell("You aren't ready to learn that yet.");
+            return false;
+        }
+    }
 	class Puke extends Command {
 	    public Puke(String s) { super(s, false); }
 	    public boolean execute() {
@@ -781,6 +914,9 @@ public class CommandHandler {
         }
 	    public boolean execute(String message) {
 	        //TrollAttack.message("Emoting " + message + ".");
+            if(!message.endsWith(".") && !message.endsWith("!") && !message.endsWith("?")) {
+                message = message + ".";
+            }
 	        player.getActualRoom().say(player.getShort() + " " + message);
             return true;
 	    }
@@ -974,8 +1110,7 @@ public class CommandHandler {
 	    }
 
 	    public boolean execute(String s) {
-	        while(TrollAttack.gameAreas.itemsRemain())  {
-	            Area area = (Area)TrollAttack.gameAreas.getNext();
+	        for(Area area : TrollAttack.gameAreas ) {
 	            if(area.filename.compareToIgnoreCase(s) == 0) {
 	                area.frozen = true;
 	                area.save(TrollAttack.gameRooms, TrollAttack.gameMobiles, TrollAttack.gameItems);
@@ -984,7 +1119,6 @@ public class CommandHandler {
 	                break;
 	            }
 	        }
-	        TrollAttack.gameAreas.reset();
 	        return true;
 	    }
 
@@ -996,8 +1130,7 @@ public class CommandHandler {
             return false;
 	    }
 	    public boolean execute(String s) {
-	        while(TrollAttack.gameAreas.itemsRemain())  {
-	            Area area = (Area)TrollAttack.gameAreas.getNext();
+	        for( Area area : TrollAttack.gameAreas) {
 	            if(area.filename.compareToIgnoreCase(s) == 0) {
 	                area.frozen = false;
 	                area.save(TrollAttack.gameRooms, TrollAttack.gameMobiles, TrollAttack.gameItems);
@@ -1006,7 +1139,6 @@ public class CommandHandler {
 	                break;
 	            }
 	        }
-	        TrollAttack.gameAreas.reset();
 	        return true;
 	    }
 	}
@@ -1015,13 +1147,9 @@ public class CommandHandler {
 	    public boolean execute() {
 		    player.tell(Communication.GREEN + "Game Areas:");
 		    player.tell(Communication.CYAN + "Filename\t\tLowVnum\tHighVnum\tFrozen\tName" + Communication.WHITE);
-		    Area area;
-		    while(TrollAttack.gameAreas.itemsRemain()) {
-		        area = (Area)TrollAttack.gameAreas.getNext();
-		       
-		        player.tell(area.filename + (area.filename.length() < 12 ? "\t" : "") + "\t" + area.low+"\t"+area.high + "\t" + "(" + (area.frozen ? "X" : " ") + ")\t" + area.name);
+		    for(Area area : TrollAttack.gameAreas) {
+		        player.tell(area.filename + (area.filename.length() < 14 ? "\t" : "") + "\t" + area.low+"\t"+area.high + "\t\t" + "(" + (area.frozen ? "X" : " ") + ")\t" + area.name);
 		    }
-		    TrollAttack.gameAreas.reset();
             return true;
 		}
 	}
@@ -1345,11 +1473,9 @@ public class CommandHandler {
 	    public boolean execute(String s) {
 	        if(player.level >= 60) {
 	            if(s.compareToIgnoreCase("all") == 0 ) {
-		            for(int i = 1;i <= TrollAttack.gameAreas.length();i++) {
-		                Area area = (Area)TrollAttack.gameAreas.find(i);
+		            for(Area area : TrollAttack.gameAreas ) {
 		                area.save(TrollAttack.gameRooms, TrollAttack.gameMobiles, TrollAttack.gameItems);
 		            }
-		            TrollAttack.gameAreas.reset();
 	            } else {
 		            Area area = Area.findArea(s,TrollAttack.gameAreas);
 		            if(area == null) {
@@ -1505,5 +1631,56 @@ public class CommandHandler {
             return true;
 		}
 	}
-	
+    
+    public static boolean handleSpell(Being player, String spellString) {
+        String[] spellParts = spellString.split(" ");
+        String spellParameter = "";
+        if(spellParts.length > 0 ) {
+            spellString = spellParts[0];
+            if(spellParts.length > 1 ) {
+                for(int i = 1; i < spellParts.length; i ++ ) {
+                    if(i > 1) {
+                        spellParameter += " ";
+                    }
+                    spellParameter += spellParts[i];
+                }
+            }
+        } else {
+            spellString = "";
+        }
+        Spell spell = null;
+        for(Ability tmpSpell : player.getAbilityList()) {
+            if(tmpSpell.isSpell() && tmpSpell.name.startsWith(spellString)) {
+                spell = (Spell)tmpSpell;
+                break;
+            } else {
+                //player.tell(tmpSpell.name + " is either not a spell or doesn't match, '" + spellString + "'.");
+            }
+        }
+        boolean results = false;
+        if(spellString.length() > 0 && spell != null) {
+            if(spell.isPeaceful() && player.isFighting()) {
+                player.tell("You can't cast that while fighting!");
+            } else {
+                if(spell.getCost() > player.getManaPoints()) {
+                    player.tell("You don't have enough mana for that!");
+                    
+                } else {
+                    if(spellParts.length > 1) {
+                        results = spell.execute(player, spellParameter);
+                        
+                    } else {
+                        results = spell.execute(player);
+                    }
+                }
+                
+            }
+        } else {
+            player.tell("Cast what spell?");
+            return false;
+        }
+        return results;
+        
+    }
+
 }

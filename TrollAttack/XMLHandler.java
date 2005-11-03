@@ -52,30 +52,8 @@ public class XMLHandler {
          */
     }
 
-    /*
-     * // Take in a node and a linked list, and attach a hash for each child of
-     * the node. public void listProcess(Node n, LinkedList l) { NodeList kids =
-     * n.getChildNodes(); Node kid;
-     *  // Loop through each of the <object> elements for(int j = loopStart; j <
-     * kids.getLength(); j += loopIncrement) { kid = kids.item(j); //
-     * TrollAttack.message("Looping through childnode " + kid.getNodeName());
-     * Hashtable newHash = new Hashtable(); l.add(newHash);
-     * 
-     * if(kid.getChildNodes().getLength() > loopIncrement+loopStart) {
-     * hashProcess(kid, newHash, 1); } /* if( ( kid.getNodeValue() == null ) && (
-     * kid.getChildNodes().item(1) != null ) && (
-     * kid.getChildNodes().item(1).getNodeValue() == null ) ) {
-     * //TrollAttack.message("Creating kash key(" + j + ") '" +
-     * kid.getNodeName() + "' + '" + kid.getNodeValue() + "'."); LinkedList
-     * newList = new LinkedList(); newHash.put(kid.getNodeName(), newList);
-     * process(kid, newList); } else { //TrollAttack.message("Creating hash
-     * key(" + j + ") '" + kid.getNodeName() + "' + '" + kid.getNodeValue() +
-     * "'.");
-     * 
-     * 
-     * //TrollAttack.message("Finished creating hash key."); } } }
-     */
-    // Take a node and a hahstable and populate the hashtable with all of the
+    
+    // Take a node and a hashtable and populate the hashtable with all of the
     // children of the node.
     public void hashProcess(Node n, Hashtable hash, int depth) {
         NodeList kids = n.getChildNodes();
@@ -94,7 +72,7 @@ public class XMLHandler {
             if (currentValue != null) {
                 if (currentValue.getClass() == LinkedList.class) {
                     LinkedList list = (LinkedList) currentValue;
-                    if (kid.getChildNodes().getLength() > 2) {
+                    if (kid.getChildNodes().item(0).getNodeType() != Node.TEXT_NODE) {
                         Hashtable hashy = new Hashtable();
                         hashProcess(kid, hashy, depth + 1);
                         list.add(hashy);
@@ -127,6 +105,8 @@ public class XMLHandler {
                                         + kid.getChildNodes().getLength()
                                         + " children.");
                             }
+                        } else {
+                            //TrollAttack.debug("This means that the child of the node we are on isn't a text node, and it doesn't have a null value, the value is " + kid.getChildNodes().item(0).getNodeValue());
                         }
                         ll.add(kid.getChildNodes().item(0).getNodeValue());
                     }

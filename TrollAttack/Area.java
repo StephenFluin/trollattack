@@ -182,74 +182,54 @@ public class Area {
         }
     }
 
-    static public Area findArea(String filename, LinkedList gameAreas) {
-        Area currentArea;
-        while (gameAreas.itemsRemain()) {
-            currentArea = (Area) gameAreas.getNext();
+    static public Area findArea(String filename, java.util.LinkedList<Area> gameAreas) {
+        for (Area currentArea : gameAreas) {
             if (filename == null) {
                 filename = "";
             }
             if (currentArea.filename.compareToIgnoreCase(filename) == 0) {
-                gameAreas.reset();
                 return currentArea;
             }
         }
-        gameAreas.reset();
         return null;
     }
 
-    static public Area test(int vnum, LinkedList gameAreas) {
-        Area currentArea;
-        while (gameAreas.itemsRemain()) {
-            currentArea = (Area) gameAreas.getNext();
+    static public Area test(int vnum, java.util.LinkedList<Area> gameAreas) {
+        for(Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
-                gameAreas.reset();
                 return currentArea;
             }
         }
-        gameAreas.reset();
         return new Area();
     }
 
-    static public Area testRoom(Room room, LinkedList gameAreas) {
-        Area currentArea;
+    static public Area testRoom(Room room, java.util.LinkedList<Area> gameAreas) {
         int vnum = room.vnum;
-        while (gameAreas.itemsRemain()) {
-            currentArea = (Area) gameAreas.getNext();
+        for (Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
-                gameAreas.reset();
                 return currentArea;
             }
         }
-        gameAreas.reset();
         return new Area();
     }
 
-    static public Area testMobile(Mobile room, LinkedList gameAreas) {
-        Area currentArea;
+    static public Area testMobile(Mobile room, java.util.LinkedList<Area> gameAreas) {
         int vnum = room.vnum;
-        for (int i = 0; i < gameAreas.length(); i++) {
-            currentArea = (Area) gameAreas.getNext();
+        for(Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
-                gameAreas.reset();
                 return currentArea;
             }
         }
-        gameAreas.reset();
         return new Area();
     }
 
-    static public Area testItem(Item room, LinkedList gameAreas) {
-        Area currentArea;
+    static public Area testItem(Item room, java.util.LinkedList<Area> gameAreas) {
         int vnum = room.vnum;
-        for (int i = 0; i < gameAreas.length(); i++) {
-            currentArea = (Area) gameAreas.getNext();
+        for(Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
-                gameAreas.reset();
                 return currentArea;
             }
         }
-        gameAreas.reset();
         return new Area();
     }
 

@@ -8,14 +8,13 @@
  */
 package TrollAttack.Commands;
 
-import TrollAttack.Area;
-import TrollAttack.Being;
-import TrollAttack.Roll;
-import TrollAttack.Util;
+import TrollAttack.*;
 
 import java.io.File;
 
 import TrollAttack.*;
+import TrollAttack.Classes.Class;
+import TrollAttack.Classes.Class.Classes;
 import TrollAttack.Items.*;
 
 /**
@@ -158,7 +157,7 @@ public class Build {
         }
         if(s.startsWith("name")) {
             area.name = command;
-            player.tell("Area name changed to '" + command + "'");
+            player.tell("Area name changed to '" + area.name + "'");
         } else if(s.startsWith("filename")) {
             if(parts[1].length() < 3) {
                 player.tell("Area filename must be at least 3 characters long.");
@@ -370,7 +369,14 @@ public class Build {
             } else if(attr.compareToIgnoreCase("level") == 0) {
                 mobile.level = intValue;
             } else if(attr.compareToIgnoreCase("trainer") == 0) {
-                mobile.canTeachMagic = new Boolean(value).booleanValue();
+                if(value.length() < 4) {
+                    mobile.canTeach = (!mobile.canTeach);
+                } else {
+                    mobile.canTeach = new Boolean(value).booleanValue();
+                }
+            } else if(attr.compareToIgnoreCase("class") == 0) {
+                player.tell( mobile.setBeingClass(value));
+                
             } else {
                 player.tell(attr + " is not a valid attribute for a mobile!");
                 return;

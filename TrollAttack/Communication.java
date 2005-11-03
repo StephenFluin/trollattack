@@ -211,7 +211,8 @@ public class Communication extends Thread {
             } catch (SocketException e) {
                 return null;
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                TrollAttack.debug("Player quit while logging in.");
                 return null;
             } catch (Exception e) {
                 e.printStackTrace();

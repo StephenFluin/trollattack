@@ -9,9 +9,11 @@ package TrollAttack;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import org.w3c.dom.Document;
 
+import TrollAttack.Commands.Ability;
 import TrollAttack.Items.*;
 
 /**
@@ -60,7 +62,7 @@ public class DataReader {
         return readRoomData((LinkedList) sections.get("room"));
     }
 
-    public LinkedList getAreas() {
+    public java.util.LinkedList<Area> getAreas() {
         if (sections.get("area").getClass() == LinkedList.class) {
             return readAreaData((LinkedList) sections.get("area"));
         } else if (sections.get("area").getClass() == Hashtable.class) {
@@ -83,7 +85,7 @@ public class DataReader {
             }
         }
         XMLHandler handler = new XMLHandler(doc);
-        Hashtable hash = (Hashtable) handler.sections.get("player");
+        Hashtable<String, String> hash = (Hashtable) handler.sections.get("player");
 
         if (hash.get("hitLevel") == null) {
             hash.put("hitLevel", 3 + "");
@@ -106,93 +108,85 @@ public class DataReader {
         Player p = null;
         p = new Player(
 
-        new Integer((String) hash.get("gold")).intValue(), new Integer(
-                (String) hash.get("hitPoints")).intValue(), new Integer(
-                (String) hash.get("maxHitPoints")).intValue(), new Integer(
-                (String) hash.get("manaPoints")).intValue(), new Integer(
-                (String) hash.get("maxManaPoints")).intValue(), new Integer(
-                (String) hash.get("movePoints")).intValue(), new Integer(
-                (String) hash.get("maxMovePoints")).intValue(), new Integer(
-                (String) hash.get("hitLevel")).intValue(), (String) hash
-                .get("hitSkill"), (String) hash.get("hitDamage"), new Integer(
-                (String) hash.get("level")).intValue(), new Integer(
-                (String) hash.get("room")).intValue(), new Integer(
-                (String) hash.get("experience")).intValue(), new Boolean(
-                (String) hash.get("builder")).booleanValue(), (hash
-                .get("title") != null ? (String) hash.get("title") : ""), (hash
-                .get("timePlayed") != null ? new Double((String) hash
+        new Integer(hash.get("gold")).intValue(), new Integer(
+                hash.get("hitPoints")).intValue(), new Integer(
+                hash.get("maxHitPoints")).intValue(), new Integer(
+                hash.get("manaPoints")).intValue(), new Integer(
+                hash.get("maxManaPoints")).intValue(), new Integer(
+                hash.get("movePoints")).intValue(), new Integer(
+                hash.get("maxMovePoints")).intValue(), new Integer(
+                hash.get("hitLevel")).intValue(), (String) hash
+                .get("hitSkill"), hash.get("hitDamage"), new Integer(
+                hash.get("level")).intValue(), new Integer(
+                hash.get("room")).intValue(), new Integer(
+                hash.get("experience")).intValue(), new Boolean(
+                hash.get("builder")).booleanValue(), (hash
+                .get("title") != null ? hash.get("title") : ""), (hash
+                .get("prompt") != null ? hash.get("prompt") : ""), (hash
+                .get("timePlayed") != null ? new Double( hash
                 .get("timePlayed")).doubleValue() : 0), Area.findArea(
-                (String) hash.get("area"), TrollAttack.gameAreas), Util
-                .intize((String) hash.get("hunger")), Util.intize((String) hash
-                .get("thirst")), (String) hash.get("name"), (String) hash
-                .get("password"));
-
-        //TrollAttack.message("ZIZZAPED PLAYER " + p.getShort());
-        Object tmpRooms = hash.get("item");
-        // This is going to get complicated until I figure out attributes,
-        // TODO because I am going to have to deal with 4 cases, single
-        // item with attributes, without attributes, multiple items with
-        // attributes, and multiple without, ack!
-        //if(tmpRooms != null) TrollAttack.debug(tmpRooms.toString());
-        if (tmpRooms == null) {
-            // No items
-        } else if (tmpRooms.getClass() == LinkedList.class) {
-            // linked list of items found, indicating more than one item found.
-            LinkedList items = (LinkedList) (tmpRooms);
-            items.reset();
-            for (int i = 0; i < items.length(); i++) {
-                Object current = items.getNext();
-                if (current == null) {
-                    TrollAttack.error("Current object is a NULL!");
-                } else {
-                    //TrollAttack.debug("Current object is a " +
-                    // current.getClass());
-                    Item newItem = getItemFromObject(current);
-                    //Item newItem = TrollAttack.getItem(new
-                    // Integer((String)items.getNext()));
-                    //addItemDataToPlayer(newItem);
-                    p.addItem((Item) newItem.clone());
+                hash.get("area"), TrollAttack.gameAreas), Util
+                .intize(hash.get("hunger")), Util.intize(hash
+                .get("thirst")), hash.get("name"), hash
+                .get("password"), 
+                (hash.get("class") != null ? hash.get("class") : "" ) 
+                );
+        
+        //TrollAttack.debug("Player's class is turning out to be..." + ( hash.get("class") != null ? hash.get("class") : "" ) );
+        
+        Object tmpAbilities = hash.get("ability");
+        java.util.LinkedList abilities = linkedListify(tmpAbilities);
+        for(Object current : abilities) {
+            if(current == null) {
+                TrollAttack.error("Current ability is null when loading pfile!");
+                TrollAttack.debug(abilities.toString());
+            } else {
+                Hashtable<String, String> data = null;
+                try {
+                     data = (Hashtable<String, String>)current;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
+                Ability ability = p.getBeingClass().findAbility(data.get("name"));
+                float proficiency = new Float(data.get("proficiency"));
+                p.practice(ability, proficiency);
             }
-        } else {
-            //TrollAttack.debug("single item found");
-            Item newItem = getItemFromObject(tmpRooms);
-            //Item newItem = (Item)TrollAttack.getItem(new
-            // Integer((String)tmpRooms));
-            //addItemDataToPlayer(newItem);
-            p.addItem((Item) newItem.clone());
+        }
+        
+        Object tmpRooms = hash.get("item");
+        java.util.LinkedList items = linkedListify(tmpRooms);
+        for(Object current : items) {
+            if (current == null) {
+                TrollAttack.error("Current object is a NULL!");
+            } else {
+                Item newItem = getItemFromObject(current);
+                p.addItem((Item) newItem.clone());
+            }
+
         }
 
         Object tmpItems = hash.get("equipment");
-        if (tmpItems == null) {
-            // No equipment
-        } else if (tmpItems.getClass() == LinkedList.class) {
-            // More than 1 piece of equipment.
-            LinkedList items = (LinkedList) tmpItems;
-            while (items.itemsRemain()) {
-                Item newItem = TrollAttack.getItem(new Integer((String) items
-                        .getNext()));
-                p.wearItem((Item) newItem.clone());
-            }
-        } else {
-            Item newItem = TrollAttack.getItem(new Integer((String) tmpItems));
+        items = linkedListify(tmpItems);
+        Iterator itemIterator = items.iterator();
+        while (itemIterator.hasNext()) {
+            Item newItem = TrollAttack.getItem(new Integer((String) itemIterator
+                    .next()));
             p.wearItem((Item) newItem.clone());
         }
         return p;
 
     }
 
-    public static LinkedList readAreaData(Hashtable hash) {
+    public static java.util.LinkedList<Area> readAreaData(Hashtable hash) {
         LinkedList ll = new LinkedList();
         ll.add(hash);
         return readAreaData(ll);
     }
 
-    public static LinkedList readAreaData(LinkedList areaList) {
+    public static java.util.LinkedList<Area> readAreaData(LinkedList areaList) {
 
         Hashtable area;
-        LinkedList areas = new LinkedList();
+        java.util.LinkedList<Area> areas = new java.util.LinkedList<Area>();
         if (areaList == null) {
             return areas;
         }
@@ -372,10 +366,11 @@ public class DataReader {
             // Creates item resets or placements.
             // It is a bad variable name, but too much work to change.
             Object tmpItems = room.get("item");
-            LinkedList roomItems = linkedListify(tmpItems);
+            java.util.LinkedList roomItems = linkedListify(tmpItems);
 
-            for (int i = 0; i < roomItems.length(); i++) {
-                Integer ivnum = new Integer((String) roomItems.getNext());
+            for(Object current : roomItems) {
+                //TrollAttack.debug(current.toString());
+                Integer ivnum = new Integer((String) current);
                 Item resetItem = TrollAttack.getItem(ivnum);
                 if (resetItem == null) {
                     TrollAttack
@@ -398,13 +393,13 @@ public class DataReader {
             // Starting to create all resets for mobiles, and mobile wear
             // or give resets and placements.
             Object tmpMobiles = room.get("mobile");
-            LinkedList mobiles = linkedListify(tmpMobiles);
+            java.util.LinkedList mobiles = linkedListify(tmpMobiles);
             //TrollAttack.debug("List has " + mobiles.length() + "elements");
-            while (mobiles.itemsRemain()) {
+            for(Object currentMobile : mobiles) {
                 Mobile resetMobile;
 
                 // 'hash' contains all data about a mobile reset or placement.
-                Hashtable hash = (Hashtable) mobiles.getNext();
+                Hashtable hash = (Hashtable) currentMobile;
                 if (hash == null) {
                     TrollAttack
                             .error("The hash that should contain all of the information for this mobile is null!");
@@ -421,18 +416,18 @@ public class DataReader {
                     resetMobile.setCurrentRoom(newRoom.vnum);
 
                     Object itemsOfMobile = hash.get("item");
-                    LinkedList mobileItems = linkedListify(itemsOfMobile);
+                    java.util.LinkedList mobileItems = linkedListify(itemsOfMobile);
 
-                    while (mobileItems.itemsRemain()) {
-                        Item newItem = getItemFromObject(mobileItems.getNext());
+                    for(Object currentMobileItem : mobileItems) {
+                        Item newItem = getItemFromObject(currentMobileItem);
                         resetMobile.addItem((Item) newItem);
                     }
 
                     tmpItems = hash.get("equipment");
                     mobileItems = linkedListify(tmpItems);
-                    while (mobileItems.itemsRemain()) {
+                    for(Object currentMobileItem : mobileItems) {
                         Item newItem = TrollAttack.getItem(new Integer(
-                                (String) mobileItems.getNext()));
+                                (String) currentMobileItem));
                         resetMobile.wearItem((Item) newItem);
                     }
 
@@ -442,25 +437,24 @@ public class DataReader {
                             resetMobile, newRoom, 1));
 
                     Object itemsOfMobile = hash.get("item");
-                    LinkedList mobileItems = linkedListify(itemsOfMobile);
+                    java.util.LinkedList mobileItems = linkedListify(itemsOfMobile);
 
-                    while (mobileItems.itemsRemain()) {
-                        Item newItem = getItemFromObject(mobileItems.getNext());
+                    for(Object currentMobileItem : mobileItems) {
+                        Item newItem = getItemFromObject(currentMobileItem);
                         TrollAttack.gameResets.add(new Reset.GiveReset(
                                 (Item) newItem.clone(), resetMobile, 1));
                     }
 
                     tmpItems = hash.get("equipment");
                     mobileItems = linkedListify(tmpItems);
-                    while (mobileItems.itemsRemain()) {
+                    for(Object currentMobileItem : mobileItems) {
                         Item newItem = TrollAttack.getItem(new Integer(
-                                (String) mobileItems.getNext()));
+                                (String)currentMobileItem));
                         TrollAttack.gameResets.add(new Reset.WearReset(
                                 (Equipment) newItem.clone(), resetMobile, 1));
                     }
                 }
             }
-            mobiles.reset();
 
         }
         TrollAttack.message("Loaded " + rooms.length() + " rooms.");
@@ -471,7 +465,7 @@ public class DataReader {
     static public LinkedList readMobileData(LinkedList mobileList) {
         Mobile newMobile;
         LinkedList mobiles = new LinkedList();
-        boolean canTeachMagic = false;
+        boolean canTeach = false;
         int vnum, hp, maxhp, clicks, level, hitLevel;
         int mana, maxMana, move, maxMove;
         String shortDesc, longDesc, mobileName, hitDamage, hitSkill;
@@ -479,33 +473,36 @@ public class DataReader {
         for (int j = 0; j < mobileList.length(); j++) {
             hitLevel = 0;
             clicks = 8;
-            Hashtable mobile = (Hashtable) mobileList.getNext();
+            Hashtable<String, String> mobile = (Hashtable) mobileList.getNext();
             //TrollAttack.message(mobile.toString());
-            vnum = new Integer((String) mobile.get("vnum")).intValue();
-            level = new Integer((String) mobile.get("level")).intValue();
-            hp = new Integer((String) mobile.get("hp")).intValue();
-            maxhp = new Integer((String) mobile.get("maxhp")).intValue();
-            mana = new Integer((String) mobile.get("mana")).intValue();
-            maxMana = new Integer((String) mobile.get("maxmana")).intValue();
-            move = new Integer((String) mobile.get("move")).intValue();
-            maxMove = new Integer((String) mobile.get("maxmove")).intValue();
+            vnum = new Integer(mobile.get("vnum")).intValue();
+            level = new Integer(mobile.get("level")).intValue();
+            hp = new Integer(mobile.get("hp")).intValue();
+            maxhp = new Integer(mobile.get("maxhp")).intValue();
+            mana = new Integer(mobile.get("mana")).intValue();
+            maxMana = new Integer(mobile.get("maxmana")).intValue();
+            move = new Integer(mobile.get("move")).intValue();
+            maxMove = new Integer(mobile.get("maxmove")).intValue();
             if (mobile.get("clicks") != null)
-                clicks = new Integer((String) mobile.get("clicks")).intValue();
+                clicks = new Integer(mobile.get("clicks")).intValue();
             if (mobile.get("respawn") != null)
-                clicks = new Integer((String) mobile.get("respawn")).intValue();
+                clicks = new Integer(mobile.get("respawn")).intValue();
             if (mobile.get("hitlevel") != null)
-                hitLevel = new Integer((String) mobile.get("hitlevel"))
+                hitLevel = new Integer(mobile.get("hitlevel"))
                         .intValue();
-            if (mobile.get("canTeachMagic") != null)
-                canTeachMagic = new Boolean((String) mobile
-                        .get("canTeachMagic")).booleanValue();
-            hitSkill = (String) mobile.get("hitskill");
-            hitDamage = (String) mobile.get("hitdamage");
-            shortDesc = (String) mobile.get("short");
-            longDesc = (String) mobile.get("long");
-            mobileName = (String) mobile.get("name");
+            if (mobile.get("canTeach") != null)
+                canTeach = new Boolean((String) mobile
+                        .get("canTeach")).booleanValue();
+            hitSkill = mobile.get("hitskill");
+            hitDamage = mobile.get("hitdamage");
+            shortDesc = mobile.get("short");
+            longDesc = mobile.get("long");
+            mobileName = mobile.get("name");
             newMobile = new Mobile(vnum, level, mobileName, hp, maxhp,
                     hitLevel, hitSkill, hitDamage, clicks, shortDesc, longDesc);
+            newMobile.canTeach = canTeach;
+            newMobile.setBeingClass( ( mobile.get("class") != null ? mobile.get("class") : "" ) );
+            
             //System.out.println("Created: " + itemList[vnum].toString());
             mobiles.add(newMobile);
         }
@@ -546,13 +543,17 @@ public class DataReader {
     // and hashtables and data) and makes the data into a linked list
     // of length 0 for null, 1 for direct data, and x for things
     // that are already linked lists.
-    public static LinkedList linkedListify(Object wannabeList) {
+    public static java.util.LinkedList linkedListify(Object wannabeList) {
         if (wannabeList == null) {
-            return new LinkedList();
+            return new java.util.LinkedList();
         } else if (wannabeList.getClass() == LinkedList.class) {
-            return (LinkedList) wannabeList;
+            java.util.LinkedList ll = new java.util.LinkedList();
+            while(((LinkedList)wannabeList).itemsRemain()) {
+                ll.add(((LinkedList)wannabeList).getNext());
+            }
+            return ll;
         } else {
-            LinkedList ll = new LinkedList();
+            java.util.LinkedList ll = new java.util.LinkedList();
             ll.add(wannabeList);
             return ll;
 

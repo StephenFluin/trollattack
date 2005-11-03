@@ -32,7 +32,7 @@ import TrollAttack.Items.Item;
  * Preferences - Java - Code Style - Code Templates
  */
 public class Util {
-    static String wrapChar = "\n";
+    static public String wrapChar = "\n";
 
     static public boolean contains(String s, String d) {
         try {
@@ -248,6 +248,7 @@ public class Util {
                 : ("#" + ((Mobile) mobile).vnum + "\t"))
                 + mobile.getShort() + "'s Information" + wrapChar;
         result += "Name:\t\t" + mobile.getName() + wrapChar;
+        result += "Class:\t\t" + mobile.getClassName() + wrapChar;
         if (!mobile.isPlayer()) {
             result += "Original:\t\t("
                     + (mobile == TrollAttack.getMobile(new Integer(
@@ -275,9 +276,7 @@ public class Util {
                 + wrapChar;
         result += "Experience:\t" + mobile.experience + "\t" + "Favor:\t"
                 + mobile.favor + wrapChar;
-        if (mobile.canTeachMagic) {
-            result += "Can teach magic (X)" + wrapChar;
-        }
+        result += "Can teach (" + (mobile.canTeach ? "X" : " " ) + ")" + wrapChar;
         if (!mobile.isPlayer()) {
             result += "Clicks:\t" + ((Mobile) mobile).getClicks() + wrapChar;
         } else {

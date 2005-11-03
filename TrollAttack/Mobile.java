@@ -100,8 +100,9 @@ public class Mobile extends Being implements Cloneable {
         attribs.add(Util.nCreate(doc, "hitlevel", hitLevel + ""));
         attribs.add(Util.nCreate(doc, "hitskill", hitSkill + ""));
         attribs.add(Util.nCreate(doc, "hitdamage", hitDamage.toString() + ""));
-        attribs.add(Util.nCreate(doc, "canTeachMagic", canTeachMagic ? "true"
+        attribs.add(Util.nCreate(doc, "canTeach", canTeach ? "true"
                 : "false"));
+        attribs.add(Util.nCreate(doc, "class", getClassName() + ""));
 
         for (int i = 0; i < attribs.length(); i++) {
 

@@ -1,4 +1,7 @@
 package TrollAttack.Commands;
+
+import TrollAttack.Being;
+
 /*
  * Created on May 7, 2005
  *
@@ -13,8 +16,9 @@ package TrollAttack.Commands;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public abstract class Command {
-	String name;
+	public String name;
 	boolean peaceful = false;
+    public boolean needsPlayer = false;
 	public Command() {}
 	public String toString() {
 		return name;
@@ -30,6 +34,14 @@ public abstract class Command {
     public boolean equals(Command command) {
         return command.name.compareToIgnoreCase(name) == 0;
     }
+    
 	public boolean execute() { return false; }
 	public boolean execute(String s) { return this.execute(); }
+    
+    public boolean execute(Being p) {
+        return execute();
+    }
+    public boolean execute(Being p, String s) {
+        return execute(s);
+    }
 }

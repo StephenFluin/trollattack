@@ -13,10 +13,11 @@ package TrollAttack;
  * Preferences - Java - Code Style - Code Templates
  */
 public class Prompt {
-    String promptString;
+    static final String defaultPrompt = "&W<&R%h&G/&R%H &B%m&G/&B%M &P%X&W>";
+    private String promptString;
 
     public Prompt() {
-        this("&W<&R%h&G/&R%H &B%m&G/&B%M  &P%X&W>");
+        this(defaultPrompt);
     }
 
     public Prompt(String s) {
@@ -24,7 +25,11 @@ public class Prompt {
     }
 
     public void setPrompt(String s) {
-        promptString = s;
+        if(s.length() < 1) {
+            setPrompt(defaultPrompt);
+        } else {   
+            promptString = s;
+        }
     }
 
     /**
@@ -34,16 +39,18 @@ public class Prompt {
      * 
      * @return
      */
-    public String showPrompt(int h, int H, int m, int M, int v, int V, int x,
-            int X) {
-        String prompt = promptString.replaceAll("%h", h + "");
-        prompt = prompt.replaceAll("%H", H + "");
-        prompt = prompt.replaceAll("%m", m + "");
-        prompt = prompt.replaceAll("%M", M + "");
-        prompt = prompt.replaceAll("%v", v + "");
-        prompt = prompt.replaceAll("%V", V + "");
-        prompt = prompt.replaceAll("%x", x + "");
-        prompt = prompt.replaceAll("%X", X + "");
+    public String showPrompt(int hp, int HP, int mana, int MANA, int move, int MOVE, int experience,
+            int experienceToLevel, int roomVnum, int gold) {
+        String prompt = promptString.replaceAll("%h", hp + "");
+        prompt = prompt.replaceAll("%H", HP + "");
+        prompt = prompt.replaceAll("%m", mana + "");
+        prompt = prompt.replaceAll("%M", MANA + "");
+        prompt = prompt.replaceAll("%v", move + "");
+        prompt = prompt.replaceAll("%V", MOVE + "");
+        prompt = prompt.replaceAll("%x", experience + "");
+        prompt = prompt.replaceAll("%X", experienceToLevel + "");
+        prompt = prompt.replaceAll("%r", roomVnum + "");
+        prompt = prompt.replaceAll("%g", gold + "");
         prompt = color(prompt);
         return prompt;
     }

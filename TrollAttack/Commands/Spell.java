@@ -1,7 +1,6 @@
-package TrollAttack.Spells;
+package TrollAttack.Commands;
 import TrollAttack.Being;
 import TrollAttack.Player;
-import TrollAttack.Commands.Ability;
 /*
  * Created on May 29, 2005
  *
@@ -17,7 +16,6 @@ import TrollAttack.Commands.Ability;
  */
 public class Spell extends Ability {
 	private int manaCost;
-	private double probability = .8;
     
 	public Spell( String spellName, int c) { 
 	    this( spellName, c, true);
@@ -36,25 +34,21 @@ public class Spell extends Ability {
 	public int getCost() {
 	    return manaCost;
 	}
-	public double getProbability() {
-	    return probability;
-	}
-	public boolean run() {return false;}
-	public boolean run(String s) {return false;}
-	public boolean execute(Being player) {
-	    if(Math.random() < this.getProbability()) {
-	        return this.run();
-	    } else {
-	        player.tell("Your magic fails you.");
-	        return false;
-	    }
-	}
-	public boolean execute(Being player, String s) {
-	    if(Math.random() < this.getProbability()) {
-	        return this.run(s);
-	    } else {
-	        player.tell("Your magic fails you.");
-	        return false;
-	    }
-	}
+    public boolean execute(Being player) {
+        boolean success = super.execute(player);
+        if(success) {
+            player.decreaseManaPoints(getCost());
+        }
+        return success;
+    }
+    public boolean execute(Being player, String s) {
+        boolean success = super.execute(player, s);
+        if(success) {
+            player.decreaseManaPoints(getCost());
+        }
+        return success;
+    }
+    public boolean isSpell() {
+        return true;
+    }
 }

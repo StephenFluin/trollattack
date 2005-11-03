@@ -40,7 +40,7 @@ public class TrollAttack {
      */
     public static DataReader myData;
 
-    public static LinkedList gameAreas;
+    public static java.util.LinkedList<Area> gameAreas;
 
     public static LinkedList gameItems;
 
