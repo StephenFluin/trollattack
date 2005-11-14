@@ -9,33 +9,18 @@
 package TrollAttack.Commands;
 
 import TrollAttack.Being;
-import TrollAttack.Player;
-import TrollAttack.TrollAttack;
 
 public class Ability extends Command {
-    public Ability(String name, String failureMessage, String successMessage, String successBroadcast) {
+    public Ability(String name, String failureMessage) {
         super(name);
-        this.failureMessage = failureMessage;
-        this.successMessage = successMessage;
-        this.successBroadcast = successBroadcast;
-        noBroadcast = false;
+        this.failureMessage = "You fail to " + failureMessage + ".";
         needsPlayer = true;
     }
     public Ability(String name) {
-        this(name, "You fail to " + name + ".", "You succeed in " + name + "ing.", "%1 succeds in " + name + "ing.");
-    }
-    public Ability(String name, String message) {
-        this.name = name;
-        this.failureMessage = "You fail to " + message + ".";
-        this.successMessage = "You successfully " + message + ".";
-        noBroadcast = true;
-        needsPlayer = true;
+        this(name, "You fail to " + name + ".");
     }
    
     private String failureMessage;
-    private String successMessage;
-    private String successBroadcast;
-    boolean noBroadcast = true;
     
     
     public boolean canUse(Being being) {
@@ -74,4 +59,9 @@ public class Ability extends Command {
         //TrollAttack.debug("Got to dead-end 2." + toString());
         return false;
     }
+    public static Ability find(String abilityName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
 }

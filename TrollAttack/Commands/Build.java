@@ -12,9 +12,6 @@ import TrollAttack.*;
 
 import java.io.File;
 
-import TrollAttack.*;
-import TrollAttack.Classes.Class;
-import TrollAttack.Classes.Class.Classes;
 import TrollAttack.Items.*;
 
 /**
@@ -55,7 +52,7 @@ public class Build {
             player.getActualRoom().description = command;
             player.tell("You change the description of the room.");
         } else if(s.startsWith("destroy")) {
-            player.getActualArea().areaRooms.delete(player.getActualRoom());
+            player.getActualArea().areaRooms.remove(player.getActualRoom());
             TrollAttack.gameRooms.delete(player.getActualRoom());
             player.setCurrentRoom(1);
             TrollAttack.getRoom(1).addBeing(player);
@@ -65,7 +62,10 @@ public class Build {
     public void editExit(String s, boolean reciprocol) {
         String[] parts = s.split(" ");
         if(parts.length < 1) {
-            player.tell("Which direction?");
+            player.tell("Usage: redit bexit <direction> <destination> [door|nodoor] [lockable <key vnum>|notlockable]");
+            player.tell("       redit exit <direction> <destination> [door|nodoor] [lockable <key vnum>|notlockable]");
+            player.tell("The bexit command will make a link from your current room to the destination, AND a link from the destination to this room.  This is the standard way to make exits.");
+            player.tell(Util.wrapChar + "Example: redit bexit east 10023 door");
             return;
         }
         int direction = Exit.getDirection(parts[0]);
@@ -73,6 +73,8 @@ public class Build {
             player.tell("That isn't a direction!");
             return;
         }
+        
+        //Length of 1 means clear the exit(s).
         if(parts.length == 1) {
             Room destRoom;
             if(reciprocol) {
@@ -81,18 +83,25 @@ public class Build {
             }
             
             player.getActualRoom().setLink(direction, 0);
-            //TrollAttack.message("Erasing link " + Exit.directionName(direction));
+           
+        // Means we are attempting to create a new exit.
         } else {
             Exit exit = player.getActualRoom().getExit(direction);
             if(exit == null) {
                 int destination = Util.intize(player, parts[1]);
-                //TrollAttack.message("Found destination " + destination + " from part '" + parts[0] + "'.");
-                if(reciprocol) {
-                    TrollAttack.getRoom(destination).setLink(Exit.directionOpposite(direction), player.getCurrentRoom());
+                try {
+                    if(reciprocol) {
+                        player.tell(TrollAttack.getRoom(destination).setLink(Exit.directionOpposite(direction), player.getCurrentRoom()));
+                    }
+                } catch(NullPointerException e) {
+                    player.tell("That is not a valid destination for this direction.");
+                    return;
                 }
-                player.getActualRoom().setLink(direction, destination);
+                player.tell(player.getActualRoom().setLink(direction, destination));
                 exit = player.getActualRoom().getExit(direction);
             }
+            
+            
             Exit bexit = exit.getOtherExit();
             if(Util.contains(s, "nodoor")) {
                 exit.setDoor(false);
@@ -110,7 +119,7 @@ public class Build {
             if(Util.contains(s, "lockable")) {
                 Item key = null;
                 try {
-                    key = TrollAttack.getItem(new Integer(s.substring(s.indexOf("locked"))));
+                    key = TrollAttack.getItem(new Integer(s.substring(s.indexOf("lockable"))));
                 } catch(Exception e) {
                     player.tell("Please be clearer about which key you want to use, locked <vnum>.");
                 }
@@ -273,10 +282,13 @@ public class Build {
                     newItem = new DrinkContainer(item);
                 } else if(value.compareToIgnoreCase(Fountain.getItemType()) == 0 && item.getType() != Fountain.getItemType()) {
                     newItem = new Fountain(item);
+                } else if(value.compareToIgnoreCase(Item.getItemType()) == 0 && (item.getType() != Item.getItemType())) {
+                    newItem = new Item(item);
                 } else {
-					player.tell("What type do you want to make this item???" + value);
+					player.tell("'" + value + "' is not a known type, or the item is already of that type.\nChoose from: Weapon, Armor, Food, DrinkContainer, Fountain, Item");
 					return;
                 }
+                player.tell("You set " + item.getShort() + "'s type.");
                 player.getActualRoom().replaceItem(item, newItem);
                 TrollAttack.replaceItem(item, newItem);
             } else {
@@ -373,6 +385,16 @@ public class Build {
                     mobile.canTeach = (!mobile.canTeach);
                 } else {
                     mobile.canTeach = new Boolean(value).booleanValue();
+                }
+            } else if(attr.compareToIgnoreCase("wanderer") == 0) {
+                if(mobile.getClass() == Mobile.class) {
+                    if(value.length() < 4) {
+                        ((Mobile)mobile).setWanderer(!((Mobile)mobile).isWanderer());
+                    } else {
+                        ((Mobile)mobile).setWanderer(new Boolean(value).booleanValue());
+                    }
+                } else {
+                    player.tell("You can only change the 'wanderer' attribute of mobiles.");
                 }
             } else if(attr.compareToIgnoreCase("class") == 0) {
                 player.tell( mobile.setBeingClass(value));

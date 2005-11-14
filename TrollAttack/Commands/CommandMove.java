@@ -34,12 +34,12 @@ public class CommandMove extends Command {
 		results = previousRoom.getExit(direction);
 		if(results != null) {
 		    if(!results.isOpen()) {
-		        player.tell("The door is closed.");
+		        player.tell(Communication.GREEN + "The door is closed.");
 		        return false;
 		    }
 		    Room nextRoom = TrollAttack.getRoom(results.getDestination());
 		    try{
-		        nextRoom.say(Util.uppercaseFirst(player.getShort()) + " arrives from the " + Exit.directionName(Exit.directionOpposite(direction)) + ".");
+		        nextRoom.say(Communication.GREEN + Util.uppercaseFirst(player.getShort()) + " arrives from the " + Exit.directionName(Exit.directionOpposite(direction)) + ".");
 		    } catch(Exception e) {
 		        TrollAttack.error("Error in CommandMove when attempting to say something as player moves to next room.");
 		        if(nextRoom == null) {
@@ -49,11 +49,17 @@ public class CommandMove extends Command {
 		    }
 		    player.setCurrentRoom(results.getDestination());
 			previousRoom.removeBeing(player);
-			previousRoom.say(Util.uppercaseFirst(player.getShort()) + " leaves to the " + name);
+			previousRoom.say(Communication.GREEN + Util.uppercaseFirst(player.getShort()) + " leaves to the " + name);
 			nextRoom.addBeing(player);
 			player.look();
+            for(Being follower : player.followers) {
+                if(follower.getActualRoom() == previousRoom) {
+                    follower.follow(player, direction);
+                }
+            }
+            
 		} else {
-			player.tell("Alas, you cannot go that way.");
+			player.tell(Communication.GREEN + "Alas, you cannot go that way.");
             return false;
 		}
         return true;

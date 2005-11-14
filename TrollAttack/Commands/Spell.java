@@ -1,6 +1,5 @@
 package TrollAttack.Commands;
 import TrollAttack.Being;
-import TrollAttack.Player;
 /*
  * Created on May 29, 2005
  *
@@ -16,6 +15,7 @@ import TrollAttack.Player;
  */
 public class Spell extends Ability {
 	private int manaCost;
+    private String successMessage;
     
 	public Spell( String spellName, int c) { 
 	    this( spellName, c, true);
@@ -28,7 +28,8 @@ public class Spell extends Ability {
 	 * @param b Is the command restricted to peaceful casting.
 	 */
 	public Spell( String spellName, int cost, boolean peacefulOnly) {
-        super( spellName , "You fail to cast " + spellName + "." , "You succeed in casting " + spellName + ".", "%1 casts " + spellName + "." );
+        super( spellName , "You fail to cast " + spellName + ".");
+        this.successMessage = "You successfully cast " + spellName + ".";
 	    this.manaCost = cost; 
     }
 	public int getCost() {
