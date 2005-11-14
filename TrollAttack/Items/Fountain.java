@@ -39,7 +39,7 @@ public class Fountain extends Item {
         return "fountain";
     }
     public String getTypeData() {
-        return "Fountain-----------";
+        return "-------Fountain-------";
     }
     public Node getTypeNode(Document doc) {
         Node data = doc.createElement("typeData");
