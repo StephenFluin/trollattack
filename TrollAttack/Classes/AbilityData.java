@@ -9,18 +9,18 @@
 package TrollAttack.Classes;
 
 public class AbilityData {
-    public double maxProficiency = 0;
+    public float maxProficiency = 0;
     public int level = 0;
-    public double proficiency = 0;
-    public AbilityData(int level, double maxProficiency ) {
+    public float proficiency = 0;
+    public AbilityData(int level, float maxProficiency ) {
         this.maxProficiency = maxProficiency;
         this.level = level;
     }
-    public AbilityData(double proficiency) {
+    public AbilityData(float proficiency) {
         this.proficiency = proficiency;
     }
     
-    public void increaseProficiency(double increase) {
+    public void increaseProficiency(float increase) {
         this.proficiency += increase;
     }
 }
