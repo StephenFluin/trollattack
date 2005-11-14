@@ -268,7 +268,6 @@ public class LinkedList {
      * @return Command.
      */
     public Object getClosest(String s) {
-        Node previous = head;
         Node current = head;
 
         while (current.getPointer() != tail) {
