@@ -54,28 +54,25 @@ public class Item implements Cloneable {
 	 * Item Types
 	 * A list of all of the types of items.
 	 */
-	final public static String[] itemTypes =
-	{
-	        "none", "armor", "weapon", "light", "scroll", "wand", "staff",  "_missile",
-	        "treasure",  "potion", "furniture", "trash", 
-	        "container", "drinkcon", "key", "food", "money", "pen", "boat",
-	        "corpse", "fountain", "pill", "blood", "bloodstain",
-	        "scraps", "pipe", "herbcon", "herb", "incense", "fire", "book", "switch",
-	        "lever", "pullchain", "button", "dial", "rune", "runepouch", "match", "trap",
-	        "map", "portal", "paper", "tinder", "lockpick", "spike", "disease", "oil",
-	        "fuel", "missileweapon", "projectile", "quiver", "shovel",
-	        "salve", "cook", "keyring", "odor", "chance"
+	public enum ItemType	{
+	        none, armor, weapon, light, scroll, wand, staff,  _missile,
+	        treasure,  potion, furniture, trash, 
+	        container, drinkcon, key, food, money, pen, boat,
+	        corpse, fountain, pill, blood, bloodstain,
+	        scraps, pipe, herbcon, herb, incense, fire, book, Switch,
+	        lever, pullchain, button, dial, rune, runepouch, match, trap,
+	        map, portal, paper, tinder, lockpick, spike, disease, oil,
+	        fuel, missileweapon, projectile, quiver, shovel,
+	        salve, cook, keyring, odor, chance
 	        };
-	final public static int ITEM_ARMOR = getItemType("armor");
-	final public static int ITEM_WEAPON = getItemType("weapon");
 	
-	final public static int getItemType(String type) {
-	    for(int i = 0; i < itemTypes.length;i++) {
-	        if(type.compareToIgnoreCase(itemTypes[i]) == 0) {
-	            return i;
+	final public static ItemType getItemType(String type) {
+	    for(ItemType itemType : ItemType.values()) {
+	        if(type.compareToIgnoreCase(itemType.toString()) == 0) {
+	            return itemType;
 	        }
 	    }
-	    return 0;
+	    return null;
 	}
 	public Item() {}
 	public Item(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdesc) {
@@ -133,14 +130,14 @@ public class Item implements Cloneable {
 		return longDesc;
 	}
 	public String getType() {
-	    return "";
+	    return getItemType();
 	}
 	public boolean equals(Item item) {
 	    return (vnum == item.vnum);
 	          
 	}
 	public String getTypeData() {
-	    return "Unspecified Type";
+	    return "--------Item----------";
 	}
 	public void setLong(String longdesc) {
 	    longDesc = longdesc;
@@ -169,5 +166,8 @@ public class Item implements Cloneable {
     public Node getTypeNode(Document doc) {
         Node data = doc.createElement("typeData");
         return data;
+    }
+    public static String getItemType() {
+        return "item";
     }
 }
