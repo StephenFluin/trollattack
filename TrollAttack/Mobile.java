@@ -20,43 +20,30 @@ import TrollAttack.Commands.CommandHandler;
  */
 public class Mobile extends Being implements Cloneable {
     public int vnum, clicks;
+    private boolean isWanderer;
 
-    public Mobile(int v, int leve, String n, int h, int mh, int hLevel,
-            String hSkill, String hDamage, int mClicks, String s, String l) {
+    public Mobile(int v, int leve, String n, int h, int mh, int m, int mm, int mo, int mmo, int hLevel,
+            String hSkill, String hDamage, int mClicks, String s, String l, boolean wander) {
         vnum = v;
         level = leve;
         isPlayer = false;
         name = n;
         hitPoints = h;
         maxHitPoints = mh;
+        manaPoints = m;
+        maxManaPoints = mm;
+        movePoints = mo;
+        maxMovePoints = mmo;
         hitLevel = hLevel;
         hitSkill = new Roll(hSkill);
         hitDamage = new Roll(hDamage);
         shortDescription = s;
         longDesc = l;
         clicks = mClicks;
+        this.isWanderer = wander;
         ch = new CommandHandler(this);
         //TrollAttack.error("Creating mobile #" + v);
         this.setPrompt("<%h>");
-    }
-
-    // Is there a better way to duplicate a mobile?
-    public Mobile(Mobile m) {
-        vnum = m.vnum;
-        name = m.name;
-        gold = m.gold;
-        hitPoints = m.hitPoints;
-        maxHitPoints = m.maxHitPoints;
-        hitLevel = m.hitLevel;
-        hitSkill = m.hitSkill;
-        hitDamage = m.hitDamage;
-        shortDescription = m.shortDescription;
-        longDesc = m.longDesc;
-        clicks = m.clicks;
-        setPrompt("<%h>");
-        isPlayer = m.isPlayer;
-        level = m.level;
-        ch = new CommandHandler(this);
     }
 
     public String toString() {
@@ -81,6 +68,13 @@ public class Mobile extends Being implements Cloneable {
         return clicks;
     }
 
+    public int getVnum() {
+        return vnum;
+    }
+    
+    public boolean isWanderer() {
+        return isWanderer;
+    }
     public Node toNode(Document doc) {
 
         Node m = doc.createElement("mobile");
@@ -102,6 +96,7 @@ public class Mobile extends Being implements Cloneable {
         attribs.add(Util.nCreate(doc, "hitdamage", hitDamage.toString() + ""));
         attribs.add(Util.nCreate(doc, "canTeach", canTeach ? "true"
                 : "false"));
+        attribs.add(Util.nCreate(doc, "wander", isWanderer() ? "true" : "false"));
         attribs.add(Util.nCreate(doc, "class", getClassName() + ""));
 
         for (int i = 0; i < attribs.length(); i++) {
@@ -115,5 +110,10 @@ public class Mobile extends Being implements Cloneable {
 
     public boolean isMobile() {
         return true;
+    }
+
+    public void setWanderer(boolean isWanderer) {
+        this.isWanderer = isWanderer;
+        
     }
 }

@@ -169,8 +169,8 @@ public class Room {
             roomBeings = roomMobiles;
             for (i = 0; i < mobileVnums.length; i++) {
                 if (mobileVnums[i] != null) {
-                    roomBeings.add(new Mobile(TrollAttack
-                            .getMobile(mobileVnums[i])));
+                    roomBeings.add((Mobile)TrollAttack
+                            .getMobile(mobileVnums[i]).clone());
                 }
                 //TrollAttack.message("Recreating mobile..");
 
@@ -190,7 +190,15 @@ public class Room {
             if (exits.length() > 7) {
                 exits += ", ";
             }
-            exits += Util.uppercaseFirst(exit.getDirectionName());
+            String exitString = Util.uppercaseFirst(exit.getDirectionName());
+            if(exit.isDoor()) {
+                if(exit.isOpen()) {
+                    exitString = "<" + exitString + ">";
+                } else {
+                    exitString = "[" + exitString + "]";
+                }
+            }
+            exits += exitString;
         }
 
         if (exits.length() <= 7) {
@@ -212,7 +220,7 @@ public class Room {
             } else {
                 color = Communication.GREEN;
             }
-            objects += color + currentItem.getLong();
+            objects += color + Prompt.color(currentItem.getLong());
             objects += Util.wrapChar;
             n++;
 
@@ -238,7 +246,7 @@ public class Room {
 
         }
         String look = Communication.WHITE + title + Util.wrapChar +
-                    Communication.YELLOW + description + Util.wrapChar +
+                    Communication.YELLOW + Prompt.color(description) + Util.wrapChar +
                     Communication.WHITE + exits + Util.wrapChar + 
                     objects +
                     mobiles;
@@ -266,22 +274,30 @@ public class Room {
     // Any player that matches who they are talking to
     // is replaced with you.
     public void say(String s, Being[] players) {
+        Boolean onList = false;
         try {
             for (Being person : roomBeings) {
                 // TrollAttack.message("Found a being...");
                 String message = s;
-                if (players.length < 1 || person != players[0]) {
-
-                    //TrollAttack.message("telling " + person.getShort() + " "
-                    // + s);
-                    for (int j = 1; j < players.length; j++) {
-                        //TrollAttack.message(players[j] == null ? "players[j]
-                        // is null" : "players[j] is not null");
-                        message = message.replaceAll("%" + j, players[j]
-                                .getShort(person));
+                for (int j = 0; j < players.length; j++) {
+                    //TrollAttack.message(players[j] == null ? "players[j]
+                    // is null" : "players[j] is not null");
+                    message = message.replaceAll("%" + j, players[j]
+                            .getShort(person));
+                }
+                onList = false;
+                for(Being ignoreMe : players) {
+                    if(person == ignoreMe) {
+                        onList = true;
+                        break;
                     }
+                }
+                if(players.length > 0 && person == players[0]) {
+                    //Ignore this person entirely.
+                } else if(onList){
                     person.tell(Util.uppercaseFirst(message));
-
+                } else {
+                    person.interrupt(Util.uppercaseFirst(message));
                 }
             }
         } catch (Exception e) {
@@ -317,15 +333,28 @@ public class Room {
         return "You can't find that door.";
     }*/
 
-    public void setLink(int direction, int destination) {
+    public String setLink(int direction, int destination) {
         if (destination == 0) {
+            Exit removeExit = null;
             for(Exit exit : roomExits) {
                 if (exit.getDirection() == direction) {
-                    roomExits.remove(exit);
+                    removeExit = exit;
+                    break;
                 }
             }
+            if(removeExit != null) {
+                roomExits.remove(removeExit);
+                return "Exit removed successfully";
+            }
+            return "Did not find an exit to remove.";
         } else {
+            for(Exit exit : roomExits) {
+                if(exit.getDirection() == direction){
+                    return "Exit already exists in this direction.";
+                }
+            }
             roomExits.add(new Exit(destination, direction));
+            return "Exit added successfully.";
         }
     }
 
@@ -447,7 +476,6 @@ public class Room {
     }
 
     public void healBeings() {
-        Mobile m;
         int strength;
         for(Being currentBeing : roomBeings) {
             strength = 1 + currentBeing.getState();

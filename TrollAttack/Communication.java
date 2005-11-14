@@ -26,7 +26,7 @@ public class Communication extends Thread {
 
     static int port = 4000;
 
-    static int ID;
+    int ID;
     static final char ESCAPE = '\033';
     static final char X = '\377';
     static final String TELOPT_ECHO =   X + "\001"; //01
@@ -55,7 +55,7 @@ public class Communication extends Thread {
     }
 
     public Communication(boolean newServerSocket, ServerSocket serverSock) {
-        ID = (int) (Math.random() * 1000);
+        this.ID = (int) (Math.random() * 1000);
         if (newServerSocket) {
             port--;
             serverSocket = createNewSocket();
@@ -83,22 +83,28 @@ public class Communication extends Thread {
     }
 
     public void close() {
-        this.killConnections();
+        try {
+            //TrollAttack.message("Player losing connection.");
+            if(in != null) {
+                in.close();
+            }
+            if(out != null) {
+                out.close();
+            }
+            if(adminSocket != null) {
+                adminSocket.close();
+            }
+        } catch(Exception e) {
+            
+        }
     }
-
+    
     public void killConnections() {
         try {
             //TrollAttack.message("Player losing connection.");
-            out.close();
-            in.close();
-            //adminSocket.shutdownInput();
-            //adminSocket.shutdownOutput();
-            adminSocket.close();
-
+            serverSocket.close();
         } catch (Exception e) {
             // e.printStackTrace();
-            TrollAttack.message(e.toString()
-                    + "- I don't know how to shut down this right.");
             e.printStackTrace();
         }
     }
@@ -106,18 +112,19 @@ public class Communication extends Thread {
     public void run() {
         String inputLine = "";
         try {
-
             // Wait for a connection
             //TrollAttack.message("Socket created, waiting for connection.");
             adminSocket = serverSocket.accept();
+            TrollAttack.message("New connection attempt.");
             in = new BufferedReader(new InputStreamReader(adminSocket.getInputStream()));
             
             out = new DataOutputStream(adminSocket.getOutputStream());
             Communication newConnection = new Communication(false, serverSocket);
             newConnection.start();
+            TrollAttack.unusedCommunication = newConnection;
             //TrollAttack.message("A new player joins the game (" +
             // newConnection.getID() + ").");
-
+            
             try {
                 player = new Player(this);
             } catch(Exception e) {
@@ -130,6 +137,7 @@ public class Communication extends Thread {
                 adminSocket.close();
                 return;
             }
+            
             player.setLastActive(TrollAttack.getTime());
             player.setCommunication(this);
             TrollAttack.broadcast(PURPLE + player.getShort()
@@ -143,23 +151,39 @@ public class Communication extends Thread {
 
             player.look();
             player.tell();
-            player.tell(player.prompt());
-            
+            player.prompt();
             // Main loop of entire game for each player.
-            while (player.authenticated == true) {
+            while (player.authenticated == true && !TrollAttack.gameOver) {
                 // TrollAttack.message(ID + ": Accepting command...");
                 try {
                     inputLine = in.readLine();
+                    
+                    //remove backspaces from inputLine
+                    if(inputLine.contains("\010")) {
+                        TrollAttack.debug("Problem.");
+                    }
+                    while(inputLine.contains("\010")) {
+                        TrollAttack.debug(inputLine);
+                        int location = inputLine.indexOf("\010");
+                        if(location == 0) {
+                            inputLine = inputLine.substring(1);
+                        } else {
+                            inputLine = inputLine.substring(0,location-1) + inputLine.substring(location+1);
+                        }
+                    }
+                    
+                    
                     player.handleCommand(inputLine);
                 } catch (Exception e) {
-                    TrollAttack.message("Lost connection to " + ID);
+                    TrollAttack.message("Lost connection to " + player.getShort());
                     break;
                 }
-
             }
 
             out.close();
             adminSocket.close();
+        } catch (SocketException e) {
+            //Mud is shutting down.
         } catch (Exception e) {
             TrollAttack.error("Exception in Server: " + e.toString());
             e.printStackTrace();
@@ -172,7 +196,8 @@ public class Communication extends Thread {
         String pass = "";
         while (tmpPlayer == null) {
             try {
-                player.tell(Communication.WHITE + "What is your name (or type "
+                out.writeBytes(Util.getMOTD());
+                player.tell(Communication.WHITE +"What is your name (or type "
                         + Communication.CYAN + "new" + Communication.WHITE
                         + " for a new character)?");
                 name = in.readLine();
@@ -188,7 +213,7 @@ public class Communication extends Thread {
 
                     player.tell(name + "'s password:");
                     pass = in.readLine();
-                    tmpPlayer = DataReader.readPlayerData(name);
+                    tmpPlayer = DataReader.readPlayerFile(name);
                     if (tmpPlayer != null) {
                         Player offendingPlayer = null;
                         for(Player p : TrollAttack.gamePlayers) {
@@ -246,19 +271,13 @@ public class Communication extends Thread {
     }
 
     public void print(String string, boolean shouldWrap, String color) {
-        int wrap = wrapLength;
-
         try {
             if (shouldWrap) {
                 string = wordwrap(string);
             }
-            //out.writeBytes(color);
-
             out.writeBytes(string);
-            //System.out.print(string);
-            //out.writeBytes("\033[0m" + Util.wrapChar);
         } catch (IOException e) {
-            player.quit();
+            player.quit(true);
             // TrollAttack.error("Player quit unexpectedly (" + e.getMessage() +
             // ").");
             //e.printStackTrace();
@@ -359,5 +378,7 @@ public class Communication extends Thread {
     public static String DARKCYAN = ESCAPE + "[0;36m";
 
     public static String DARKWHITE = ESCAPE + "[0;37m";
+
+
 
 }

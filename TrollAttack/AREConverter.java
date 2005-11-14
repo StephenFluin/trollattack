@@ -36,13 +36,13 @@ public class AREConverter {
             return;
         }
         print("Reading: '" + areaFile.getAbsolutePath() + "'.");
-
         EasyReader in = new EasyReader(areaFile.getAbsolutePath());
 
         String area = "";
         while (!in.isEOF()) {
             area += in.stringInputLine() + "\n";
         }
+        print("Finished reading file.");
         String pattern = ".*" + "#AREA\\s*(.*?)~.*" + "#AUTHOR\\s*(.*?)~.*"
                 + "#RANGES\n(.*?)\n\\$.*" + "#FLAGS\n(.*?)\n.*"
                 + "#ECONOMY\\s*(.*?)\n.*" + "#MOBILES\n(.*?)"
@@ -52,6 +52,8 @@ public class AREConverter {
         if (!sections.matches()) {
             print("Invalid area file!");
             return;
+        } else {
+            print("Area file appears to be valid.");
         }
         String AREA, AUTHOR, RANGES, FLAGS, ECONOMY, MOBILES, OBJECTS, ROOMS, RESETS, SHOPS, SPECIALS;
         AREA = sections.group(1);
@@ -65,7 +67,15 @@ public class AREConverter {
         RESETS = sections.group(9);
         SHOPS = sections.group(10);
         SPECIALS = sections.group(11);
+        Area areaResult = handleAreaData(AREA); 
 
+    }
+
+    private static Area handleAreaData(String area) {
+        print(area);
+        
+        
+        return null;
     }
 
     public static void print(String s) {

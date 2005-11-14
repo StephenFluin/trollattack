@@ -14,23 +14,24 @@ import org.w3c.dom.NodeList;
  * Preferences - Java - Code Style - Code Templates
  */
 public class XMLHandler {
-    public Hashtable sections;
 
     static int loopStart, loopIncrement;
 
-    Node node, kid, Kid;
+    
 
-    NodeList kids;
+    
 
-    public XMLHandler(Document doc) {
-        this(doc, new Hashtable());
+    public static Hashtable handle(Document doc) {
+        return handle(doc, new Hashtable());
     }
 
-    public XMLHandler(Document doc, Hashtable secs) {
-        sections = secs;
+    public static Hashtable handle(Document doc, Hashtable sections) {
         if (doc == null) {
-            return;
+            TrollAttack.error("Document provided for conversion from XML to hashtables is null.");
+            return null;
         }
+        Node node, kid, Kid;
+        NodeList kids;
         node = doc;
         kids = node.getChildNodes();
         // Kid is root item
@@ -50,12 +51,13 @@ public class XMLHandler {
          * I would like section to look like this: item=List[x] { [1]: {vnum=1,
          * name=sword} [2]: {vnum=2, name=sword2, ... , item=List[2] {...}}
          */
+        return sections;
     }
 
     
     // Take a node and a hashtable and populate the hashtable with all of the
     // children of the node.
-    public void hashProcess(Node n, Hashtable hash, int depth) {
+    public static void hashProcess(Node n, Hashtable hash, int depth) {
         NodeList kids = n.getChildNodes();
         Node kid;
 

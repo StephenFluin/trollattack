@@ -55,7 +55,7 @@ public class Prompt {
         return prompt;
     }
 
-    public String color(String s) {
+    public static String color(String s) {
         // Lights
         s = s.replaceAll("&C", Communication.CYAN);
         s = s.replaceAll("&P", Communication.PURPLE);

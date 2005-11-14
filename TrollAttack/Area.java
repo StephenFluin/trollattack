@@ -36,7 +36,7 @@ public class Area {
 
     public int defaultClicks;
 
-    public LinkedList areaRooms;
+    public java.util.LinkedList<Room> areaRooms;
 
     public Area() {
         this(0, 0, "uncategorized.xml", "Uncategorized", 15, true);
@@ -48,7 +48,7 @@ public class Area {
         high = highVnum;
         filename = areaFilename;
         name = areaName;
-        areaRooms = new LinkedList();
+        areaRooms = new java.util.LinkedList<Room>();
         defaultClicks = clicks;
         this.frozen = frozen;
     }
@@ -62,20 +62,18 @@ public class Area {
             return false;
         } else {
             frozen = true;
-            while (areaRooms.itemsRemain()) {
-                ((Room) areaRooms.getNext()).freeze();
+            for(Room room : areaRooms) {
+                room.freeze();
             }
-            areaRooms.reset();
             return true;
         }
     }
 
     public boolean unfreeze() {
         if (frozen == true) {
-            while (areaRooms.itemsRemain()) {
-                ((Room) areaRooms.getNext()).unfreeze();
+            for(Room room : areaRooms) {
+                room.unfreeze();
             }
-            areaRooms.reset();
             return true;
         } else {
             return false;
@@ -102,6 +100,18 @@ public class Area {
         return m;
     }
 
+    public int countBeing(Being being) {
+        int number = 0;
+        for(Room room : areaRooms) {
+            for(Being thing : room.roomBeings) {
+                if(thing == being) {
+                    number++;
+                }
+            }
+        }
+        return number;
+    }
+    
     /**
      * Saving works by loading everything in the game into hashtables and
      * linkedlists, and then saving only the files that we wanted to
@@ -119,7 +129,7 @@ public class Area {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        Hashtable areasList = new Hashtable();
+        Hashtable<String, Document> areasList = new Hashtable<String, Document>();
         Document doc = builder.newDocument();
         Room currentRoom = null;
 
@@ -233,7 +243,7 @@ public class Area {
         return new Area();
     }
 
-    static public void addToList(Document doc, Hashtable hash, Room room) {
+    static public void addToList(Document doc, Hashtable<String, Document> hash, Room room) {
         Area roomArea = Area.testRoom(room, TrollAttack.gameAreas);
         String filename = roomArea.filename;
         Object rooms = hash.get(filename);
@@ -249,11 +259,8 @@ public class Area {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            Hashtable areasList = new Hashtable();
+            //Hashtable<String, Document> areasList = new Hashtable<String, Document>();
             Document docu = builder.newDocument();
-            //TrollAttack.message("Hashtable for " + filename + " didn't
-            // contain this file yet.");
-            //TrollAttack.message(hash.toString());
             n = docu.createElement("TrollAttack");
             docu.appendChild(n);
             n.appendChild(roomArea.toNode(docu));
@@ -268,7 +275,7 @@ public class Area {
 
     }
 
-    static public void addToList(Document doc, Hashtable hash, Mobile room) {
+    static public void addToList(Document doc, Hashtable<String, Document> hash, Mobile room) {
         Area roomArea = Area.testMobile(room, TrollAttack.gameAreas);
         String filename = roomArea.filename;
         Object rooms = hash.get(filename);
@@ -285,7 +292,7 @@ public class Area {
         n.appendChild(room.toNode(((Document) rooms)));
     }
 
-    static public void addToList(Document doc, Hashtable hash, Item room) {
+    static public void addToList(Document doc, Hashtable<String, Document> hash, Item room) {
         Area roomArea = Area.testItem(room, TrollAttack.gameAreas);
         String filename = roomArea.filename;
         Object rooms = hash.get(filename);

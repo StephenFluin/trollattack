@@ -184,7 +184,6 @@ public class EasyReader extends PushbackReader {
      *            charInputLine</CODE>.
      */
     public char charQuery(String prompt) {
-        char answer;
 
         System.out.print(prompt);
         return charInputLine();

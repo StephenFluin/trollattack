@@ -27,12 +27,9 @@ public class Background extends Thread {
              * Every 60 seconds, CLICK!
              */
             if (time % 60 == 0) {
-                Reset reset;
-                while (TrollAttack.gameResets.itemsRemain()) {
-                    reset = (Reset) TrollAttack.gameResets.getNext();
+                for (Reset reset : TrollAttack.gameResets) {
                     reset.run();
                 }
-                TrollAttack.gameResets.reset();
             }
 
             /**
@@ -51,6 +48,9 @@ public class Background extends Thread {
             }
             if (time % (60 * 6) == 0) {
                 TrollAttack.agePlayers(.1);
+            }
+            if(time % 60 == 0) {
+                TrollAttack.wanderLust();
             }
 
             // Punt players idle for more than 20 minutes every 1 minute.
@@ -77,6 +77,7 @@ public class Background extends Thread {
             time++;
             //TrollAttack.message("Slept all the way to " + time + ".");
         }
+        TrollAttack.message("Background shutting down.");
     }
 
     public int getTime() {

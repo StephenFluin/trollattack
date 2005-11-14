@@ -9,7 +9,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import TrollAttack.Commands.Ability;
 import TrollAttack.Commands.CommandHandler;
 import TrollAttack.Classes.Class;
 import TrollAttack.Items.Item;
@@ -47,7 +46,6 @@ public class Player extends Being {
     public boolean authenticated = false;
 
     public double timePlayed = 0;
-    private java.util.LinkedList<Ability> playerAbilities;
 
     public Player(Communication com) {
         // Set the default player values here.
@@ -97,6 +95,7 @@ public class Player extends Being {
         this.setPrompt(prompt);
         setArea(myArea);
         shortDescription = shortd;
+        name = shortd;
         
         password = pass;
         isPlayer = true;
@@ -143,11 +142,6 @@ public class Player extends Being {
             communication.print(s + (wrapAtEnd ? Util.wrapChar : ""));
         }
     }
-    public void prompt(String s) {
-        tell(Util.wrapChar + s, false);
-        //System.out.println("Attempting to print:" + Util.wrapChar + s);
-    }
-
     public void name(String newName) {
         shortDescription = newName;
     }
@@ -189,8 +183,8 @@ public class Player extends Being {
     }
 
     public boolean canEdit(int vnum) {
-        if (level > 60
-                || (getActualArea().low <= vnum && getActualArea().high >= vnum)) {
+        if ( ( level > 60
+                || (getActualArea().low <= vnum && getActualArea().high >= vnum) ) && vnum > 0) {
             return true;
         } else {
             tell("You don't have permissions to modify this area, your vnum range is "
@@ -204,6 +198,16 @@ public class Player extends Being {
     }
 
     public void quit() {
+        quit(false);
+    }
+    public void quit(boolean forceful) {
+        if(getFollowing() != null && !forceful) {
+            stopFollowing();
+        }
+        while(!followers.isEmpty()) {
+            Being follower = followers.getFirst();
+            follower.stopFollowing();
+        }
         getActualRoom().removeBeing(this);
         TrollAttack.gamePlayers.remove(this);
         closeConnection();
@@ -292,7 +296,7 @@ public class Player extends Being {
         attribs.add(Util.nCreate(doc, "thirst", thirst + ""));
         attribs.add(Util.nCreate(doc, "gold", gold + ""));
         attribs.add(Util.nCreate(doc, "title", title + ""));
-        attribs.add(Util.nCreate(doc, "prompt", getPrompt()));
+        attribs.add(Util.nCreate(doc, "prompt", getPromptString()));
         attribs.add(Util.nCreate(doc, "class", getClassName() + ""));
         
 
@@ -384,7 +388,7 @@ public class Player extends Being {
         while (name.compareToIgnoreCase("new") == 0) {
             tell(Communication.WHITE + "Pick a name:");
             name = communication.in.readLine();
-            if (DataReader.readPlayerData(name) != null) {
+            if (DataReader.readPlayerFile(name) != null) {
                 name = "new";
                 tell(Communication.WHITE + "That name is taken!");
             }
@@ -398,17 +402,15 @@ public class Player extends Being {
         tell();
         tell();
         boolean finishedWithStep = true;
-        while(getClassName() == Class.Classes.Unclassed) {
+        while(getBeingClass() == null ) {
             if(!finishedWithStep) {
                 tell(Communication.GREEN + "That is not a valid class.");
                 tell();
             }
             tell(Communication.WHITE + "What class would you like to be?");
             tell(Communication.WHITE + "Options:");
-            for(Class.Classes option : Class.Classes.values()) {
-                if(option != Class.Classes.Unclassed) {
-                    tell(Communication.CYAN + option + "");
-                }
+            for(Class option : TrollAttack.gameClasses) {
+                tell(Communication.CYAN + option.getName() + "");
             }
             setBeingClass(communication.in.readLine());
             finishedWithStep = false;
@@ -442,6 +444,8 @@ public class Player extends Being {
         tell(Communication.CYAN + "Welcome to Troll Attack!  We hope you enjoy your time here.  If you have any questions, send an email to questions@trollattack.com.");
         return password;
     }
+
+
     
 
 

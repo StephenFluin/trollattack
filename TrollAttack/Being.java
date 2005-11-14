@@ -9,7 +9,6 @@ import org.w3c.dom.Node;
 
 import TrollAttack.Classes.*;
 import TrollAttack.Classes.Class;
-import TrollAttack.Classes.Class.*;
 import TrollAttack.Commands.Ability;
 import TrollAttack.Commands.CommandHandler;
 import TrollAttack.Items.*;
@@ -38,8 +37,10 @@ public class Being implements Cloneable {
             luck;
 
     public java.util.LinkedList<Item> beingItems = new java.util.LinkedList<Item>();
-
+    public java.util.LinkedList<Being> followers = new java.util.LinkedList<Being>();
+    
     public Being switched = null;
+    private Being following;
 
     public boolean canTeach = false;
     
@@ -82,9 +83,12 @@ public class Being implements Cloneable {
     public Room getActualRoom() {
         Room result = TrollAttack.getRoom(currentRoom);
         // can't optimize with actualRoom because reloadWorld can't update it..
+        // this is a lie, we just need to make reloadWorld smarter. (we = i).
         if (result == null) {
             TrollAttack.error("Being doesn't have a correct currentroom ("
                     + currentRoom + ").");
+            setCurrentRoom(1);
+            return actualRoom;
         }
         return result;
     }
@@ -98,7 +102,7 @@ public class Being implements Cloneable {
         if (TrollAttack.gameRooms != null) {
             actualRoom = TrollAttack.getRoom(currentRoom);
         }
-        if (r == 0) {
+        if (r < 1) {
             throw (new NullPointerException());
         } else {
         }
@@ -191,9 +195,9 @@ public class Being implements Cloneable {
     public Class getBeingClass() {
         return beingClass;
     }
-    public Class.Classes getClassName() {
+    public String getClassName() {
         if(beingClass == null) {
-            return Class.Classes.Unclassed;
+            return "Unclassed";
         } else {
             return beingClass.getName();
         }
@@ -202,36 +206,20 @@ public class Being implements Cloneable {
     public void setBeingClass(Class newClass) {
         beingClass = newClass;
     }
-    public void setBeingClass(Class.Classes className) {
-        switch(className) {
-        case Wizard:
-            setBeingClass(new Wizard());
-            //TrollAttack.debug("Setting to be a wiz.");
-            break;
-        case Warrior:
-            setBeingClass(new Warrior());
-            //TrollAttack.debug("Setting to be a war.");
-            break;
-        case Thief:
-            setBeingClass(new Thief());
-            //TrollAttack.debug("Setting to be a thief.");
-            break;
-        default:
-            //TrollAttack.error("Couldn't figure out what class this being is to be!!!");
-        }
-    }
-    public String setBeingClass(String value) {
-        for(Classes classType : Class.Classes.values()) {
-            if((classType.toString()).toLowerCase().startsWith(value.toLowerCase())) {
-                setBeingClass(classType);
-                //TrollAttack.debug("MATCH - Setting " + getShort() + " to be a " + getClassName() + " because of string " + value + ".");
+    public String setBeingClass(String className) {
+        for(Class beingClass : TrollAttack.gameClasses) {
+            if(beingClass.getName() == null) {
+                TrollAttack.error("This class has no name, '" + beingClass.toString() + "'!");
+            }
+            if(beingClass.getName().toLowerCase().startsWith(className.toLowerCase())) {
+                setBeingClass(beingClass);
                 return "Setting " + getShort() + " to be a " + getClassName() + ".";
-            } else {
-                //TrollAttack.debug((classType.toString()).toLowerCase() + " did not start with '" + value + "'.");
             }
         }
-        //TrollAttack.debug("Setting " + getShort() + " to be a " + getClassName() + " because of string " + value + ".");
+        Class notClass = null;
+        setBeingClass(notClass);
         return "Setting " + getShort() + " to be a " + getClassName() + ".";
+        
     }
     
     public int getHitDamage() {
@@ -241,8 +229,7 @@ public class Being implements Cloneable {
     public int getAverageHitDamage() {
         return hitDamage.getAverage();
     }
-
-    public String prompt() {
+    public String getPrompt() {
         return myPrompt.showPrompt(
                 hitPoints, 
                 maxHitPoints, 
@@ -255,11 +242,10 @@ public class Being implements Cloneable {
                 currentRoom,
                 gold);
     }
-    public void prompt(String s) {
-        
+    public void prompt() {
+        prompt( getPrompt());
     }
-
-    public String getPrompt() {
+    public String getPromptString() {
         return myPrompt.getPrompt();
     }
 
@@ -324,6 +310,16 @@ public class Being implements Cloneable {
     }
     public void tell(String s) {
         tell(s, true);
+    }
+    public void interrupt(String message) {
+        interrupt(message, true);
+    }
+    public void interrupt(String message, boolean wrapAtEnd) {
+        tell(Util.wrapChar + message);
+        prompt();
+    }
+    public void prompt(String s) {
+        tell(Util.wrapChar + s, false);
     }
 
     public void healAll() {
@@ -411,7 +407,10 @@ public class Being implements Cloneable {
         String[] itemList = new String[255];
         int n = 0;
         for (Item currentItem : beingItems) {
-            itemList[n] = currentItem.getShort();
+            String itemName = ( (currentItem.getClass() == DrinkContainer.class) 
+                    ? (Communication.BLUE + currentItem.getShort())
+                    : (Communication.GREEN + currentItem.getShort()));
+            itemList[n] = itemName;
             n++;
         }
         String[] inventoryList = new String[n];
@@ -507,12 +506,11 @@ public class Being implements Cloneable {
         try {
             newDrinky = (DrinkContainer) newDrink;
         } catch (ClassCastException e) {
-            try {
-                Fountain fountain = (Fountain) newDrink;
+            if(newDrink.getClass()== Fountain.class) {
                 thirst -= 2;
                 return "You drink from " + newDrink.getShort()
                         + " and are now " + getThirstString() + ".";
-            } catch (ClassCastException er) {
+            } else {
                 return "You can't drink from that!";
             }
         }
@@ -738,11 +736,13 @@ public class Being implements Cloneable {
 
             if (Util.contains(currentItem.getName(), name)) {
                 newItem = currentItem;
-                if (remove == true) {
-                    beingItems.remove(newItem);
-                }
+                break;
             } else {
             }
+            
+        }
+        if (remove == true) {
+            beingItems.remove(newItem);
         }
         return newItem;
     }
@@ -801,7 +801,9 @@ public class Being implements Cloneable {
         being.equipment.reset();
 
     }
-
+    public int getVnum() {
+        return 0;
+    }
     public int countExactItem(Item item) {
         int count = 0;
         Iterator<Item> i = beingItems.iterator();
@@ -886,6 +888,9 @@ public class Being implements Cloneable {
         practice(ability, proficiency, true);
     }
     public void practice(Ability ability, float proficiency, boolean safety) {
+        if(ability == null) {
+            TrollAttack.error("You can't practice a null ability!");
+        }
         if(abilitiesData.containsKey(ability)) {
             // already know this skill
             if(!safety) {
@@ -900,7 +905,9 @@ public class Being implements Cloneable {
     public void learnFromPractice(boolean success, Ability ability) {
        AbilityData data = abilitiesData.get(ability);
        AbilityData classData = getBeingClass().getAbilityData().get(ability);
-        if(data.proficiency < classData.maxProficiency) {
+       
+       // If this is an ability of the class, then check the maxproficiency for learning.
+       if(classData != null && data.proficiency < classData.maxProficiency) {
             // Can learn more still.
             float increase = (float)(success ? .9 : 0.3);
             data.proficiency += increase;
@@ -919,6 +926,86 @@ public class Being implements Cloneable {
         float probability = 100 * new Random().nextFloat();
         AbilityData data = abilitiesData.get(ability);
         return (data.proficiency > probability);
+    }
+
+    public void stopFollowing() {
+        if(getFollowing() == null) {
+            tell(Communication.GREEN + "You weren't following anything!");
+            return;
+        }
+        if(getFollowing().followers.contains(this)) {
+            getFollowing().followers.remove(this);            
+        } else {
+            try {
+                tell(Communication.GREEN + "Hrm, they didn't know you were following them.");
+                TrollAttack.error("Being didn't know that they were being followed.");
+            } catch(Exception e) {
+                
+            }
+        }
+        tell(Communication.GREEN + "You stop following " + getFollowing().getShort() + ".");
+        getFollowing().interrupt(Communication.GREEN + getShort() + " stops following you.");
+        setFollowing(null);
+    }
+    public void startFollowing(Being victim) {
+        if(victim == null) {
+            tell(Communication.GREEN + "You can't follow nothing!");
+            return;
+        }
+        if(getFollowing() != null) {
+            stopFollowing();
+        }
+        victim.followers.add(this);
+        tell(Communication.GREEN + "You start following " + victim.getShort() + ".");
+        victim.interrupt(Communication.GREEN + getShort() + " starts following you.");
+        setFollowing(victim);
+    }
+
+    private void setFollowing(Being victim) {
+        following = victim;
+    }
+    public Being getFollowing() {
+        return following;
+    }
+
+    public void move(int direction) {
+        ch.handleCommand(Exit.directionName(direction));
+    }
+
+    public void follow(Being player, int direction) {
+        Room previousRoom = getActualRoom();
+        previousRoom.removeBeing(this);
+        roomSay(Communication.GREEN + "%1 follows " + player.getShort() + ".");
+        setCurrentRoom(player.getActualRoom());
+        Being[] ignores = {this, player};
+        getActualRoom().say(Communication.GREEN + "%0 arrives following %1.",ignores);
+        getActualRoom().addBeing(this);
+        interrupt(Communication.GREEN + "You follow " + player.getShort() + "." + Util.wrapChar + getActualRoom().look(this), false);
+        for(Being follower : followers) {
+            if(follower.getActualRoom() == previousRoom) {
+                follower.follow(player, direction);
+            }
+            
+        }
+        
+    }
+
+    public void wander() {
+        //TrollAttack.debug(getShort() + " is wandering!");
+        int safety = 5;
+        Roll chance = new Roll("1d" + getActualRoom().roomExits.size());
+        //TrollAttack.debug("Roll looks like: " + chance.toString());
+        Exit randomExit = getActualRoom().roomExits.get(chance.roll() - 1);
+        
+        // Makes sure that mobiles don't leave their area.
+        while(Area.testRoom(randomExit.getDestinationRoom(), TrollAttack.gameAreas) != getActualArea()) {
+            if(safety-- < 0) {
+                TrollAttack.error("Tried " + safety + " times without finding a useable exit for wandering!");
+                return;
+            }
+            randomExit = getActualRoom().roomExits.get(chance.roll());
+        }
+        ch.handleCommand(randomExit.getDirectionName());
     }
 
 

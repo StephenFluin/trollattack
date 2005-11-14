@@ -92,7 +92,7 @@ public class Util {
                 try {
                     return builder.parse(xmlFile);
                 } catch (Exception e) {
-                    TrollAttack.error("Badly formed area file (" + dataFile
+                    TrollAttack.error("Badly formed file (" + dataFile
                             + ").");
                 }
             }
@@ -140,16 +140,6 @@ public class Util {
         trox.transform(source, result);
     }
 
-    static public void fillDefaults(Hashtable hash, String[] fillNames,
-            String[] fillValues) {
-        Object tmp;
-        for (int i = 0; i < fillNames.length; i++) {
-            tmp = hash.get(fillNames[i]);
-            if (tmp == null) {
-                hash.put(fillNames[i], fillValues[i]);
-            }
-        }
-    }
 
     static public Node nCreate(Document doc, String name, String value) {
         Node n = doc.createElement(name);
@@ -168,7 +158,7 @@ public class Util {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        Hashtable areasList = new Hashtable();
+        Hashtable<String, Document> areasList = new Hashtable<String, Document>();
         Document doc = builder.newDocument();
         Room currentRoom = null;
         // Add all of the rooms to their appropriate file hashes.
@@ -276,13 +266,81 @@ public class Util {
                 + wrapChar;
         result += "Experience:\t" + mobile.experience + "\t" + "Favor:\t"
                 + mobile.favor + wrapChar;
-        result += "Can teach (" + (mobile.canTeach ? "X" : " " ) + ")" + wrapChar;
+        result += "Can teach? (" + (mobile.canTeach ? "X" : " " ) + ")" + wrapChar;
+        
         if (!mobile.isPlayer()) {
+            result += "Wanderer? (" + (((Mobile) mobile).isWanderer() ? "X" : " " ) + ")" + wrapChar;
             result += "Clicks:\t" + ((Mobile) mobile).getClicks() + wrapChar;
         } else {
             result += "You are " + mobile.getHungerString() + wrapChar;
             result += "You are " + mobile.getThirstString() + wrapChar;
         }
+        return result;
+    }
+    
+    public static String getMOTD() {
+        String MOTD =
+             
+            "&WWelcome to:&Y____   ______  _______ ___      ___   " +       "&B        /           /       " + wrapChar +
+            "&Y       /      /  / __  / / __   //  /     /  /   " +         "&B        /' .,,,,  ./        " + wrapChar +
+            "&Y      /__  __/  / /_/ / / /_/  //  /     /  /    " +         "&B       /';'     ,/          " + wrapChar +
+            "&Y       / /    / __  / /      //  /____ /  /____  " +         "&B      / /   ,,//,`'`        " + wrapChar +
+            "&Y      /_/    /_/  \\_\\/______//_______//_______/  " +       "&B     ( ,, '_,  ,,,' ``      " + wrapChar +
+            "&Y     _      _______ _______ _     __      _  __  " +         "&B     |    /@  ,,, ;\" `     " + wrapChar +
+            "&Y    / \\    /      //      // \\   / _\\    / \\/ /  " +     "&B    /    .   ,''/' `,``     " + wrapChar +
+            "&Y   / ^ \\  /__  __//__  __// ^ \\  | |    /    /   " +       "&B   /   .     ./, `,, ` ;    " + wrapChar +
+            "&Y  / / \\ \\   / /     / /  / / \\ \\ | |_  /     \\   " +    "&B,./  .   ,-,',` ,,/''\\,'   " + wrapChar +
+            "&Y /_/   \\ \\ /_/     /_/  /_/   \\_\\\\__/ /__/\\___\\  " +  "&B|   /; ./,,'`,,'' |   |     " + wrapChar +
+            "&Y                                                 " +         "&B|     /   ','    /    |     " + wrapChar +
+            "&G     Written by &RStephen Fluin&Y                    " +     "&B\\___/'   '     |     |      " + wrapChar +
+            "&Y                                                 " +         "&B  `,,'  |      /     `\\     " + wrapChar +
+            "&Y                                                 " +         "&B       /      |        ~\\   " + wrapChar;
+        MOTD = Prompt.color(MOTD);
+        //System.out.println(MOTD);
+        return MOTD;
+    }
+    
+    // Splits a command into a bunch of strings by " "'s, but allows for single quotes to
+    // do stuff like "cast 'create spring'" -> cast, create spring.
+    public static String[] split(String command) {
+        String[] spaceParts = command.split(" ");
+        
+        int partsCount = 0;
+        String newPart = "";
+        boolean waitingCloseQuote = false;
+        
+        for(int i = 0;i < spaceParts.length;i++) {
+            if(waitingCloseQuote) {
+                newPart += " ";
+                if(spaceParts[i].endsWith("'")) {
+                    newPart += spaceParts[i].substring(0,spaceParts[i].length()-1);
+                    spaceParts[partsCount - 1] = newPart;
+                    waitingCloseQuote = false;
+                    newPart = "";
+                } else {
+                    newPart += spaceParts[i];
+                }
+            } else if( spaceParts[i].startsWith("'") && !spaceParts[i].endsWith("'")) {
+               newPart = spaceParts[i].substring(1);
+               partsCount++;
+               waitingCloseQuote = true;
+            } else {
+                if(spaceParts[i].startsWith("'") && spaceParts[i].endsWith("'")) {
+                    spaceParts[i] = spaceParts[i].substring(1,spaceParts[i].length()-1);
+                }
+                spaceParts[partsCount] = spaceParts[i];
+                partsCount++;
+                
+            }
+        }
+        if(newPart.length() > 0) {
+            spaceParts[partsCount] = newPart;
+        }
+        String[] result = new String[partsCount];
+        for(int i = 0;i < partsCount;i++) {
+            result[i] = spaceParts[i];
+        }
+        
         return result;
     }
 }

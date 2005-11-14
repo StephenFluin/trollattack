@@ -13,7 +13,10 @@ import java.util.Iterator;
 
 import org.w3c.dom.Document;
 
+import TrollAttack.Classes.Class;
+import TrollAttack.Classes.AbilityData;
 import TrollAttack.Commands.Ability;
+import TrollAttack.Commands.AbilityHandler;
 import TrollAttack.Items.*;
 
 /**
@@ -23,13 +26,16 @@ import TrollAttack.Items.*;
  * Preferences - Java - Code Style - Code Templates
  */
 public class DataReader {
-    private LinkedList items, mobiles, rooms;
-
-    private Hashtable sections;
+    private Hashtable areaData, classData;
 
     public DataReader() {
-        File dir = new File("Areas");
-        sections = new Hashtable();
+        areaData = readFolder("Areas");
+        classData = readFolder("Classes");
+    }
+
+    private Hashtable readFolder(String folderName) {
+        File dir = new File(folderName);
+        Hashtable data = new Hashtable();
         FilenameFilter filter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.endsWith(".xml");
@@ -38,41 +44,59 @@ public class DataReader {
         String[] children = dir.list(filter);
         if (children == null) {
             TrollAttack.error("Couldn't find area files.");
+            return null;
             // Either dir does not exist or is not a directory
         } else {
             for (int i = 0; i < children.length; i++) {
                 // Get filename of file or directory
                 String filename = children[i];
                 TrollAttack.message("Loading File: " + filename);
-                Document doc = Util.xmlize("Areas/" + filename);
-                XMLHandler handler = new XMLHandler(doc, sections);
+                Document doc = Util.xmlize(folderName + "/" + filename);
+                XMLHandler.handle(doc, data);
             }
+            TrollAttack.message("Read " + children.length + " " + folderName + " files.");
         }
+        return data;
     }
-
+    
     public LinkedList getItems() {
-        return readItemData((LinkedList) sections.get("item"));
+        return readItemData((LinkedList) areaData.get("item"));
     }
 
     public LinkedList getMobiles() {
-        return readMobileData((LinkedList) sections.get("mobile"));
+        return readMobileData((LinkedList) areaData.get("mobile"));
     }
 
     public LinkedList getRooms() {
-        return readRoomData((LinkedList) sections.get("room"));
+        return readRoomData((LinkedList) areaData.get("room"));
+    }
+    
+    public java.util.LinkedList<Class> getClasses() {
+        java.util.LinkedList<Hashtable> classesData = linkedListify(classData.get("class"));
+        java.util.LinkedList<Class> classes = new java.util.LinkedList<Class>();
+        for(Hashtable hash : classesData) {
+            classes.add(readClassData(hash));
+        }
+        return classes;
+        
     }
 
     public java.util.LinkedList<Area> getAreas() {
-        if (sections.get("area").getClass() == LinkedList.class) {
-            return readAreaData((LinkedList) sections.get("area"));
-        } else if (sections.get("area").getClass() == Hashtable.class) {
-            return readAreaData((Hashtable) sections.get("area"));
+        if(areaData.get("area") == null) {
+            TrollAttack.error("No data exists for areas.");
+            return null;
+        }
+        if (areaData.get("area").getClass() == LinkedList.class) {
+            return readAreaData((LinkedList) areaData.get("area"));
+        } else if (areaData.get("area").getClass() == Hashtable.class) {
+            return readAreaData((Hashtable) areaData.get("area"));
         } else {
             return readAreaData(new LinkedList());
         }
     }
 
-    public static Player readPlayerData(String playerName) {
+    public static Player readPlayerFile(String playerName) {
+        Hashtable sections = new Hashtable();
         //TrollAttack.message("Reading a player..");
         if (playerName.length() < 2) {
             return null;
@@ -84,8 +108,9 @@ public class DataReader {
                 return null;
             }
         }
-        XMLHandler handler = new XMLHandler(doc);
-        Hashtable<String, String> hash = (Hashtable) handler.sections.get("player");
+        
+        XMLHandler.handle(doc, sections);
+        Hashtable<String, String> hash = (Hashtable<String, String>) sections.get("player");
 
         if (hash.get("hitLevel") == null) {
             hash.put("hitLevel", 3 + "");
@@ -147,11 +172,15 @@ public class DataReader {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                Ability ability = p.getBeingClass().findAbility(data.get("name"));
+                Ability ability = TrollAttack.abilityHandler.find(data.get("name"));
+                if(ability == null) {
+                    TrollAttack.error("Non-existant ability found in pfile, '" + data.get("name") + "'.");
+                }
                 float proficiency = new Float(data.get("proficiency"));
                 p.practice(ability, proficiency);
             }
         }
+        p.rehash();
         
         Object tmpRooms = hash.get("item");
         java.util.LinkedList items = linkedListify(tmpRooms);
@@ -205,14 +234,12 @@ public class DataReader {
     }
 
     public static LinkedList readItemData(LinkedList itemList) {
-        int vnum = 0, weight = 0, t = 0, cost = 0, wearLoc = 0;
+        int vnum = 0, weight = 0, cost = 0;
         Item newItem;
-        Roll hd;
         String shortDesc = "", longDesc = "", itemName = "", type = "";
         LinkedList items = new LinkedList();
-        LinkedList affects = new LinkedList();
         for (int i = 0; i < itemList.length(); i++) {
-            vnum = weight = t = cost = wearLoc = 0;
+            vnum = weight = cost = 0;
             Hashtable item = (Hashtable) itemList.getNext();
 
             vnum = new Integer((String) item.get("vnum")).intValue();
@@ -465,7 +492,7 @@ public class DataReader {
     static public LinkedList readMobileData(LinkedList mobileList) {
         Mobile newMobile;
         LinkedList mobiles = new LinkedList();
-        boolean canTeach = false;
+        boolean canTeach = false, wander = false;
         int vnum, hp, maxhp, clicks, level, hitLevel;
         int mana, maxMana, move, maxMove;
         String shortDesc, longDesc, mobileName, hitDamage, hitSkill;
@@ -491,15 +518,17 @@ public class DataReader {
                 hitLevel = new Integer(mobile.get("hitlevel"))
                         .intValue();
             if (mobile.get("canTeach") != null)
-                canTeach = new Boolean((String) mobile
+                canTeach = new Boolean(mobile
                         .get("canTeach")).booleanValue();
+            if (mobile.get("wander") != null)
+                wander = new Boolean(mobile.get("wander")).booleanValue();
             hitSkill = mobile.get("hitskill");
             hitDamage = mobile.get("hitdamage");
             shortDesc = mobile.get("short");
             longDesc = mobile.get("long");
             mobileName = mobile.get("name");
-            newMobile = new Mobile(vnum, level, mobileName, hp, maxhp,
-                    hitLevel, hitSkill, hitDamage, clicks, shortDesc, longDesc);
+            newMobile = new Mobile(vnum, level, mobileName, hp, maxhp, mana, maxMana, move, maxMove,
+                    hitLevel, hitSkill, hitDamage, clicks, shortDesc, longDesc, wander);
             newMobile.canTeach = canTeach;
             newMobile.setBeingClass( ( mobile.get("class") != null ? mobile.get("class") : "" ) );
             
@@ -509,6 +538,24 @@ public class DataReader {
         TrollAttack.message("Loaded " + mobiles.length() + " mobiles.");
         return mobiles;
 
+    }
+    
+    public static Class readClassData(Hashtable hash) {
+        // Class data looks like this: 
+        // "<name>name</name><ability><name>x</name><level>#</level><maxProficiency>#</level>"
+        
+        Class result;
+        String name = (String)hash.get("name");
+        java.util.LinkedList<Hashtable<String, String>> abilities = linkedListify(hash.get("ability"));
+        Hashtable<Ability, AbilityData> abilitiesData = new Hashtable<Ability, AbilityData>();
+        for(Hashtable<String, String> abilityData : abilities) {
+            Ability ability = TrollAttack.abilityHandler.find(abilityData.get("name"));
+            AbilityData data = new AbilityData(Util.intize(abilityData.get("level")), new Float(abilityData.get("maxProficiency")).floatValue());
+            abilitiesData.put(ability, data);
+        }
+        result = new Class(name);
+        result.setAbilityData(abilitiesData);
+        return result;
     }
 
     public static Item getItemFromObject(Object newItem) {
@@ -559,4 +606,6 @@ public class DataReader {
 
         }
     }
+
+
 }

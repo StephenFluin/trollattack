@@ -45,11 +45,6 @@ public class Fight extends Thread {
     public void run() {
         first.setBeingFighting(second);
         second.setBeingFighting(first);
-        double damage;
-        //TrollAttack.error("First Data: " + first.getHitDamage() + ", " +
-        // first.hitSkill);
-        //TrollAttack.error("Second Data: " + second.getHitDamage() + ", " +
-        // second.hitSkill);
         while (first.hitPoints > 0 && second.hitPoints > 0) {
             try {
                 Thread.sleep(1000);
@@ -61,8 +56,8 @@ public class Fight extends Thread {
             runRound(second, first);
             first.tell("");
             second.tell("");
-            first.tell(first.prompt());
-            second.tell(second.prompt());
+            first.prompt();
+            second.prompt();
 
         }
         if (first.hitPoints > 0) {

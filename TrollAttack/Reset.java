@@ -102,7 +102,7 @@ public abstract class Reset {
         }
 
         public void execute() {
-            if (room.countExactMobile(mob) < limit) {
+            if (area.countBeing(mob) < limit) {
                 room.addBeing(mob);
                 mob.setCurrentRoom(room.vnum);
                 mob.healAll();

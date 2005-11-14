@@ -18,17 +18,23 @@ import java.util.GregorianCalendar;
 
 import org.w3c.dom.Document;
 
+import TrollAttack.Commands.AbilityHandler;
 import TrollAttack.Commands.CommandHandler;
 import TrollAttack.Items.Item;
+import TrollAttack.Classes.Class;
 
 
 public class TrollAttack {
     static Document document;
 
-    static boolean gameOver = false;
+    static public boolean gameOver = false;
+    
+    
 
     static Background backGround;
 
+    public static Communication unusedCommunication;
+    
     static Communication io;
 
     static Calendar cal = new GregorianCalendar();
@@ -47,10 +53,14 @@ public class TrollAttack {
     public static LinkedList gameMobiles;
 
     public static java.util.LinkedList<Player> gamePlayers;
-
+    public static java.util.LinkedList<Class> gameClasses;
+    public static java.util.LinkedList<Reset> gameResets;
+    
     public static LinkedList gameRooms;
+    
+    public static AbilityHandler abilityHandler = new AbilityHandler();
 
-    public static LinkedList gameResets;
+
 
     public static boolean isGameOver() {
         return gameOver;
@@ -61,20 +71,17 @@ public class TrollAttack {
     public static void main(String[] args) {
         //print("starting program...");
 
-        String command;
-
         gamePlayers = new java.util.LinkedList<Player>();
 
         reloadWorld();
-
+        
         io = new Communication();
-
+        unusedCommunication = io;
         // Done reading data files.
         backGround = new Background();
         backGround.start();
 
         io.start();
-
     }
 
     /**
@@ -94,9 +101,10 @@ public class TrollAttack {
 
     public static void broadcast(String message) {
         for (Player currentPlayer : gamePlayers) {
-            currentPlayer.tell(message);
+            currentPlayer.interrupt(message);
         }
     }
+    
 
     static public void print(String string, boolean shouldWrap) {
         //io.print(string, shouldWrap);
@@ -117,7 +125,7 @@ public class TrollAttack {
     static public Player getPlayer(String s) {
         Player returnPlayer = null;
         for(Player p : gamePlayers) {
-            if (p.getName().compareToIgnoreCase(s) == 0) {
+            if (p.getName().toLowerCase().startsWith(s.toLowerCase())) {
                 returnPlayer = p;
             } else {
                 //TrollAttack.message(s + " != " + p.getName());
@@ -164,7 +172,6 @@ public class TrollAttack {
 
     static public Room getRoom(int vnum) {
         Room room;
-        Room returnRoom = null;
         for (int i = 0; i < gameRooms.length(); i++) {
             room = (Room) gameRooms.getNext();
             if (room.vnum == vnum) {
@@ -173,7 +180,6 @@ public class TrollAttack {
             } else {
             }
         }
-        //TrollAttack.error("Room " + vnum + " not found!");
         gameRooms.reset();
         return null;
     }
@@ -191,12 +197,30 @@ public class TrollAttack {
         }
     }
 
+    static public void wanderLust() {
+        Roll chance = new Roll("1d10");
+        java.util.LinkedList<Mobile> wanderers = new java.util.LinkedList<Mobile>();
+        for(Area area : gameAreas) {
+            if(!area.frozen) {
+                for(Room room : area.areaRooms) {
+                    for(Being being : room.roomBeings) {
+                        if(!being.isPlayer && ((Mobile)being).isWanderer() && chance.roll() > 3) {
+                            wanderers.add( (Mobile)being );
+                        }
+                    }
+                }
+            }
+        }
+        for(Mobile mob : wanderers) {
+            mob.wander();
+        }
+    }
     static public void hungerStrike(int strength) {
         for(Player p : gamePlayers) {
             if (++p.hunger >= 9) {
                 p.hunger = 9;
                 p.hitPoints -= strength;
-                p.tell("You are " + p.getHungerString()
+                p.interrupt("You are " + p.getHungerString()
                         + ", and your rampant hunger causes you " + strength
                         + " damage.");
                 p.prompt();
@@ -204,7 +228,7 @@ public class TrollAttack {
             } else {
                 if (p.hunger % 2 == 0) {
                     p
-                            .tell("Your stomach feels a little emptier and you are now "
+                            .interrupt("Your stomach feels a little emptier and you are now "
                                     + p.getHungerString());
                 }
             }
@@ -213,24 +237,24 @@ public class TrollAttack {
             if (++p.thirst >= 9) {
                 p.thirst = 9;
                 p.hitPoints -= strength;
-                p.tell("You are " + p.getThirstString()
+                p.interrupt("You are " + p.getThirstString()
                         + ", and your rampant thirst causes you " + strength
                         + " damage.");
             } else {
                 if (p.thirst % 2 == 0) {
-                    p.tell("Your mouth feels drier and you are now "
+                    p.interrupt("Your mouth feels drier and you are now "
                             + p.getThirstString());
                 }
             }
         }
     }
 
-    static public void endGame() {
+    /*static public void endGame() {
         gameOver = true;
         backGround.stop();
         io.killConnections();
         io.stop();
-    }
+    }*/
 
     static public int getTime() {
         ;
@@ -242,7 +266,7 @@ public class TrollAttack {
             if (currentPlayer.getIdleTime() > time) {
                 message("Punting player " + currentPlayer.getShort()
                         + " for idleness.");
-                currentPlayer.tell("You have been idle for more than "
+                currentPlayer.interrupt("You have been idle for more than "
                         + (time / 60) + " minutes, kicking...");
                 currentPlayer.save();
                 currentPlayer.quit();
@@ -265,21 +289,47 @@ public class TrollAttack {
     }
 
     public static void reloadWorld() {
-        TrollAttack.gameResets = new LinkedList();
+        /* Surprisingly, the order here is important. You can't create the rooms
+         * if you don't already have the info about the mobs that will be in them.
+         * You can't create the mobs, unless you have the info about the items that
+         * they will carry.  And you can't create the Mobs unless you have the info
+         * about their classes.
+         */
+        
+        TrollAttack.gameResets = new java.util.LinkedList<Reset>();
         TrollAttack.myData = new DataReader();
         TrollAttack.gameAreas = TrollAttack.myData.getAreas();
+        TrollAttack.gameClasses = TrollAttack.myData.getClasses();
         TrollAttack.gameItems = TrollAttack.myData.getItems();
         TrollAttack.gameMobiles = TrollAttack.myData.getMobiles();
         TrollAttack.gameRooms = TrollAttack.myData.getRooms();
-        while (TrollAttack.gameResets.itemsRemain()) {
-            Reset reset = (Reset) TrollAttack.gameResets.getNext();
+        
+        for(Reset reset : gameResets) {
             reset.run();
         }
-        TrollAttack.gameResets.reset();
         for(Player p : gamePlayers) {
             TrollAttack.getRoom(p.getCurrentRoom()).addBeing(p);
             p.setCurrentRoom(p.getCurrentRoom());
         }
 
+    }
+
+    public static void shutdown() {
+        broadcast(Communication.RED + "MUD Shutting down NOW!");
+        while(gamePlayers.size() > 0){
+            Player p = gamePlayers.getFirst();
+            p.interrupt(Communication.WHITE + "The game forces you to save and quit.");
+            p.handleCommand("save");
+            p.handleCommand("quit");
+        }
+        try {
+            Thread.sleep(200);
+        } catch(Exception e) {
+            
+        }
+        gameOver = true;
+        unusedCommunication.killConnections();
+        message("Game shutting down.");
+       
     }
 }
