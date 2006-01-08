@@ -1269,17 +1269,14 @@ public class CommandHandler {
 	    public boolean execute() {
 		    player.tell(Communication.GREEN +"Items in the VNUM range of this area:");
 		    player.tell(Communication.CYAN + "VNUM\tName\t\tShortDesc" + Communication.WHITE);
-		    Item item;
 		    int high, low;
 		    high = player.getActualArea().high;
 		    low = player.getActualArea().low;
-		    while(TrollAttack.gameItems.itemsRemain()) {
-		        item = (Item)TrollAttack.gameItems.getNext();
+		   for(Item item : TrollAttack.gameItems) {
 		        if(item.vnum <= high && item.vnum >= low) {
 		            player.tell(item.vnum + "\t" + item.name + "\t" + item.getShort());
 		        }
 		    }
-		    TrollAttack.gameItems.reset();
             return true;
 		}
 	}
@@ -1288,11 +1285,9 @@ public class CommandHandler {
 	    public boolean execute() {
 		    player.tell(Communication.GREEN +"Mobiles in the VNUM range of this area:");
 		    player.tell(Communication.CYAN + "VNUM\tName\t\t\tShortDesc" + Communication.WHITE);
-		    Mobile mobile;
 		    int high = player.getActualArea().high;
 		    int low = player.getActualArea().low;
-		    while(TrollAttack.gameMobiles.itemsRemain()) {
-		        mobile = (Mobile)TrollAttack.gameMobiles.getNext();
+		    for(Mobile mobile : TrollAttack.gameMobiles) {
                 
 		        if(mobile.vnum <= high && mobile.vnum >= low) {
                     String tabs = "";
@@ -1302,7 +1297,6 @@ public class CommandHandler {
 		            player.tell(mobile.vnum + "\t" + mobile.name + tabs + mobile.getShort());
 		        }
 		    }
-		    TrollAttack.gameMobiles.reset();
             return true;
 		}
         public boolean execute(String s) {
@@ -1321,7 +1315,6 @@ public class CommandHandler {
                     player.tell(being.getVnum() + "\t" + being.name + tabs + being.getShort());
                 }
             }
-            TrollAttack.gameMobiles.reset();
             return true;
         }
 	}
@@ -1330,16 +1323,13 @@ public class CommandHandler {
 	    public boolean execute() {
 		    player.tell(Communication.GREEN +"Rooms in the VNUM range of this area:");
 		    player.tell(Communication.CYAN + "VNUM\tTitle" + Communication.WHITE);
-		    Room room;
 		    int high = player.getActualArea().high;
 		    int low = player.getActualArea().low;
-		    while(TrollAttack.gameRooms.itemsRemain()) {
-		        room = (Room)TrollAttack.gameRooms.getNext();
+		    for(Room room : TrollAttack.gameRooms) {
 		        if(room.vnum >= low && room.vnum  <= high) {
 		            player.tell(room.vnum + "\t" + room.title);
 		        }
 		    }
-		    TrollAttack.gameRooms.reset();
             return true;
 		}
 	}
