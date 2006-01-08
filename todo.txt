@@ -3,13 +3,13 @@ Todo List / Ideas:
 Convert .are files to my xml format.
 Make each area aware of all of its own rooms, mobiles, items, and players (for saving
 	so we don't always have to scan all of the junk in the game)
-follow commands
 Make int minPosition work, instead of boolean mustBePeaceful
+Work on channels and player preferences.
 Fix Experience System
 get rid of all instances of my LinkedList class so we can just import it instead of using java.util.LinkedList<Exit> all the time.
 5. Pets and Mountable Mobiles
 6. Swimming and Water
 Movement points
 Guilds and Orders
-Better Item Handling (in build system)
+Better Item Handling (in build system) // i think this is done..... isn't it?
 Speech
