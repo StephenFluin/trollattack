@@ -24,7 +24,7 @@ public class AbilityHandler {
     }
     
     private void register(Ability ability) {
-        TrollAttack.debug("Adding ability '" + ability.name + "' to list.");
+        //TrollAttack.debug("Adding ability '" + ability.name + "' to list.");
         abilities.add(ability);
     }
     public Ability find(String abilityName) {
