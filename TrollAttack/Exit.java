@@ -9,6 +9,7 @@ package TrollAttack;
  */
 
 import TrollAttack.Items.Item;
+import java.util.LinkedList;
 
 /**
  * @author PeEll

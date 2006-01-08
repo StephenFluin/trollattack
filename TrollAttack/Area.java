@@ -6,11 +6,11 @@
  */
 package TrollAttack;
 
-import TrollAttack.LinkedList;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Hashtable;
+import java.util.LinkedList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,7 +36,7 @@ public class Area {
 
     public int defaultClicks;
 
-    public java.util.LinkedList<Room> areaRooms;
+    public LinkedList<Room> areaRooms;
 
     public Area() {
         this(0, 0, "uncategorized.xml", "Uncategorized", 15, true);
@@ -48,7 +48,7 @@ public class Area {
         high = highVnum;
         filename = areaFilename;
         name = areaName;
-        areaRooms = new java.util.LinkedList<Room>();
+        areaRooms = new LinkedList<Room>();
         defaultClicks = clicks;
         this.frozen = frozen;
     }
@@ -83,7 +83,7 @@ public class Area {
     public Node toNode(Document doc) {
 
         Node m = doc.createElement("area");
-        LinkedList attribs = new LinkedList();
+        LinkedList<Node> attribs = new LinkedList<Node>();
         attribs.add(Util.nCreate(doc, "low", low + ""));
         attribs.add(Util.nCreate(doc, "high", high + ""));
         attribs.add(Util.nCreate(doc, "filename", filename));
@@ -91,9 +91,7 @@ public class Area {
         attribs.add(Util.nCreate(doc, "clicks", defaultClicks + ""));
         attribs.add(Util.nCreate(doc, "frozen", frozen ? "true" : "false"));
 
-        for (int i = 0; i < attribs.length(); i++) {
-
-            Node newAttrib = (Node) attribs.getNext();
+        for(Node newAttrib : attribs) {
             m.appendChild(newAttrib);
         }
 
@@ -118,8 +116,8 @@ public class Area {
      * change/update.
      *  
      */
-    public void save(LinkedList gameRooms, LinkedList gameMobiles,
-            LinkedList gameItems) {
+    public void save(LinkedList<Room> gameRooms, LinkedList<Mobile> gameMobiles,
+            LinkedList<Item> gameItems) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         DocumentBuilder builder = null;
@@ -131,31 +129,20 @@ public class Area {
         }
         Hashtable<String, Document> areasList = new Hashtable<String, Document>();
         Document doc = builder.newDocument();
-        Room currentRoom = null;
 
         // Add all of the rooms to their appropriate file hashes.
-        for (int i = 0; i < gameRooms.length(); i++) {
-            currentRoom = (Room) gameRooms.getNext();
-            //TrollAttack.message("Adding " + currentRoom.vnum + "room to new
-            // file...");
+        for (Room currentRoom : gameRooms) {
             Area.addToList(doc, areasList, currentRoom);
 
         }
-        gameRooms.reset();
 
-        Mobile currentMobile = null;
-        for (int i = 0; i < gameMobiles.length(); i++) {
-            currentMobile = (Mobile) gameMobiles.getNext();
+        for (Mobile currentMobile : gameMobiles) {
             Area.addToList(doc, areasList, currentMobile);
         }
-        gameMobiles.reset();
 
-        Item currentItem = null;
-        for (int i = 0; i < gameItems.length(); i++) {
-            currentItem = (Item) gameItems.getNext();
+        for (Item currentItem : gameItems) {
             Area.addToList(doc, areasList, currentItem);
         }
-        gameItems.reset();
 
         /* Deleting old files... */
         File dir = new File("Areas");
@@ -192,7 +179,7 @@ public class Area {
         }
     }
 
-    static public Area findArea(String filename, java.util.LinkedList<Area> gameAreas) {
+    static public Area findArea(String filename, LinkedList<Area> gameAreas) {
         for (Area currentArea : gameAreas) {
             if (filename == null) {
                 filename = "";
@@ -204,7 +191,7 @@ public class Area {
         return null;
     }
 
-    static public Area test(int vnum, java.util.LinkedList<Area> gameAreas) {
+    static public Area test(int vnum, LinkedList<Area> gameAreas) {
         for(Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
                 return currentArea;
@@ -213,7 +200,7 @@ public class Area {
         return new Area();
     }
 
-    static public Area testRoom(Room room, java.util.LinkedList<Area> gameAreas) {
+    static public Area testRoom(Room room, LinkedList<Area> gameAreas) {
         int vnum = room.vnum;
         for (Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
@@ -223,7 +210,7 @@ public class Area {
         return new Area();
     }
 
-    static public Area testMobile(Mobile room, java.util.LinkedList<Area> gameAreas) {
+    static public Area testMobile(Mobile room, LinkedList<Area> gameAreas) {
         int vnum = room.vnum;
         for(Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
@@ -233,7 +220,7 @@ public class Area {
         return new Area();
     }
 
-    static public Area testItem(Item room, java.util.LinkedList<Area> gameAreas) {
+    static public Area testItem(Item room, LinkedList<Area> gameAreas) {
         int vnum = room.vnum;
         for(Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {

@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import org.w3c.dom.Document;
 
@@ -59,21 +60,21 @@ public class DataReader {
         return data;
     }
     
-    public LinkedList getItems() {
+    public LinkedList<Item> getItems() {
         return readItemData((LinkedList) areaData.get("item"));
     }
 
-    public LinkedList getMobiles() {
+    public LinkedList<Mobile> getMobiles() {
         return readMobileData((LinkedList) areaData.get("mobile"));
     }
 
-    public LinkedList getRooms() {
+    public LinkedList<Room> getRooms() {
         return readRoomData((LinkedList) areaData.get("room"));
     }
     
-    public java.util.LinkedList<Class> getClasses() {
-        java.util.LinkedList<Hashtable> classesData = linkedListify(classData.get("class"));
-        java.util.LinkedList<Class> classes = new java.util.LinkedList<Class>();
+    public LinkedList<Class> getClasses() {
+        LinkedList<Hashtable> classesData = linkedListify(classData.get("class"));
+        LinkedList<Class> classes = new LinkedList<Class>();
         for(Hashtable hash : classesData) {
             classes.add(readClassData(hash));
         }
@@ -81,7 +82,7 @@ public class DataReader {
         
     }
 
-    public java.util.LinkedList<Area> getAreas() {
+    public LinkedList<Area> getAreas() {
         if(areaData.get("area") == null) {
             TrollAttack.error("No data exists for areas.");
             return null;
@@ -160,7 +161,7 @@ public class DataReader {
         //TrollAttack.debug("Player's class is turning out to be..." + ( hash.get("class") != null ? hash.get("class") : "" ) );
         
         Object tmpAbilities = hash.get("ability");
-        java.util.LinkedList abilities = linkedListify(tmpAbilities);
+        LinkedList abilities = linkedListify(tmpAbilities);
         for(Object current : abilities) {
             if(current == null) {
                 TrollAttack.error("Current ability is null when loading pfile!");
@@ -183,7 +184,7 @@ public class DataReader {
         p.rehash();
         
         Object tmpRooms = hash.get("item");
-        java.util.LinkedList items = linkedListify(tmpRooms);
+        LinkedList items = linkedListify(tmpRooms);
         for(Object current : items) {
             if (current == null) {
                 TrollAttack.error("Current object is a NULL!");
@@ -206,21 +207,19 @@ public class DataReader {
 
     }
 
-    public static java.util.LinkedList<Area> readAreaData(Hashtable hash) {
+    public static LinkedList<Area> readAreaData(Hashtable hash) {
         LinkedList ll = new LinkedList();
         ll.add(hash);
         return readAreaData(ll);
     }
 
-    public static java.util.LinkedList<Area> readAreaData(LinkedList areaList) {
+    public static LinkedList<Area> readAreaData(LinkedList<Hashtable> areaList) {
 
-        Hashtable area;
-        java.util.LinkedList<Area> areas = new java.util.LinkedList<Area>();
+        LinkedList<Area> areas = new LinkedList<Area>();
         if (areaList == null) {
             return areas;
         }
-        for (int i = 0; i < areaList.length(); i++) {
-            area = (Hashtable) areaList.getNext();
+        for(Hashtable area : areaList) {
             Area newArea = new Area(new Integer((String) area.get("low"))
                     .intValue(), new Integer((String) area.get("high"))
                     .intValue(), (String) area.get("filename"), (String) area
@@ -233,14 +232,14 @@ public class DataReader {
         return areas;
     }
 
-    public static LinkedList readItemData(LinkedList itemList) {
+    //Reads in a list of hashtables with item data and creates a list of Items.
+    public static LinkedList<Item> readItemData(LinkedList<Hashtable> itemList) {
         int vnum = 0, weight = 0, cost = 0;
         Item newItem;
         String shortDesc = "", longDesc = "", itemName = "", type = "";
         LinkedList items = new LinkedList();
-        for (int i = 0; i < itemList.length(); i++) {
+        for(Hashtable item : itemList) {
             vnum = weight = cost = 0;
-            Hashtable item = (Hashtable) itemList.getNext();
 
             vnum = new Integer((String) item.get("vnum")).intValue();
             if (item.get("cost") != null)
@@ -309,41 +308,36 @@ public class DataReader {
             //new Item(vnum,weight, cost, itemName, shortDesc, longDesc) );
             //System.out.println("Created: " + itemList[vnum].toString());
         }
-        TrollAttack.message("Loaded " + items.length() + " items.");
+        TrollAttack.message("Loaded " + items.size() + " items.");
         return items;
     }
 
-    // This function creates a linked list of hashes and linked lists
-    // that contain all of the data for rooms, as well as all of the
-    // information for mobile in room, door, item, give, and wear resets.
-    public static LinkedList readRoomData(LinkedList roomList) {
+    // This function reads in a list of rooms (Hashtable objects) and
+    // creates a list of Rooms
+    public static LinkedList<Room> readRoomData(LinkedList<Hashtable> roomList) {
         Room newRoom;
 
         LinkedList rooms = new LinkedList();
         int vnum = 0;
-        java.util.LinkedList<Exit> exits;
+        LinkedList<Exit> exits;
         String title = "", description = "";
 
         // Cycle through each of the rooms in the linked list.
-        for (int j = 0; j < roomList.length(); j++) {
-            exits = new java.util.LinkedList<Exit>();
-
-            // puts all of the data about a room in the 'room' variable.
-            Hashtable room = (Hashtable) roomList.getNext();
-
+        for(Hashtable room : roomList) {
+            exits = new LinkedList<Exit>();
             vnum = new Integer((String) room.get("vnum")).intValue();
             title = (String) room.get("title");
             description = (String) room.get("description");
             newRoom = new Room(vnum, title, description, exits);
             rooms.add(newRoom);
+            
             // Goes through all known exits and checks the hash for them.
             for (int i = 1; i < Exit.directionList.length; i++) {
-                //TrollAttack.message("looping " + i);
+                // Makes sure the exit is real and that it doesn't already exist.
                 if ((Exit.directionList[i] != null)
                         && room.get(Exit.directionList[i]) != null) {
-                    if (room.get(Exit.directionList[i]).getClass() == Hashtable.class) {
-
-                        Hashtable exitData = (Hashtable) room
+                    if (room.get(Exit.directionList[i]) instanceof Hashtable) {
+                        Hashtable exitData = (Hashtable)room
                                 .get(Exit.directionList[i]);
                         int ivnum = new Integer((String) exitData.get("vnum"))
                                 .intValue();
@@ -393,7 +387,7 @@ public class DataReader {
             // Creates item resets or placements.
             // It is a bad variable name, but too much work to change.
             Object tmpItems = room.get("item");
-            java.util.LinkedList roomItems = linkedListify(tmpItems);
+            LinkedList roomItems = linkedListify(tmpItems);
 
             for(Object current : roomItems) {
                 //TrollAttack.debug(current.toString());
@@ -420,7 +414,7 @@ public class DataReader {
             // Starting to create all resets for mobiles, and mobile wear
             // or give resets and placements.
             Object tmpMobiles = room.get("mobile");
-            java.util.LinkedList mobiles = linkedListify(tmpMobiles);
+            LinkedList mobiles = linkedListify(tmpMobiles);
             //TrollAttack.debug("List has " + mobiles.length() + "elements");
             for(Object currentMobile : mobiles) {
                 Mobile resetMobile;
@@ -443,7 +437,7 @@ public class DataReader {
                     resetMobile.setCurrentRoom(newRoom.vnum);
 
                     Object itemsOfMobile = hash.get("item");
-                    java.util.LinkedList mobileItems = linkedListify(itemsOfMobile);
+                    LinkedList mobileItems = linkedListify(itemsOfMobile);
 
                     for(Object currentMobileItem : mobileItems) {
                         Item newItem = getItemFromObject(currentMobileItem);
@@ -464,7 +458,7 @@ public class DataReader {
                             resetMobile, newRoom, 1));
 
                     Object itemsOfMobile = hash.get("item");
-                    java.util.LinkedList mobileItems = linkedListify(itemsOfMobile);
+                    LinkedList mobileItems = linkedListify(itemsOfMobile);
 
                     for(Object currentMobileItem : mobileItems) {
                         Item newItem = getItemFromObject(currentMobileItem);
@@ -484,12 +478,12 @@ public class DataReader {
             }
 
         }
-        TrollAttack.message("Loaded " + rooms.length() + " rooms.");
+        TrollAttack.message("Loaded " + rooms.size() + " rooms.");
         return rooms;
 
     }
 
-    static public LinkedList readMobileData(LinkedList mobileList) {
+    static public LinkedList readMobileData(LinkedList<Hashtable<String,String>> mobileList) {
         Mobile newMobile;
         LinkedList mobiles = new LinkedList();
         boolean canTeach = false, wander = false;
@@ -497,10 +491,9 @@ public class DataReader {
         int mana, maxMana, move, maxMove;
         String shortDesc, longDesc, mobileName, hitDamage, hitSkill;
 
-        for (int j = 0; j < mobileList.length(); j++) {
+        for (Hashtable<String,String> mobile : mobileList) {
             hitLevel = 0;
             clicks = 8;
-            Hashtable<String, String> mobile = (Hashtable) mobileList.getNext();
             //TrollAttack.message(mobile.toString());
             vnum = new Integer(mobile.get("vnum")).intValue();
             level = new Integer(mobile.get("level")).intValue();
@@ -535,7 +528,7 @@ public class DataReader {
             //System.out.println("Created: " + itemList[vnum].toString());
             mobiles.add(newMobile);
         }
-        TrollAttack.message("Loaded " + mobiles.length() + " mobiles.");
+        TrollAttack.message("Loaded " + mobiles.size() + " mobiles.");
         return mobiles;
 
     }
@@ -546,7 +539,7 @@ public class DataReader {
         
         Class result;
         String name = (String)hash.get("name");
-        java.util.LinkedList<Hashtable<String, String>> abilities = linkedListify(hash.get("ability"));
+        LinkedList<Hashtable<String, String>> abilities = linkedListify(hash.get("ability"));
         Hashtable<Ability, AbilityData> abilitiesData = new Hashtable<Ability, AbilityData>();
         for(Hashtable<String, String> abilityData : abilities) {
             Ability ability = TrollAttack.abilityHandler.find(abilityData.get("name"));
@@ -590,17 +583,17 @@ public class DataReader {
     // and hashtables and data) and makes the data into a linked list
     // of length 0 for null, 1 for direct data, and x for things
     // that are already linked lists.
-    public static java.util.LinkedList linkedListify(Object wannabeList) {
+    public static LinkedList linkedListify(Object wannabeList) {
         if (wannabeList == null) {
-            return new java.util.LinkedList();
+            return new LinkedList();
         } else if (wannabeList.getClass() == LinkedList.class) {
-            java.util.LinkedList ll = new java.util.LinkedList();
-            while(((LinkedList)wannabeList).itemsRemain()) {
-                ll.add(((LinkedList)wannabeList).getNext());
+            LinkedList ll = new LinkedList();
+            for(Object o : ((LinkedList)wannabeList)) {
+                ll.add(o);
             }
             return ll;
         } else {
-            java.util.LinkedList ll = new java.util.LinkedList();
+            LinkedList ll = new LinkedList();
             ll.add(wannabeList);
             return ll;
 

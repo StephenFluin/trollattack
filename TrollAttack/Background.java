@@ -15,58 +15,32 @@ package TrollAttack;
 public class Background extends Thread {
     int time = 0;
 
+    // Order by most frequent to least frequent for organization.
     public void run() {
         while (!TrollAttack.gameOver) {
-            // Item routines
-            for (int i = 0; i < TrollAttack.gameItems.getLength(); i++) {
 
-            }
-            //TrollAttack.message("Starting item background.");
-            // Mobile routines
             /**
              * Every 60 seconds, CLICK!
              */
+            
+            if (time % 10 == 0) {
+                TrollAttack.healBeings();
+                
+            }
             if (time % 60 == 0) {
                 for (Reset reset : TrollAttack.gameResets) {
                     reset.run();
                 }
-            }
-
-            /**
-             * Every 10 seconds, increase healths by 2.
-             */
-
-            /*
-             * if(time % 30 == 0) { TrollAttack.deadies.handleResurrection(); }
-             */
-            //TrollAttack.message("Starting healing background.");
-            if (time % 10 == 0) {
-                TrollAttack.healBeings();
-            }
-            if (time % (60 * 30) == 0) {
-                TrollAttack.hungerStrike(6);
+                TrollAttack.wanderLust();
+                TrollAttack.puntIdlePlayers(TrollAttack.maxIdleTime);
             }
             if (time % (60 * 6) == 0) {
                 TrollAttack.agePlayers(.1);
             }
-            if(time % 60 == 0) {
-                TrollAttack.wanderLust();
+            if (time % (60 * 30) == 0) {
+                TrollAttack.hungerStrike(6);
             }
 
-            // Punt players idle for more than 20 minutes every 1 minute.
-            if (time % (60) == 0) {
-                TrollAttack.puntIdlePlayers(60 * 20);
-            }
-
-            //TrollAttack.message("Starting room background.");
-            // Who cares what happens in rooms
-            //for(int i = 0;i < TrollAttack.gameRooms.length; i++) {
-            //	
-            //}
-            if (time % (60 * 5) == 0) {
-                //TrollAttack.broadcast("A healing wind continues to blow
-                // accross the realm.");
-            }
 
             try {
                 Thread.sleep(1000);

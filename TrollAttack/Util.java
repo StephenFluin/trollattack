@@ -2,8 +2,7 @@ package TrollAttack;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -160,30 +159,21 @@ public class Util {
         }
         Hashtable<String, Document> areasList = new Hashtable<String, Document>();
         Document doc = builder.newDocument();
-        Room currentRoom = null;
         // Add all of the rooms to their appropriate file hashes.
-        for (int i = 0; i < TrollAttack.gameRooms.length(); i++) {
-            currentRoom = (Room) TrollAttack.gameRooms.getNext();
+        for (Room currentRoom : TrollAttack.gameRooms) {
             //TrollAttack.message("Adding " + currentRoom.vnum + "room to new
             // file...");
             Area.addToList(doc, areasList, currentRoom);
 
         }
-        TrollAttack.gameRooms.reset();
 
-        Mobile currentMobile = null;
-        for (int i = 0; i < TrollAttack.gameMobiles.length(); i++) {
-            currentMobile = (Mobile) TrollAttack.gameMobiles.getNext();
+        for (Mobile currentMobile : TrollAttack.gameMobiles) {
             Area.addToList(doc, areasList, currentMobile);
         }
-        TrollAttack.gameMobiles.reset();
 
-        Item currentItem = null;
-        for (int i = 0; i < TrollAttack.gameItems.length(); i++) {
-            currentItem = (Item) TrollAttack.gameItems.getNext();
+        for(Item currentItem : TrollAttack.gameItems) {
             Area.addToList(doc, areasList, currentItem);
         }
-        TrollAttack.gameItems.reset();
 
         /* Deleting old files... */
         File dir = new File("Areas");
@@ -295,7 +285,7 @@ public class Util {
             "&G     Written by &RStephen Fluin&Y                    " +     "&B\\___/'   '     |     |      " + wrapChar +
             "&Y                                                 " +         "&B  `,,'  |      /     `\\     " + wrapChar +
             "&Y                                                 " +         "&B       /      |        ~\\   " + wrapChar;
-        MOTD = Prompt.color(MOTD);
+        //MOTD = Prompt.color(MOTD);
         //System.out.println(MOTD);
         return MOTD;
     }
@@ -343,4 +333,23 @@ public class Util {
         
         return result;
     }
+
+    public static <T> T findIn (String name, Collection<T> list) {
+        for(T element : list) {
+            if(element.toString().toLowerCase().startsWith(name.toLowerCase())) {
+                return element;
+            }
+        }
+        return null;
+    }
+    public static <T> T findIn (String name, T[] list) {
+        for(T element : list) {
+            if(element.toString().toLowerCase().startsWith(name.toLowerCase())) {
+                return element;
+            }
+        }
+        return null;
+        
+    }
+
 }

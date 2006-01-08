@@ -51,32 +51,9 @@ public class Prompt {
         prompt = prompt.replaceAll("%X", experienceToLevel + "");
         prompt = prompt.replaceAll("%r", roomVnum + "");
         prompt = prompt.replaceAll("%g", gold + "");
-        prompt = color(prompt);
         return prompt;
     }
 
-    public static String color(String s) {
-        // Lights
-        s = s.replaceAll("&C", Communication.CYAN);
-        s = s.replaceAll("&P", Communication.PURPLE);
-        s = s.replaceAll("&W", Communication.WHITE);
-        s = s.replaceAll("&Y", Communication.YELLOW);
-        s = s.replaceAll("&G", Communication.GREEN);
-        s = s.replaceAll("&R", Communication.RED);
-        s = s.replaceAll("&B", Communication.BLUE);
-        s = s.replaceAll("&A", Communication.GREY);
-
-        // Darks
-        s = s.replaceAll("&DC", Communication.DARKCYAN);
-        s = s.replaceAll("&DP", Communication.DARKPURPLE);
-        s = s.replaceAll("&DW", Communication.DARKWHITE);
-        s = s.replaceAll("&DY", Communication.DARKYELLOW);
-        s = s.replaceAll("&DG", Communication.DARKGREEN);
-        s = s.replaceAll("&DR", Communication.DARKRED);
-        s = s.replaceAll("&DB", Communication.DARKBLUE);
-        s = s.replaceAll("&DA", Communication.DARKGREY);
-        return s;
-    }
 
     public String getPrompt() {
         return promptString;

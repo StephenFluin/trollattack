@@ -1,6 +1,7 @@
 package TrollAttack;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -16,13 +17,13 @@ public class Room {
 
     public String description = "", title = "";
 
-    private LinkedList roomItems = new LinkedList();
+    private LinkedList<Item> roomItems = new LinkedList<Item>();
 
-    public java.util.LinkedList<Being> roomBeings = new java.util.LinkedList<Being>();
+    public LinkedList<Being> roomBeings = new LinkedList<Being>();
 
-    public java.util.LinkedList<Exit> roomExits = new java.util.LinkedList<Exit>();
+    public LinkedList<Exit> roomExits = new LinkedList<Exit>();
 
-    public Room(int vnum, String title, String description, java.util.LinkedList<Exit> exits) {
+    public Room(int vnum, String title, String description, LinkedList<Exit> exits) {
         this.vnum = vnum;
         //this.east = east; this.west = west; this.north = north; this.south =
         // south;
@@ -43,12 +44,12 @@ public class Room {
 
     public String toString() {
         String returnValue = vnum + ":" + title;
-        for (int i = 0; i < roomItems.length(); i++) {
-            Item currentItem = (Item) roomItems.getNext();
+        int i = 0;
+        for (Item currentItem : roomItems) {
+            i++;
             returnValue += "\n\rroomItems[" + i + "](" + currentItem + ")"
                     + currentItem.getShort();
         }
-        roomItems.reset();
         return returnValue;
 
     }
@@ -56,7 +57,7 @@ public class Room {
     public Node toNode(Document doc) {
 
         Node m = doc.createElement("room");
-        LinkedList attribs = new LinkedList();
+        LinkedList<Node> attribs = new LinkedList<Node>();
         attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
         attribs.add(Util.nCreate(doc, "title", title));
         attribs.add(Util.nCreate(doc, "description", description + ""));
@@ -91,16 +92,11 @@ public class Room {
             }
         }
 
-        Item roomItem;
-        for (int i = 0; i < roomItems.getLength(); i++) {
-            roomItem = (Item) roomItems.getNext();
+        for (Item roomItem : roomItems) {
             attribs.add(Util.nCreate(doc, "item", roomItem.vnum + ""));
         }
-        roomItems.reset();
 
-        for (int i = 0; i < attribs.length(); i++) {
-
-            Node newAttrib = (Node) attribs.getNext();
+        for (Node newAttrib : attribs) {
             m.appendChild(newAttrib);
         }
 
@@ -108,48 +104,27 @@ public class Room {
     }
 
     public void freeze() {
-        Integer[] itemVnums = new Integer[roomItems.length()];
-        for (int i = 0; i < roomItems.length(); i++) {
-            itemVnums[i] = new Integer(((Item) roomItems.getNext()).vnum);
+        LinkedList<Item> newItemList = new LinkedList<Item>();
+        for (Item i : roomItems) {
+            newItemList.add(TrollAttack.getItem(i.vnum));
         }
-        roomItems = new LinkedList();
-        for (int i = 0; i < itemVnums.length; i++) {
-            roomItems.add(TrollAttack.getItem(itemVnums[i]));
-            //TrollAttack.message("Recreating item..");
-
-        }
-        try {
-            Integer[] mobileVnums = new Integer[roomBeings.size()];
-            java.util.LinkedList<Being> roomMobiles = new java.util.LinkedList<Being>();
-            int i = 0;
-            Iterator<Being> eachBeing = roomBeings.iterator();
-            while(eachBeing.hasNext()) {
-                Being tmp = eachBeing.next();
-                if (tmp.isPlayer()) {
-                    roomMobiles.add(tmp);
-                } else {
-                    mobileVnums[i] = new Integer(((Mobile) tmp).vnum);
-                }
+        roomItems = newItemList;
+        LinkedList<Being> newBeingList = new LinkedList<Being>();
+        for (Being b : roomBeings) {
+            if(!b.isPlayer()) {
+                newBeingList.add(TrollAttack.getMobile(b.getVnum()));
+            } else {
+                newBeingList.add(b);
             }
-            roomBeings = roomMobiles;
-            
-            for (i = 0; i < mobileVnums.length; i++) {
-                if (mobileVnums[i] != null) {
-                    roomBeings.add(TrollAttack.getMobile(mobileVnums[i]));
-                }
-                //TrollAttack.message("Recreating mobile..");
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-
+        roomBeings = newBeingList;
     }
 
     public void unfreeze() {
-        Integer[] roomVnums = new Integer[roomItems.length()];
-        for (int i = 0; i < roomItems.length(); i++) {
-            roomVnums[i] = new Integer(((Item) roomItems.getNext()).vnum);
+        // Rewrite this to be more efficient and use resets.
+        Integer[] roomVnums = new Integer[roomItems.size()];
+        for (int i = 0; i < roomItems.size(); i++) {
+            roomVnums[i] = new Integer(((Item) roomItems.get(i)).vnum);
         }
         roomItems = new LinkedList();
         for (int i = 0; i < roomVnums.length; i++) {
@@ -157,7 +132,7 @@ public class Room {
         }
         try {
             Integer[] mobileVnums = new Integer[roomBeings.size()];
-            java.util.LinkedList<Being> roomMobiles = new java.util.LinkedList<Being>();
+            LinkedList<Being> roomMobiles = new LinkedList<Being>();
             int i = 0;
             for (Being tmp : roomBeings) {
                 if (tmp.isPlayer()) {
@@ -212,20 +187,18 @@ public class Room {
          */
         String objects = "";
         int n = 0;
-        while (roomItems.itemsRemain()) {
-            Item currentItem = (Item) roomItems.getNext();
+        for(Item currentItem : roomItems) {
             String color;
             if (currentItem.getType() == Fountain.getItemType()) {
                 color = Communication.BLUE;
             } else {
                 color = Communication.GREEN;
             }
-            objects += color + Prompt.color(currentItem.getLong());
+            objects += color + currentItem.getLong();
             objects += Util.wrapChar;
             n++;
 
         }
-        roomItems.reset();
 
         /**
          * Show Mobs get all mobs from the room, and write their longdesc (as
@@ -246,7 +219,7 @@ public class Room {
 
         }
         String look = Communication.WHITE + title + Util.wrapChar +
-                    Communication.YELLOW + Prompt.color(description) + Util.wrapChar +
+                    Communication.YELLOW + description + Util.wrapChar +
                     Communication.WHITE + exits + Util.wrapChar + 
                     objects +
                     mobiles;
@@ -362,16 +335,13 @@ public class Room {
         int count = 0;
         //TrollAttack.message("There are " + roomItems.getLength() + " items in
         // the room." + vnum);
-        while (roomItems.itemsRemain()) {
-
-            Item currentItem = (Item) roomItems.getNext();
+        for(Item currentItem : roomItems) {
             //TrollAttack.message("Looking at " + currentItem.getShort() + "
             // for comparison.");
             if (currentItem == item) {
                 count++;
             }
         }
-        roomItems.reset();
         return count;
     }
 
@@ -398,20 +368,17 @@ public class Room {
     }
 
     public Item getItem(String name, boolean remove) {
-        Item newItem;
-        while (roomItems.itemsRemain()) {
-            Item currentItem = (Item) roomItems.getNext();
+        Item newItem = null;        
+        for(Item currentItem : roomItems) {
             if (Util.contains(currentItem.name, name)) {
                 newItem = currentItem;
-                if (remove) {
-                    roomItems.delete(currentItem);
-                }
-                roomItems.reset();
-                return newItem;
+                break;
             }
         }
-        roomItems.reset();
-        return null;
+        if(remove && newItem != null) {
+            roomItems.remove(newItem);
+        }
+        return newItem;
     }
 
     public Being getBeing(String name, boolean remove, Being actor) {
@@ -498,13 +465,18 @@ public class Room {
             TrollAttack
                     .error("Can't replace with self, otherwise infinite loop!");
         }
-        while (roomItems.itemsRemain()) {
-            if (roomItems.getNext() == find) {
-                roomItems.delete(find);
-                roomItems.add(replace);
+        Item foundItem = null;
+        for(Item item : roomItems) {
+            if (item == find) {
+                foundItem = item;
+                break;
             }
         }
-        roomItems.reset();
+        if(foundItem != null) {
+            roomItems.remove(find);
+            roomItems.add(replace);
+        }
+        
     }
 
     public Room getLink(int direction) {
@@ -523,7 +495,7 @@ public class Room {
         return null;
     }
 
-    public java.util.LinkedList<Being> getRoomBeings() {
+    public LinkedList<Being> getRoomBeings() {
         return roomBeings;
     }
 

@@ -1,6 +1,7 @@
 package TrollAttack;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -11,6 +12,7 @@ import org.w3c.dom.Node;
 
 import TrollAttack.Commands.CommandHandler;
 import TrollAttack.Classes.Class;
+import TrollAttack.Items.Equipment;
 import TrollAttack.Items.Item;
 import TrollAttack.Items.Weapon;
 
@@ -275,7 +277,7 @@ public class Player extends Being {
         doc.appendChild(n);
         Node m = doc.createElement("player");
         n.appendChild(m);
-        LinkedList attribs = new LinkedList();
+        LinkedList<Node> attribs = new LinkedList<Node>();
         attribs.add(Util.nCreate(doc, "name", getName() + ""));
         attribs.add(Util.nCreate(doc, "hitPoints", hitPoints + ""));
         attribs.add(Util.nCreate(doc, "maxHitPoints", maxHitPoints + ""));
@@ -310,15 +312,8 @@ public class Player extends Being {
          * (Item)(playerItems.getNext()) ).vnum + "")); } attribs.add(itemList);
          */
 
-        boolean stillMore = true;
-        while (stillMore) {
-            Node newAttrib = (Node) attribs.getNext();
-            if (newAttrib == null) {
-                stillMore = false;
-            } else {
-                m.appendChild(newAttrib);
-
-            }
+        for(Node newAttrib : attribs ) {
+            m.appendChild(newAttrib);
         }
         Being.addEquipmentNodes(doc, this, m);
         Being.addAbilityNodes(doc, this, m);
@@ -336,10 +331,8 @@ public class Player extends Being {
     public int getHitDamage() {
         //TrollAttack.error("Reading player hit damage.");
         int hd = hitDamage.roll();
-        Item currentItem;
-        while (equipment.itemsRemain()) {
-            currentItem = (Item) equipment.getNext();
-            if (currentItem.getClass() == Weapon.class) {
+        for(Equipment currentItem : equipment) {
+            if (currentItem instanceof Weapon) {
                 int adam = ((Weapon) currentItem).getHitDamage();
                 // TrollAttack.message("Player is wearing " +
                 // currentItem.getShort() + ", helping with " + adam + "
@@ -347,7 +340,6 @@ public class Player extends Being {
                 hd += adam;
             }
         }
-        equipment.reset();
         return hd;
     }
 
@@ -381,13 +373,14 @@ public class Player extends Being {
     }
 
     public String interactiveNewPlayer() throws IOException {
+        
         name = "new";
         tell();
         tell(Communication.WHITE + "Picking a name is one of the most important parts of starting to play.  Once you have created your character, you will not be able to change your name, so choose wisely!  Immortals may change your name if they deem it inappropiriate or offensive.");
         tell();
         while (name.compareToIgnoreCase("new") == 0) {
             tell(Communication.WHITE + "Pick a name:");
-            name = communication.in.readLine();
+            name = communication.getLine();
             if (DataReader.readPlayerFile(name) != null) {
                 name = "new";
                 tell(Communication.WHITE + "That name is taken!");
@@ -397,7 +390,7 @@ public class Player extends Being {
         tell();
         shortDescription = name;
         tell(Communication.WHITE + "Pick a password:");
-        setPassword(communication.in.readLine());
+        setPassword(communication.getLine());
         authenticated = true;
         tell();
         tell();
@@ -412,7 +405,7 @@ public class Player extends Being {
             for(Class option : TrollAttack.gameClasses) {
                 tell(Communication.CYAN + option.getName() + "");
             }
-            setBeingClass(communication.in.readLine());
+            setBeingClass(communication.getLine());
             finishedWithStep = false;
         }
         
@@ -435,7 +428,7 @@ public class Player extends Being {
             tell(Communication.WHITE + dexterity +  "\tDexterity");
             tell(Communication.WHITE + intelligence + "\tIntelligence");
             tell(Communication.CYAN + "Keep these? (Y/n)");
-            String read = communication.in.readLine();
+            String read = communication.getLine();
             if(read.startsWith("y") || read.startsWith("Y")) {
                 finishedWithStep = true;
             }

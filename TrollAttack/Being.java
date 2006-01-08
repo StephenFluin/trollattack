@@ -1,6 +1,7 @@
 package TrollAttack;
 
 import java.util.*;
+import java.util.LinkedList;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -36,8 +37,8 @@ public class Being implements Cloneable {
     int strength, intelligence, wisdom, dexterity, constitution, charisma,
             luck;
 
-    public java.util.LinkedList<Item> beingItems = new java.util.LinkedList<Item>();
-    public java.util.LinkedList<Being> followers = new java.util.LinkedList<Being>();
+    public LinkedList<Item> beingItems = new LinkedList<Item>();
+    public LinkedList<Being> followers = new LinkedList<Being>();
     
     public Being switched = null;
     private Being following;
@@ -53,7 +54,7 @@ public class Being implements Cloneable {
     public Hashtable<Ability, AbilityData> getAbilitiesData() {
         return abilitiesData;
     }
-    public LinkedList equipment = new LinkedList();
+    public LinkedList<Equipment> equipment = new LinkedList<Equipment>();
 
     // Allows mobiles to do anything a player can do, is this dangerous or
     // memory hoggery?
@@ -312,11 +313,9 @@ public class Being implements Cloneable {
         tell(s, true);
     }
     public void interrupt(String message) {
-        interrupt(message, true);
-    }
-    public void interrupt(String message, boolean wrapAtEnd) {
-        tell(Util.wrapChar + message);
-        prompt();
+        tell(Util.wrapChar + message +
+                Util.wrapChar + getPrompt(), false);
+        
     }
     public void prompt(String s) {
         tell(Util.wrapChar + s, false);
@@ -435,17 +434,14 @@ public class Being implements Cloneable {
 
     public String getEquipment() {
         String result = "Equipment:" + Util.wrapChar;
-        Equipment currentItem;
         int count = 0;
-        while (equipment.itemsRemain()) {
-            currentItem = (Equipment) equipment.getNext();
+        for(Equipment currentItem : equipment) {
             result += Communication.GREEN
                     + Util.uppercaseFirst(currentItem.getWearLocation())
                     + Communication.WHITE + ": " + currentItem.getShort()
                     + Util.wrapChar;
             count++;
         }
-        equipment.reset();
         if (count < 1) {
             result += Communication.PURPLE + "none" + Util.wrapChar;
         }
@@ -575,15 +571,13 @@ public class Being implements Cloneable {
 
     public String wearItem(Item newWear) {
         Equipment newWearEquipment;
-        try {
+        if(newWear instanceof Equipment) {
             newWearEquipment = (Equipment) newWear;
-        } catch (ClassCastException e) {
+        } else {
             return "You don't know how to wear that (Can't make it a piece of eq)!";
         }
 
-        Equipment tmpEq;
-        while (equipment.itemsRemain()) {
-            tmpEq = (Equipment) equipment.getNext();
+        for(Equipment tmpEq : equipment) {
             if (tmpEq.wearLocation == null) {
                 return "The game can't figure out how to wear thing thing, wierd!";
             }
@@ -593,28 +587,28 @@ public class Being implements Cloneable {
             }
 
         }
-        equipment.reset();
-        equipment.add(newWear);
+        equipment.add(newWearEquipment);
         beingItems.remove(newWear);
         return "You wear " + newWear.getShort();
 
     }
 
     public String removeItem(String name) {
-        Item inHand = null;
         String result = "";
-        while (equipment.itemsRemain()) {
-            inHand = (Item) equipment.getNext();
-            if (Util.contains(inHand.getName(), name)) {
-                beingItems.add(inHand);
-                equipment.delete(inHand);
+        Equipment inHand = null;
+        for(Equipment test : equipment) {
+            if (Util.contains(test.getName(), name)) {
+                beingItems.add(test);
+                inHand = test;
+                break;
+                
             }
         }
-        equipment.reset();
         if (inHand == null) {
             return "You aren't wearing that!";
         } else {
             result = "You remove " + inHand.shortDesc + ".";
+            equipment.remove(inHand);
         }
         return result;
 
@@ -794,11 +788,9 @@ public class Being implements Cloneable {
             }
             beingNode.appendChild(itemNode);
         }
-        while (being.equipment.itemsRemain()) {
-            beingNode.appendChild(Util.nCreate(doc, "equipment",
-                    ((Item) (being.equipment.getNext())).vnum + ""));
+        for(Equipment eq : being.equipment) {
+            beingNode.appendChild(Util.nCreate(doc, "equipment", eq.vnum + ""));
         }
-        being.equipment.reset();
 
     }
     public int getVnum() {
@@ -817,12 +809,11 @@ public class Being implements Cloneable {
 
     public int countExactEquipment(Equipment item) {
         int count = 0;
-        while (equipment.itemsRemain()) {
-            if (item == equipment.getNext()) {
+        for(Equipment eq : equipment) {
+            if (item == eq) {
                 count++;
             }
         }
-        equipment.reset();
         return count;
     }
 
@@ -980,7 +971,7 @@ public class Being implements Cloneable {
         Being[] ignores = {this, player};
         getActualRoom().say(Communication.GREEN + "%0 arrives following %1.",ignores);
         getActualRoom().addBeing(this);
-        interrupt(Communication.GREEN + "You follow " + player.getShort() + "." + Util.wrapChar + getActualRoom().look(this), false);
+        interrupt(Communication.GREEN + "You follow " + player.getShort() + "." + Util.wrapChar + getActualRoom().look(this));
         for(Being follower : followers) {
             if(follower.getActualRoom() == previousRoom) {
                 follower.follow(player, direction);
@@ -1003,7 +994,15 @@ public class Being implements Cloneable {
                 TrollAttack.error("Tried " + safety + " times without finding a useable exit for wandering!");
                 return;
             }
-            randomExit = getActualRoom().roomExits.get(chance.roll());
+            try {
+                randomExit = getActualRoom().roomExits.get(chance.roll() - 1);
+            } catch(IndexOutOfBoundsException e) {
+                TrollAttack.error("Index out of bounds error!");
+                e.printStackTrace();
+                TrollAttack.debug("Chance: " + chance.toString() + ", exits: " + getActualRoom().roomExits.size());
+                TrollAttack.debug("Room:" + getActualRoom().vnum + "currentroom: " + currentRoom);
+                TrollAttack.debug("Look Data:" + getActualRoom().look(this));
+            }
         }
         ch.handleCommand(randomExit.getDirectionName());
     }

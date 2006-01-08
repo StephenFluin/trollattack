@@ -1,13 +1,10 @@
 package TrollAttack;
 
 import java.io.*;
-import java.net.BindException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.util.LinkedList;
 /*
  * Created on Jun 8, 2005
  *
@@ -21,120 +18,36 @@ import java.util.regex.Pattern;
  * TODO To change the template for this generated type comment go to Window -
  * Preferences - Java - Code Style - Code Templates
  */
-public class Communication extends Thread {
+public abstract class Communication extends Thread {
     static int wrapLength = 76;
 
-    static int port = 4000;
-
     int ID;
-    static final char ESCAPE = '\033';
-    static final char X = '\377';
-    static final String TELOPT_ECHO =   X + "\001"; //01
-    static final String GA =            X + "\371"; //F9
-    static final String SB =            X + "\372"; //FA
-    static final String WILL =          X + "\373"; //FB
-    static final String WONT =          X + "\374"; //FC
-    static final String DO   =          X + "\375"; //FD
-    static final String DONT =          X + "\376"; //FE
-    static final String IAC =           X + "\377"; //FF
+   
+
+    static enum Channel {BUILD, CHAT, MUD, STANDARD};
     
 
     Player player;
 
-    //DataInputStream in;
-    BufferedReader in;
-
-    DataOutputStream out;
-
-    ServerSocket serverSocket;
-
-    Socket adminSocket;
-
-    public Communication() {
-        this(true, null);
-    }
-
-    public Communication(boolean newServerSocket, ServerSocket serverSock) {
-        this.ID = (int) (Math.random() * 1000);
-        if (newServerSocket) {
-            port--;
-            serverSocket = createNewSocket();
-            TrollAttack.message("Server started and listening on port " + port
-                    + ".");
-        } else {
-            serverSocket = serverSock;
-        }
-    }
-
-    public ServerSocket createNewSocket() {
-        ServerSocket ss = null;
-        try {
-            ss = new ServerSocket(++port, 1);
-        } catch (BindException e) {
-            ss = createNewSocket();
-        } catch (Exception e) {
-            TrollAttack.error("Exception: " + e.toString());
-        }
-        return ss;
-    }
-
     public int getID() {
         return ID;
     }
-
-    public void close() {
-        try {
-            //TrollAttack.message("Player losing connection.");
-            if(in != null) {
-                in.close();
-            }
-            if(out != null) {
-                out.close();
-            }
-            if(adminSocket != null) {
-                adminSocket.close();
-            }
-        } catch(Exception e) {
-            
-        }
-    }
-    
-    public void killConnections() {
-        try {
-            //TrollAttack.message("Player losing connection.");
-            serverSocket.close();
-        } catch (Exception e) {
-            // e.printStackTrace();
-            e.printStackTrace();
-        }
-    }
-
+    public abstract void close();
+    public abstract void waitForUser();
     public void run() {
+        //TrollAttack.debug("Creating new communication (wait for user step).");
+        waitForUser();
+        //TrollAttack.debug("Send and Receive methods have been registered, prompting for login.");
         String inputLine = "";
         try {
-            // Wait for a connection
-            //TrollAttack.message("Socket created, waiting for connection.");
-            adminSocket = serverSocket.accept();
-            TrollAttack.message("New connection attempt.");
-            in = new BufferedReader(new InputStreamReader(adminSocket.getInputStream()));
-            
-            out = new DataOutputStream(adminSocket.getOutputStream());
-            Communication newConnection = new Communication(false, serverSocket);
-            newConnection.start();
-            TrollAttack.unusedCommunication = newConnection;
-            //TrollAttack.message("A new player joins the game (" +
-            // newConnection.getID() + ").");
-            
             try {
                 player = new Player(this);
             } catch(Exception e) {
                 e.printStackTrace();
             }
-
             player = authenticate(player);
             if (player == null) {
-                out.close();
-                adminSocket.close();
+                close();
                 return;
             }
             
@@ -156,7 +69,7 @@ public class Communication extends Thread {
             while (player.authenticated == true && !TrollAttack.gameOver) {
                 // TrollAttack.message(ID + ": Accepting command...");
                 try {
-                    inputLine = in.readLine();
+                    inputLine = getLine();
                     
                     //remove backspaces from inputLine
                     if(inputLine.contains("\010")) {
@@ -180,27 +93,24 @@ public class Communication extends Thread {
                 }
             }
 
-            out.close();
-            adminSocket.close();
-        } catch (SocketException e) {
-            //Mud is shutting down.
+            close();
         } catch (Exception e) {
             TrollAttack.error("Exception in Server: " + e.toString());
             e.printStackTrace();
         }
     }
-
+    public abstract String color(String s);
     public Player authenticate(Player player) {
         Player tmpPlayer = null;
         String name = "";
         String pass = "";
         while (tmpPlayer == null) {
             try {
-                out.writeBytes(Util.getMOTD());
-                player.tell(Communication.WHITE +"What is your name (or type "
+                print(Util.getMOTD(), false);
+                player.tell(WHITE +"What is your name (or type "
                         + Communication.CYAN + "new" + Communication.WHITE
                         + " for a new character)?");
-                name = in.readLine();
+                name = getLine();
                 //TrollAttack.message("Read name " + name + ".");
                 if (name == null) {
                     continue;
@@ -212,7 +122,7 @@ public class Communication extends Thread {
                 } else {
 
                     player.tell(name + "'s password:");
-                    pass = in.readLine();
+                    pass = getLine();
                     tmpPlayer = DataReader.readPlayerFile(name);
                     if (tmpPlayer != null) {
                         Player offendingPlayer = null;
@@ -261,39 +171,27 @@ public class Communication extends Thread {
         player = tmpPlayer;
         return player;
     }
-
-    public void print(String string, String color) {
-        this.print(string, true, color);
-    }
-
     public void print(String string) {
-        this.print(string, "");
+
+        print(string, true);
     }
-
-    public void print(String string, boolean shouldWrap, String color) {
-        try {
-            if (shouldWrap) {
-                string = wordwrap(string);
-            }
-            out.writeBytes(string);
-        } catch (IOException e) {
-            player.quit(true);
-            // TrollAttack.error("Player quit unexpectedly (" + e.getMessage() +
-            // ").");
-            //e.printStackTrace();
-
-        } catch (Exception e) {
-            TrollAttack.error("Output error!");
-            e.printStackTrace();
+    public void print(String string, boolean shouldWrap) {
+        if (shouldWrap) {
+            string = wordwrap(string);
         }
-
+        string = color(string);
+        send(string);
     }
+    public abstract void send(String string);
 
+    public void start() {
+        super.start();
+    }
     public int colorLessLength(String string) {
         // Each occurence of \033 means that a color is in the string, and
         // 7 non-content characters are added to the length, so remove them.
-        String[] colors = string.split("\033");
-        return string.length() - ((colors.length - 1) * 7);
+        String[] colors = string.split("[^&]&");
+        return string.length() - ((colors.length - 1) * 3);
     }
 
     public String wordwrap(String string) {
@@ -344,41 +242,32 @@ public class Communication extends Thread {
 
     }
 
-    // Server server = new Server();
-    // server.start();
-    // public
-    public static String GREY = ESCAPE + "[1;30m";
+    public abstract String getLine() throws NullPointerException;
 
-    public static String RED = ESCAPE + "[1;31m";
+    public static LinkedList<Channel> getChannels() {
+        LinkedList<Channel> list = new LinkedList<Channel>();
+        for(Channel c : Channel.values()) {
+            list.add(c);
+        }
+        return list;
+    }
 
-    public static String GREEN = ESCAPE + "[1;32m";
-
-    public static String YELLOW = ESCAPE + "[1;33m";
-
-    public static String BLUE = ESCAPE + "[1;34m";
-
-    public static String PURPLE = ESCAPE + "[1;35m";
-
-    public static String CYAN = ESCAPE + "[1;36m";
-
-    public static String WHITE = ESCAPE + "[1;37m";
-
-    public static String DARKGREY = ESCAPE + "[0:30m";
-
-    public static String DARKRED = ESCAPE + "[0;31m";
-
-    public static String DARKGREEN = ESCAPE + "[0;32m";
-
-    public static String DARKYELLOW = ESCAPE + "[0;33m";
-
-    public static String DARKBLUE = ESCAPE + "[0;34m";
-
-    public static String DARKPURPLE = ESCAPE + "[0;35m";
-
-    public static String DARKCYAN = ESCAPE + "[0;36m";
-
-    public static String DARKWHITE = ESCAPE + "[0;37m";
-
+    public static final String GREY = "&A";
+    public static final String RED = "&R";
+    public static final String GREEN = "&G";
+    public static final String YELLOW = "&Y";
+    public static final String BLUE = "&B";
+    public static final String PURPLE = "&P";
+    public static final String CYAN = "&C";
+    public static final String WHITE = "&W";
+    public static final String DARKGREY = "&DA";
+    public static final String DARKRED = "&DR";
+    public static final String DARKGREEN = "&DG";
+    public static final String DARKYELLOW = "&DY";
+    public static final String DARKBLUE = "&DB";
+    public static final String DARKPURPLE = "&DP";
+    public static final String DARKCYAN = "&DC";
+    public static final String DARKWHITE = "&DW";
 
 
 }

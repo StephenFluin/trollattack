@@ -15,7 +15,9 @@ package TrollAttack;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.LinkedList;
 
+import org.jivesoftware.smack.PacketCollector;
 import org.w3c.dom.Document;
 
 import TrollAttack.Commands.AbilityHandler;
@@ -35,8 +37,6 @@ public class TrollAttack {
 
     public static Communication unusedCommunication;
     
-    static Communication io;
-
     static Calendar cal = new GregorianCalendar();
 
     /**
@@ -46,17 +46,17 @@ public class TrollAttack {
      */
     public static DataReader myData;
 
-    public static java.util.LinkedList<Area> gameAreas;
+    public static LinkedList<Area> gameAreas;
 
-    public static LinkedList gameItems;
+    public static LinkedList<Item> gameItems;
 
-    public static LinkedList gameMobiles;
+    public static LinkedList<Mobile> gameMobiles;
 
-    public static java.util.LinkedList<Player> gamePlayers;
-    public static java.util.LinkedList<Class> gameClasses;
-    public static java.util.LinkedList<Reset> gameResets;
+    public static LinkedList<Player> gamePlayers;
+    public static LinkedList<Class> gameClasses;
+    public static LinkedList<Reset> gameResets;
     
-    public static LinkedList gameRooms;
+    public static LinkedList<Room> gameRooms;
     
     public static AbilityHandler abilityHandler = new AbilityHandler();
 
@@ -68,20 +68,23 @@ public class TrollAttack {
 
     public static CommandHandler ch;
 
+    public static int maxIdleTime= 60 * 20;
+
     public static void main(String[] args) {
         //print("starting program...");
 
-        gamePlayers = new java.util.LinkedList<Player>();
+        gamePlayers = new LinkedList<Player>();
 
         reloadWorld();
         
-        io = new Communication();
+        Communication io = new TelnetServer();
+        Communication io2 = new ImClient();
+        
         unusedCommunication = io;
         // Done reading data files.
         backGround = new Background();
         backGround.start();
 
-        io.start();
     }
 
     /**
@@ -135,24 +138,19 @@ public class TrollAttack {
     }
 
     static public Item getItem(Integer vnum) {
-        Item item;
         Item returnItem = null;
-        for (int i = 0; i < gameItems.length(); i++) {
-            item = (Item) gameItems.getNext();
+        for(Item item : gameItems) {
             if (item.vnum == vnum.intValue()) {
                 returnItem = item;
             }
         }
-        gameItems.reset();
         return returnItem;
     }
 
     static public Mobile getMobile(Integer vnum) {
         //TrollAttack.message("Getting mobile #" + vnum.toString());
-        Mobile mobile;
         Mobile returnMobile = null;
-        for (int i = 0; i < gameMobiles.length(); i++) {
-            mobile = (Mobile) gameMobiles.getNext();
+        for(Mobile mobile : gameMobiles) {
             if (mobile.vnum == vnum.intValue()) {
                 //TrollAttack.message("We found the mobile...");
                 returnMobile = mobile;
@@ -166,29 +164,23 @@ public class TrollAttack {
             //TrollAttack.error("Couldn't find mobile #" + vnum.toString() + "
             // that we were looking for...");
         }
-        gameMobiles.reset();
         return returnMobile;
     }
 
     static public Room getRoom(int vnum) {
-        Room room;
-        for (int i = 0; i < gameRooms.length(); i++) {
-            room = (Room) gameRooms.getNext();
+        for (Room room : gameRooms) {
             if (room.vnum == vnum) {
-                gameRooms.reset();
                 return room;
             } else {
             }
         }
-        gameRooms.reset();
         return null;
     }
 
     static public void healBeings() {
-        for (int i = 0; i < gameRooms.length(); i++) {
-            ((Room) (gameRooms.getNext())).healBeings();
+        for (Room room : gameRooms) {
+            room.healBeings();
         }
-        gameRooms.reset();
     }
 
     static public void agePlayers(double amount) {
@@ -199,7 +191,7 @@ public class TrollAttack {
 
     static public void wanderLust() {
         Roll chance = new Roll("1d10");
-        java.util.LinkedList<Mobile> wanderers = new java.util.LinkedList<Mobile>();
+        LinkedList<Mobile> wanderers = new LinkedList<Mobile>();
         for(Area area : gameAreas) {
             if(!area.frozen) {
                 for(Room room : area.areaRooms) {
@@ -262,30 +254,30 @@ public class TrollAttack {
     }
 
     static public void puntIdlePlayers(int time) {
+        LinkedList<Player> puntPlayers = new LinkedList<Player>();
         for(Player currentPlayer : gamePlayers) {
             if (currentPlayer.getIdleTime() > time) {
-                message("Punting player " + currentPlayer.getShort()
-                        + " for idleness.");
-                currentPlayer.interrupt("You have been idle for more than "
-                        + (time / 60) + " minutes, kicking...");
-                currentPlayer.save();
-                currentPlayer.quit();
+                puntPlayers.add(currentPlayer);
 
-            } else {
-                //currentPlayer.tell("You have been idle for " +
-                // currentPlayer.getIdleTime() + " seconds.");
             }
+        }
+        for(int i = puntPlayers.size();i > 0;i++) {
+            Player currentPlayer = puntPlayers.get(i);
+            message("Punting player " + currentPlayer.getShort()
+                    + " for idleness.");
+            currentPlayer.interrupt("You have been idle for more than "
+                    + (time / 60) + " minutes, kicking...");
+            currentPlayer.save();
+            currentPlayer.quit();
         }
     }
 
     public static void replaceItem(Item find, Item replace) {
-        gameItems.delete(find);
+        gameItems.remove(find);
         gameItems.add(replace);
-        while (gameRooms.itemsRemain()) {
-            Room currentRoom = (Room) gameRooms.getNext();
+        for(Room currentRoom : gameRooms) {
             currentRoom.replaceItem(find, replace);
         }
-        gameRooms.reset();
     }
 
     public static void reloadWorld() {
@@ -296,7 +288,7 @@ public class TrollAttack {
          * about their classes.
          */
         
-        TrollAttack.gameResets = new java.util.LinkedList<Reset>();
+        TrollAttack.gameResets = new LinkedList<Reset>();
         TrollAttack.myData = new DataReader();
         TrollAttack.gameAreas = TrollAttack.myData.getAreas();
         TrollAttack.gameClasses = TrollAttack.myData.getClasses();
@@ -328,7 +320,7 @@ public class TrollAttack {
             
         }
         gameOver = true;
-        unusedCommunication.killConnections();
+        unusedCommunication.close();
         message("Game shutting down.");
        
     }
