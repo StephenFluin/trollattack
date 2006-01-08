@@ -9,7 +9,7 @@
 package TrollAttack.Commands;
 
 import TrollAttack.*;
-
+import java.util.LinkedList;
 import java.io.File;
 
 import TrollAttack.Items.*;
@@ -53,7 +53,7 @@ public class Build {
             player.tell("You change the description of the room.");
         } else if(s.startsWith("destroy")) {
             player.getActualArea().areaRooms.remove(player.getActualRoom());
-            TrollAttack.gameRooms.delete(player.getActualRoom());
+            TrollAttack.gameRooms.remove(player.getActualRoom());
             player.setCurrentRoom(1);
             TrollAttack.getRoom(1).addBeing(player);
             
@@ -176,7 +176,10 @@ public class Build {
                 }
                 String oldFilename = area.filename;
                 area.filename = parts[1];
-                area.save(TrollAttack.gameRooms, TrollAttack.gameMobiles, TrollAttack.gameItems);
+                LinkedList<Room> r = TrollAttack.gameRooms;
+                LinkedList<Mobile> m = TrollAttack.gameMobiles;
+                LinkedList<Item> i = TrollAttack.gameItems;
+                area.save((LinkedList<Room>)r, m, i);
                 File oldFile = new File("Areas/" + oldFilename);
                 TrollAttack.message("Deleting file Areas/" + oldFilename + ".");
                 oldFile.delete();
