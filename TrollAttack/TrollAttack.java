@@ -17,7 +17,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 
-import org.jivesoftware.smack.PacketCollector;
+//import org.jivesoftware.smack.PacketCollector;
 import org.w3c.dom.Document;
 
 import TrollAttack.Commands.AbilityHandler;
@@ -78,7 +78,7 @@ public class TrollAttack {
         reloadWorld();
         
         Communication io = new TelnetServer();
-        Communication io2 = new ImClient();
+        //Communication io2 = new ImClient();
         
         unusedCommunication = io;
         // Done reading data files.

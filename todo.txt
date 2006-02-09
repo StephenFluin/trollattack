@@ -1,5 +1,6 @@
 Todo List / Ideas:
 
+Don't kill on death.
 Convert .are files to my xml format.
 Make each area aware of all of its own rooms, mobiles, items, and players (for saving
 	so we don't always have to scan all of the junk in the game)

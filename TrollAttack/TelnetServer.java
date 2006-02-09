@@ -78,11 +78,26 @@ public class TelnetServer extends Communication {
         return ss;
     }
     public String getLine() throws NullPointerException {
-        try {
-            return in.readLine();
+        String line;
+    	try {
+             line = in.readLine();
         } catch(Exception e) {
             throw new NullPointerException("Problem with getLine.");
         }
+//      remove backspaces from inputLine
+        if(line.contains("\010")) {
+            TrollAttack.debug("Problem.");
+        }
+        while(line.contains("\010")) {
+            TrollAttack.debug(line);
+            int location = line.indexOf("\010");
+            if(location == 0) {
+                line = line.substring(1);
+            } else {
+                line = line.substring(0,location-1) + line.substring(location+1);
+            }
+        }
+        return line;
     }
     public void send(String string) {
         try {
@@ -133,6 +148,7 @@ public class TelnetServer extends Communication {
     public static String DARKCYAN = ESCAPE + "[0;36m";
     public static String DARKWHITE = ESCAPE + "[0;37m";
     public String color(String s) {
+    	TrollAttack.debug(s);
         // Lights
         s = s.replaceAll("([^&]|^)&C", "$1" + CYAN);
         s = s.replaceAll("([^&]|^)&P", "$1" + PURPLE);

@@ -638,6 +638,22 @@ public class Being implements Cloneable {
         }
 
     }
+    
+    public void dropAllEquipment() {
+
+
+        Iterator<Equipment> i = equipment.iterator();
+        LinkedList<Equipment> forFloor = new LinkedList<Equipment>();
+        int count = 0;
+        while (i.hasNext()) {
+            count++;
+            forFloor.add(i.next());
+        }
+        for(Equipment e : forFloor) {
+        	getActualRoom().addItem(e);
+        }
+
+    }
 
     public boolean isBuilder() {
         return false;
@@ -647,6 +663,7 @@ public class Being implements Cloneable {
     }
 
     public void kill() {
+    	dropAllEquipment();
         dropAll();
         getActualRoom().removeBeing(this);
     }

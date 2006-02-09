@@ -70,22 +70,6 @@ public abstract class Communication extends Thread {
                 // TrollAttack.message(ID + ": Accepting command...");
                 try {
                     inputLine = getLine();
-                    
-                    //remove backspaces from inputLine
-                    if(inputLine.contains("\010")) {
-                        TrollAttack.debug("Problem.");
-                    }
-                    while(inputLine.contains("\010")) {
-                        TrollAttack.debug(inputLine);
-                        int location = inputLine.indexOf("\010");
-                        if(location == 0) {
-                            inputLine = inputLine.substring(1);
-                        } else {
-                            inputLine = inputLine.substring(0,location-1) + inputLine.substring(location+1);
-                        }
-                    }
-                    
-                    
                     player.handleCommand(inputLine);
                 } catch (Exception e) {
                     TrollAttack.message("Lost connection to " + player.getShort());
@@ -104,6 +88,7 @@ public abstract class Communication extends Thread {
         Player tmpPlayer = null;
         String name = "";
         String pass = "";
+        int attempts = 0;
         while (tmpPlayer == null) {
             try {
                 print(Util.getMOTD(), false);
@@ -154,9 +139,14 @@ public abstract class Communication extends Thread {
                     player.tell("Incorrect password or player not found.");
                 }
             } catch (NullPointerException e) {
-                tmpPlayer = null;
-                e.printStackTrace();
-
+                if(attempts++ < 100) {
+	            	tmpPlayer = null;
+	            	TrollAttack.message("Authentication failure (" + attempts + ").");
+                } else {
+                	return null;
+                }
+	                //e.printStackTrace();
+                		
             } catch (SocketException e) {
                 return null;
             } catch (IOException e) {

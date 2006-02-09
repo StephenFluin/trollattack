@@ -65,7 +65,6 @@ public class CommandHandler {
 		registerCommand(new Equipment("equiptment"));
 		registerCommand(new Wear("wear"));
 		registerCommand(new Level("level"));
-		registerCommand(new Gold("gold"));
 		registerCommand(new Eat("eat"));
 		registerCommand(new Drink("drink"));
 		registerCommand(new Fill("fill"));
