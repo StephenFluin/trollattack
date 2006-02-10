@@ -72,7 +72,22 @@ public class Util {
     }
 
     static public String uppercaseFirst(String string) {
-        return string.substring(0, 1).toUpperCase() + string.substring(1);
+    	int index = 0;
+    	if(string.indexOf("&") == 0) {
+    		index = 2;
+    		//TrollAttack.debug("Found & - " + string);
+    	} else {
+    		//TrollAttack.debug("Index of & was " + string.indexOf("&"));
+    	}
+        try {
+        	return string.substring(0,index) + 
+	        	string.substring(index, index+1).toUpperCase() + 
+	        	string.substring(index + 1);
+        } catch(Exception e) {
+        	TrollAttack.error("Couldn't uppercase first of '" + string + "'.");
+        	e.printStackTrace();
+        	return string;
+        }
     }
 
     static public Document xmlize(String dataFile) {

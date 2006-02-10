@@ -1,6 +1,14 @@
 Todo List / Ideas:
 
 Don't kill on death.
+having two people fight gives only one of them experience upon death
+switch doesn't seem to work
+magic missile should say how much damage it does.
+rich troll doesn't give any experience
+follow caused an infinite loop saying "you aren't following anything"
+
+Others can't see you trancing.
+sending tells repeats the name of the person you are sending to.
 Help files
 Convert .are files to my xml format.
 Make each area aware of all of its own rooms, mobiles, items, and players (for saving

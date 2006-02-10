@@ -59,7 +59,7 @@ public class TelnetServer extends Communication {
             
             Communication newConnection = new TelnetServer(false, serverSocket);
             newConnection.start();
-            TrollAttack.debug("New telnet listener started.");
+            //TrollAttack.debug("New telnet listener started.");
             TrollAttack.unusedCommunication = newConnection;
         } catch(Exception e) {
             e.printStackTrace();

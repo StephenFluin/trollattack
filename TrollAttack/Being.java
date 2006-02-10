@@ -647,7 +647,9 @@ public class Being implements Cloneable {
         int count = 0;
         while (i.hasNext()) {
             count++;
-            forFloor.add(i.next());
+            Equipment droppable = i.next();
+            equipment.remove(droppable);
+            forFloor.add(droppable);
         }
         for(Equipment e : forFloor) {
         	getActualRoom().addItem(e);
@@ -665,6 +667,7 @@ public class Being implements Cloneable {
     public void kill() {
     	dropAllEquipment();
         dropAll();
+        save();
         getActualRoom().removeBeing(this);
     }
 
@@ -981,15 +984,46 @@ public class Being implements Cloneable {
     public void move(int direction) {
         ch.handleCommand(Exit.directionName(direction));
     }
+    public boolean transport(int vnum) {
+        int oldRoom = getCurrentRoom();
+        getActualRoom().removeBeing(this);
+        getActualRoom().say(getShort() + " disappears in a whirl of smoke.");
+        Room newRoom = TrollAttack.getRoom(vnum);
+        if(newRoom == null) {
+            if(canEdit(vnum)) {
+                tell("Waving your hand, you form order from swirling chaos, and step into a new reality...");
+            
+	               newRoom = new Room(
+	    	               vnum,
+	    	               "A Freshly Created Room",
+	    	               "Change the title of this room by typing \"redit title <new title>\".   Enter the description of this room by typing \"redit desc <description>\".",
+	    	               new java.util.LinkedList<Exit>());
+	    	        TrollAttack.gameRooms.add(newRoom);
+	    	        Area.test(vnum, TrollAttack.gameAreas).areaRooms.add(newRoom);
+	    	        setCurrentRoom(newRoom);
+            } else {
+                setCurrentRoom(oldRoom);
+                tell("You don't have permission to make that room (" + vnum + ")!");
+                return false;
+            }
+        } else {
+            setCurrentRoom(newRoom);
+        }
+        getActualRoom().addBeing(this);
+        look();
+        return true;
+    }
 
     public void follow(Being player, int direction) {
         Room previousRoom = getActualRoom();
         previousRoom.removeBeing(this);
         roomSay(Communication.GREEN + "%1 follows " + player.getShort() + ".");
         setCurrentRoom(player.getActualRoom());
-        Being[] ignores = {this, player};
-        getActualRoom().say(Communication.GREEN + "%0 arrives following %1.",ignores);
         getActualRoom().addBeing(this);
+        Being[] ignores = {this, player};
+        
+        getActualRoom().say(Communication.GREEN + "%1 arrives following %2.",ignores);
+        
         interrupt(Communication.GREEN + "You follow " + player.getShort() + "." + Util.wrapChar + getActualRoom().look(this));
         for(Being follower : followers) {
             if(follower.getActualRoom() == previousRoom) {

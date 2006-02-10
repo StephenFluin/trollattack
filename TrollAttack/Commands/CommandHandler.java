@@ -705,6 +705,8 @@ public class CommandHandler {
 	            Roll roller = new Roll(s);
 	        	player.tell("You rolled '" + s + "' to get " + roller.roll());
                 
+	        } catch(NumberFormatException e) {
+	        	player.tell("This isn't a valid roll.");
 	        } catch(Exception e) {
 	            e.printStackTrace();
 	        }
@@ -1114,55 +1116,6 @@ public class CommandHandler {
             return true;
 		}
 	}
-	/*class Transport extends Command {
-	    public Goto(String s) { super(s, false); }
-	    public boolean execute() {
-	        player.tell("You are currently in room " + player.getCurrentRoom() + ".");
-	    }
-	    public boolean execute( String s ) {
-	       int room;
-	       int oldRoom = 1;
-	        try {
-	           room = Util.intize(null, s);
-	           if(room == Integer.MIN_VALUE) {
-	               Player p = TrollAttack.getPlayer(s);
-	               if(p == null) {
-	                   player.tell("This isn't a valid vnum or player name.");
-	                   return;
-	               } else {
-	                   room = p.getCurrentRoom();
-	               }
-	           }
-	           
-	           oldRoom = player.getCurrentRoom();
-	           player.getActualRoom().removePlayer(player);
-	           player.setCurrentRoom(room);
-	           if(player.getActualRoom() == null) {
-	               if(player.canEdit(room)) {
-	                   player.tell("Waving your hand, you form order from swirling chaos, and step into a new reality...");
-	               
-		               Room newRoom = new Room(
-		    	               room,
-		    	               "A Freshly Created Room",
-		    	               "Change the title of this room by typing \"rtitle <new title>\".   Enter the description of this room by typing \"rdescription <description>\".",
-		    	               0,0,0,0,0,0,0,0,0,0);
-		    	        //player.tell("You have create room " + s + ", type \"goto " + s + "\" to see your new room.");
-		    	        TrollAttack.gameRooms.add(newRoom);
-		    	        Area.testRoom(newRoom).rooms.add(newRoom);
-		    	        player.setCurrentRoom(room);
-	               } else {
-	                   player.setCurrentRoom(oldRoom);
-	               }
-	           }
-	           player.getActualRoom().addPlayer(player);
-	           player.look();
-	       } catch(Exception e) {
-	           player.tell("Problem changing rooms!");
-	           e.printStackTrace();
-	       }
-	       
-	    }
-	}*/
 	
 	/* Builder Commands */
 	class Goto extends Command {
@@ -1173,7 +1126,6 @@ public class CommandHandler {
 	    }
 	    public boolean execute( String s ) {
 	       int room;
-	       int oldRoom = 1;
 	        try {
 	           try {
 	               room = Util.intize(null, s);
@@ -1186,39 +1138,13 @@ public class CommandHandler {
 	                   room = p.getCurrentRoom();
 	               }
 	           }
-	           
-	           oldRoom = player.getCurrentRoom();
-	           player.getActualRoom().removeBeing(player);
-               player.getActualRoom().say(player.getShort() + " disappears in a whirl of smoke.");
-	           Room newRoom = TrollAttack.getRoom(room);
-	           if(newRoom == null) {
-	               if(player.canEdit(room)) {
-	                   player.tell("Waving your hand, you form order from swirling chaos, and step into a new reality...");
-	               
-		               newRoom = new Room(
-		    	               room,
-		    	               "A Freshly Created Room",
-		    	               "Change the title of this room by typing \"redit title <new title>\".   Enter the description of this room by typing \"redit desc <description>\".",
-		    	               new java.util.LinkedList<Exit>());
-		    	        //player.tell("You have create room " + s + ", type \"goto " + s + "\" to see your new room.");
-		    	        TrollAttack.gameRooms.add(newRoom);
-		    	        Area.test(room, TrollAttack.gameAreas).areaRooms.add(newRoom);
-		    	        player.setCurrentRoom(newRoom);
-	               } else {
-	                   player.setCurrentRoom(oldRoom);
-                       player.tell("You don't have permission to goto that room!");
-	               }
-	           } else {
-	               player.setCurrentRoom(newRoom);
-               }
-	           player.getActualRoom().addBeing(player);
-	           player.look();
+	           player.transport(room);
 	       } catch(Exception e) {
 	           player.tell("Problem changing rooms (invalid vnum)!");
 	           e.printStackTrace();
                return false;
 	       }
-           player.getActualRoom().say(player.getShort() + " arrives in a whirl of smoke.", player);
+           player.getActualRoom().say("%1 arrives in a whirl of smoke.", player);
            return true;
 	       
 	    }
@@ -1900,18 +1826,15 @@ public class CommandHandler {
                 player.tell("That isn't an online player!");
                 return false;
             }
-            victim.setCurrentRoom(new Integer(parts[1]));
-            int previous = victim.getCurrentRoom();
-            if(victim.getActualRoom() == null) {
-                player.tell("That isn't a valid room!");
-                victim.setCurrentRoom(previous);
-                return false;
-            }
-            victim.tell("You are pulled by a strange force, your surroundings leave you and you find yourself somewhere else.");
-            victim.handleCommand("look");
-            player.tell("You transfer " + victim.getShort() + " to " + victim.getActualRoom().title + "(" + victim.getActualRoom().vnum + ").");
             Being[] ignores = {player, victim};
-            player.getActualRoom().say("%2 is pulled by a strange force from the room.", ignores);
+            Room oldRoom = victim.getActualRoom();
+            int room = Util.intize(parts[1]);
+            TrollAttack.getRoom(room).say("%2 enters the room, being pulled by a strange force.", ignores);
+            victim.transport(room);
+            victim.tell("You are pulled by a strange force, your surroundings leave you and you find yourself somewhere else.");
+            player.tell("You transfer " + victim.getShort() + " to " + victim.getActualRoom().title + "(" + victim.getActualRoom().vnum + ").");
+
+            oldRoom.say("%2 is pulled by a strange force from the room.", ignores);
             return true;
         }
     }

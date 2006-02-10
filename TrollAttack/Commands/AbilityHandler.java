@@ -9,6 +9,7 @@
 package TrollAttack.Commands;
 
 import TrollAttack.TrollAttack;
+import TrollAttack.Commands.abilities.BurningHand;
 import TrollAttack.Commands.abilities.Heal;
 import TrollAttack.Commands.abilities.MagicMissile;
 import TrollAttack.Commands.abilities.Scan;
@@ -20,6 +21,7 @@ public class AbilityHandler {
         register(new Scan());
         register(new Heal());
         register(new MagicMissile());
+        register(new BurningHand());
         
     }
     

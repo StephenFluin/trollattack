@@ -35,6 +35,11 @@ public class Roll {
                 numberOfDice = 0;
             } else {
                 numberOfDice = new Integer(parts[0]).intValue();
+                if(numberOfDice == 0 && !(parts[0].startsWith("0"))) {
+                	throw(new NumberFormatException("Doesn't look like a valid number."));
+                } else {
+                	//TrollAttack.debug("Rolled a real exact zero.");
+                }
             }
             sizeOfDice = 1;
             addition = 0;
@@ -44,8 +49,12 @@ public class Roll {
             sizeOfDice = new Integer(tmpParts[0]).intValue();
             addition = new Integer(tmpParts[1]).intValue();
         } else {
+        	if(parts[0].compareTo("") == 0 || parts[1].compareTo("") == 0) {
+        		throw(new NumberFormatException("Doesn't look like a valid number."));
+        	}
             try {
-                numberOfDice = new Integer(parts[0]).intValue();
+                
+            	numberOfDice = new Integer(parts[0]).intValue();
                 sizeOfDice = new Integer(parts[1]).intValue();
                 addition = 0;
             } catch (Exception e) {

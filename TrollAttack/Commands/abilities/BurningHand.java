@@ -8,7 +8,7 @@
  */
 package TrollAttack.Commands.abilities;
 
-public class MagicMissile extends OffensiveSpell {
+public class BurningHand extends OffensiveSpell {
 
-    public MagicMissile() { super("magic missile", 7, 5, "You manifest a ball of violent light, rocketing towards %1.", "%1 manifests a ball of violent light, rocketing towards %2."); }
+    public BurningHand() { super("burning hand", 8, 15, "You lay a burning hand upon %1.", "%1 lays a burning hand upon %2."); }
 }

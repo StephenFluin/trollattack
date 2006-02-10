@@ -70,7 +70,7 @@ public class TrollAttack {
 
     public static int maxIdleTime= 60 * 20;
 
-    public static String version = "0.80.1";
+    public static String version = "0.80.2";
 
     public static void main(String[] args) {
         message("Starting TrollAttack, version: " + version);
@@ -263,7 +263,7 @@ public class TrollAttack {
 
             }
         }
-        for(int i = puntPlayers.size();i > 0;i++) {
+        for(int i = puntPlayers.size() - 1;i >= 0;i++) {
             Player currentPlayer = puntPlayers.get(i);
             message("Punting player " + currentPlayer.getShort()
                     + " for idleness.");

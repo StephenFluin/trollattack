@@ -241,7 +241,7 @@ public class Room {
     }
 
     // players works like this:
-    // 0 is ignored
+    // 1 is ignored
     // 1 is %1
     // 2 is %2 ...
     // Any player that matches who they are talking to
@@ -250,25 +250,20 @@ public class Room {
         Boolean onList = false;
         try {
             for (Being person : roomBeings) {
-                // TrollAttack.message("Found a being...");
+                //TrollAttack.debug("Displaying mesage for: " + person.getShort());
                 String message = s;
-                for (int j = 0; j < players.length; j++) {
-                    //TrollAttack.message(players[j] == null ? "players[j]
-                    // is null" : "players[j] is not null");
-                    message = message.replaceAll("%" + j, players[j]
+                for (int j = 0; j < ( players.length ); j++) {
+                    try {
+                    	message = message.replaceAll("%" + (j+1), players[j]
                             .getShort(person));
-                }
-                onList = false;
-                for(Being ignoreMe : players) {
-                    if(person == ignoreMe) {
-                        onList = true;
-                        break;
+                    	//TrollAttack.debug("Replacing %" + (j+1) + " with " + players[j].getShort(person));
+                    } catch (NullPointerException e) {
+                    	//TrollAttack.debug("Tried to say the message '" + message + "' to " + players[j] + "'(" + j + ").");
                     }
                 }
+
                 if(players.length > 0 && person == players[0]) {
                     //Ignore this person entirely.
-                } else if(onList){
-                    person.tell(Util.uppercaseFirst(message));
                 } else {
                     person.interrupt(Util.uppercaseFirst(message));
                 }

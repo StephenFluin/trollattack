@@ -24,17 +24,16 @@ public class Heal extends Spell {
         if( s.compareToIgnoreCase("self") == 0 ) {
             return this.run(player);
         }
-        Being mob = player.getActualRoom().getBeing( s, null );
-        if( mob == null) {
+        Being victim = player.getActualRoom().getBeing( s, null );
+        if( victim == null) {
             player.tell("You don't see that here.");
             return false;
         } else {
 
-            player.tell("You pass a healing hand over " + mob.getShort() + ".");
-            mob.tell(player.getShort() + " passes a healing hand over you.");
-            Being[] players = {player, mob};
+            //player.tell("You pass a healing hand over " + mob.getShort() + ".");
+            Being[] players = {player, victim};
             player.getActualRoom().say("%1 passes a healing hand over %2.", players);
-            mob.increaseHitPoints( strength );
+            victim.increaseHitPoints( strength );
             return true;
            
         }

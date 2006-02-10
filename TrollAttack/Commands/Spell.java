@@ -17,8 +17,8 @@ public class Spell extends Ability {
 	private int manaCost;
     private String successMessage;
     
-	public Spell( String spellName, int c) { 
-	    this( spellName, c, true);
+	public Spell( String spellName, int cost) { 
+	    this( spellName, cost, true);
     }
 	/**
 	 * Creates a new spell with the name spellName

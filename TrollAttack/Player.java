@@ -349,14 +349,23 @@ public class Player extends Being {
 
     public void kill(Being killer) {
         kill();
-        tell(killer.getShort() + " kills you!");
+        tell(Communication.RED + (killer.getShort() + " KILLS you!").toUpperCase() );
 
         setCurrentRoom(1);
         hitPoints = manaPoints = movePoints = 1;
         save();
-        authenticated = false;
-        //	    communication.authenticate(this);
-        closeConnection();
+       
+        try{
+        	int i = 10;
+        	while(i-- > 0) {
+    			tell("Your spirit floats rapidly over the astral plane, looking for a way to return.");
+        		Thread.sleep(10000);
+        	}
+        } catch(Exception e) {
+        	
+        }
+        tell("Your spirit finds its way back the planet, and you find yourself again.");
+       
     }
 
     public void score() {
