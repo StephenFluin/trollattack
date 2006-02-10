@@ -12,12 +12,18 @@ import TrollAttack.Being;
 
 public class Ability extends Command {
     public Ability(String name, String failureMessage) {
-        super(name);
-        this.failureMessage = "You fail to " + failureMessage + ".";
+        this(name, failureMessage, false);
+    }
+    public Ability(String name, String failureMessage, boolean peacefulOnly) {
+        super(name,peacefulOnly);
+        this.failureMessage = failureMessage;
         needsPlayer = true;
     }
+    public Ability(String name, boolean peacefulOnly) {
+        this(name, "You fail to " + name + ".", peacefulOnly);
+    }
     public Ability(String name) {
-        this(name, "You fail to " + name + ".");
+        this(name, false);
     }
    
     private String failureMessage;

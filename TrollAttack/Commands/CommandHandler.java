@@ -87,6 +87,7 @@ public class CommandHandler {
 		registerCommand(new Open("open"));
 		registerCommand(new Close("close"));
 		registerCommand(new Who("who"));
+        registerCommand(new Version("version"));
 		registerCommand(new Where("where"));
 		registerCommand(new Save("save"));
 		
@@ -115,6 +116,7 @@ public class CommandHandler {
             registerCommand(new cSet("cset"));
             registerCommand(new cCreate("ccreate"));
             registerCommand(new cStat("cstat"));
+            registerCommand(new Transport("transport"));
 
 		}
 
@@ -757,6 +759,7 @@ public class CommandHandler {
             return false;
 	    }
 	    public boolean execute(String phrase) {
+            phrase = Util.decolor(phrase);
 	        player.tell(Communication.CYAN + "You say, \"" + phrase + "\".");
 	        player.roomSay(Communication.CYAN + player.getShort() + " says, \"" + phrase + "\".");
             return true;
@@ -770,6 +773,7 @@ public class CommandHandler {
         }
         public boolean execute(String s) {
             for(Player p : TrollAttack.gamePlayers) {
+                s = Util.decolor(s);
                 if(p == player) {
                     player.tell(Communication.CYAN + "You chat, \"" + s + "\".");
                 } else {
@@ -871,7 +875,7 @@ public class CommandHandler {
         }
     }
     class Practice extends Command {
-        public Practice(String s) { super(s,true); }
+        public Practice(String s) { super(s,false); }
         public boolean execute() {
             if(player.getBeingClass() == null) {
                 player.tell("Unclassed players can't learn skills.");
@@ -996,6 +1000,13 @@ public class CommandHandler {
 	    }
 	    
 	}
+    class Version extends Command {
+        public Version(String s) { super(s, false); }
+        public boolean execute() {
+            player.tell("Version: " + TrollAttack.version + ".");
+            return true;
+        }
+    }
 	class Where extends Command {
 	    public Where(String s) { super(s, false); }
 	    public boolean execute() {
@@ -1864,6 +1875,43 @@ public class CommandHandler {
                 player.tell("You add/update the ability '" + newAbility.name + "'.");
             }
             setClass.saveClass();
+            return true;
+        }
+    }
+    class Transport extends Command {
+        public Transport(String s) { super(s, false); }
+        public boolean execute() {
+            player.tell("Usage: transport <player> <vnum>");
+            return false;
+        }
+        public boolean execute(String s) {
+            String[] parts = Util.split(s);
+            
+            if(parts.length != 2) {
+                return execute();
+            }
+            Player victim = null;
+            for(Player p : TrollAttack.gamePlayers) {
+                if(Util.contains(p.getShort(), parts[0]) && p.level < player.level) {
+                    victim = p;
+                }
+            }
+            if(victim == null) {
+                player.tell("That isn't an online player!");
+                return false;
+            }
+            victim.setCurrentRoom(new Integer(parts[1]));
+            int previous = victim.getCurrentRoom();
+            if(victim.getActualRoom() == null) {
+                player.tell("That isn't a valid room!");
+                victim.setCurrentRoom(previous);
+                return false;
+            }
+            victim.tell("You are pulled by a strange force, your surroundings leave you and you find yourself somewhere else.");
+            victim.handleCommand("look");
+            player.tell("You transfer " + victim.getShort() + " to " + victim.getActualRoom().title + "(" + victim.getActualRoom().vnum + ").");
+            Being[] ignores = {player, victim};
+            player.getActualRoom().say("%2 is pulled by a strange force from the room.", ignores);
             return true;
         }
     }

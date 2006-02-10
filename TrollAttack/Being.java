@@ -185,7 +185,7 @@ public class Being implements Cloneable {
     }
 
     public String getLong() {
-        return Communication.PURPLE + Util.uppercaseFirst(getShort()) + " is "
+        return Util.uppercaseFirst(getShort()) + " is "
                 + getDoing() + " here";
     }
 
@@ -866,6 +866,7 @@ public class Being implements Cloneable {
             return false;
         } else {
             tell("You close the door.");
+            roomSay("%1 closes the door.");
             exit.close();
             return true;
         }
@@ -881,6 +882,7 @@ public class Being implements Cloneable {
             return false;
         } else {
             tell("You open the door.");
+            roomSay("%1 opens the door.");
             exit.open();
             return true;
         }

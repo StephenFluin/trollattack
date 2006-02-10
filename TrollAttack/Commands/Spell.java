@@ -28,7 +28,7 @@ public class Spell extends Ability {
 	 * @param b Is the command restricted to peaceful casting.
 	 */
 	public Spell( String spellName, int cost, boolean peacefulOnly) {
-        super( spellName , "You fail to cast " + spellName + ".");
+        super( spellName , "You fail to cast " + spellName + ".", peacefulOnly);
         this.successMessage = "You successfully cast " + spellName + ".";
 	    this.manaCost = cost; 
     }

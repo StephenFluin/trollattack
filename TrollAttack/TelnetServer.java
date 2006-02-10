@@ -86,10 +86,10 @@ public class TelnetServer extends Communication {
         }
 //      remove backspaces from inputLine
         if(line.contains("\010")) {
-            TrollAttack.debug("Problem.");
+            //TrollAttack.debug("Problem.");
         }
         while(line.contains("\010")) {
-            TrollAttack.debug(line);
+            //TrollAttack.debug(line);
             int location = line.indexOf("\010");
             if(location == 0) {
                 line = line.substring(1);
@@ -148,7 +148,7 @@ public class TelnetServer extends Communication {
     public static String DARKCYAN = ESCAPE + "[0;36m";
     public static String DARKWHITE = ESCAPE + "[0;37m";
     public String color(String s) {
-    	TrollAttack.debug(s);
+    	//TrollAttack.debug(s);
         // Lights
         s = s.replaceAll("([^&]|^)&C", "$1" + CYAN);
         s = s.replaceAll("([^&]|^)&P", "$1" + PURPLE);
@@ -168,6 +168,8 @@ public class TelnetServer extends Communication {
         s = s.replaceAll("([^&]|^)&DR", "$1" + DARKRED);
         s = s.replaceAll("([^&]|^)&DB", "$1" + DARKBLUE);
         s = s.replaceAll("([^&]|^)&DA", "$1" + DARKGREY);
+        
+        s = s.replaceAll("&&(..)", "&$1");
         return s;
     }
 }

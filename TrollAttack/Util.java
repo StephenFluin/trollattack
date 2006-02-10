@@ -352,4 +352,7 @@ public class Util {
         
     }
 
+    public static String decolor(String s) {
+        return s.replaceAll("&", "&&");
+    }
 }

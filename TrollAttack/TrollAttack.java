@@ -70,8 +70,10 @@ public class TrollAttack {
 
     public static int maxIdleTime= 60 * 20;
 
+    public static String version = "0.80.1";
+
     public static void main(String[] args) {
-        //print("starting program...");
+        message("Starting TrollAttack, version: " + version);
 
         gamePlayers = new LinkedList<Player>();
 
