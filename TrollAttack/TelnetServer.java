@@ -9,12 +9,10 @@
 package TrollAttack;
 
 import java.io.*;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class TelnetServer extends Communication {
     BufferedReader in;
@@ -36,6 +34,7 @@ public class TelnetServer extends Communication {
     public TelnetServer() {
         this(true, null);
         this.start();
+        //TrollAttack.debug("TelnetServer done!");
     }
 
     public TelnetServer(boolean newServerSocket, ServerSocket serverSock) {
@@ -48,9 +47,22 @@ public class TelnetServer extends Communication {
         } else {
             serverSocket = serverSock;
         }
+        
+    }
+    public void shutdown() {
+    	this.close();
+        if(serverSocket != null) {
+        	try {
+        		serverSocket.close();
+        	} catch(Exception e) {
+        		e.printStackTrace();
+        	}
+        }
+    	
     }
     public void waitForUser() {
         try {
+        	//TrollAttack.debug("Waiting.");
             adminSocket = serverSocket.accept();
             TrollAttack.message("New connection attempt.");
             in = new BufferedReader(new InputStreamReader(adminSocket.getInputStream()));
@@ -59,8 +71,8 @@ public class TelnetServer extends Communication {
             
             Communication newConnection = new TelnetServer(false, serverSocket);
             newConnection.start();
-            //TrollAttack.debug("New telnet listener started.");
-            TrollAttack.unusedCommunication = newConnection;
+        } catch(SocketException e) {
+        	//TrollAttack.message(getID() + " Telnet listener shutting down.");
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -108,6 +120,9 @@ public class TelnetServer extends Communication {
             // ").");
             //e.printStackTrace();
 
+        } catch(NullPointerException e) {
+        	//TrollAttack.debug("Socket is shutdown, no longer exists.");
+        	throw(e);
         } catch (Exception e) {
             TrollAttack.error("Output error!");
             e.printStackTrace();
@@ -116,18 +131,22 @@ public class TelnetServer extends Communication {
     }
     public void close() {
         try {
-            //TrollAttack.message("Player losing connection.");
-            if(in != null) {
-                in.close();
-            }
-            if(out != null) {
-                out.close();
-            }
             if(adminSocket != null) {
                 adminSocket.close();
             }
-        } catch(Exception e) {
+            if(in != null) {
+                in.close();
+                in = null;
+            }
             
+            if(out != null) {
+                out.close();
+                out = null;
+            }
+
+
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
     
@@ -169,7 +188,7 @@ public class TelnetServer extends Communication {
         s = s.replaceAll("([^&]|^)&DB", "$1" + DARKBLUE);
         s = s.replaceAll("([^&]|^)&DA", "$1" + DARKGREY);
         
-        s = s.replaceAll("&&(..)", "&$1");
+        s = s.replaceAll("&&", "&");
         return s;
     }
 }

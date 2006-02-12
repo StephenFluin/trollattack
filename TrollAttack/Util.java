@@ -265,6 +265,12 @@ public class Util {
                 + mobile.maxMovePoints + wrapChar;
         result += "Level:\t" + mobile.level + "\t" + "Gold:\t" + mobile.gold
                 + wrapChar;
+        result += "Strength:\t" + mobile.strength + "\t" + "Constitution:\t" + mobile.constitution
+        	+ wrapChar;
+        result += "Charisma:\t" + mobile.charisma + "\t" + "Dexterity:\t" + mobile.dexterity
+        	+ wrapChar;
+        result += "Intelligence:\t" + mobile.intelligence + "\t" + "Wisdom:\t" + mobile.wisdom
+        	+ wrapChar;
         result += "Damage Dice:\t" + mobile.hitDamage.toString() + "\t"
                 + "Hit Dice:\t" + mobile.hitSkill.toString() + wrapChar;
         result += "Hit Level (Minimum roll to hit):\t" + mobile.hitLevel
@@ -368,6 +374,7 @@ public class Util {
     }
 
     public static String decolor(String s) {
-        return s.replaceAll("&", "&&");
+        //TrollAttack.debug("Escaped string to: " + s.replaceAll("&", "&&"));
+    	return s.replaceAll("&", "&&");
     }
 }

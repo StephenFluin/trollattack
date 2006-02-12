@@ -60,33 +60,28 @@ public class Fight extends Thread {
             second.prompt();
 
         }
+        Being winner, loser;
         if (first.hitPoints > 0) {
-            results = new Boolean(true);
+            winner = first;
+            loser = second;
         } else {
-            results = new Boolean(false);
+            winner = second;
+            loser = first;
         }
-        boolean win = this.results().booleanValue();
-        if (win) {
-            TrollAttack.getRoom(first.getCurrentRoom())
-                    .removeBeing(second.name);
-            int experienceIncrease = (int) (second.getAverageHitDamage() * second.maxHitPoints);
-            first.interrupt(Communication.RED + "You KILLED " + second.getShort() + Util.wrapChar + Communication.WHITE + "You have gained " + Communication.CYAN + experienceIncrease + Communication.WHITE + " experience points from this kill.");
-            pBroadcast[0] = first;
-            pBroadcast[1] = second;
-            fightRoom.say("%1 killed %2.", pBroadcast);
-            if (second.isPlayer) {
-                ((Player) second).kill(first);
-            } else {
-                // SHOULD BE HANDLED BY RESETS!!!!
-            }
-            second.dropAll();
-            
-            first
-                    .increaseExperience(experienceIncrease);
-        } else {
-            first.kill(second);
+        
+        int experienceIncrease = (int) (winner.getAverageHitDamage() * loser.maxHitPoints);
+        first
+        .increaseExperience(experienceIncrease);
+        
+        winner.interrupt(Communication.RED + "You KILLED " + loser.getShort() + Util.wrapChar + Communication.WHITE + "You have gained " + Communication.CYAN + experienceIncrease + Communication.WHITE + " experience points from this kill.");
+        pBroadcast[0] = winner;
+        pBroadcast[1] = loser;
+        fightRoom.say("%1 KILLED %2.", pBroadcast);
+        loser.getActualRoom()
+        .removeBeing(loser.name);
+        loser.kill(winner);
 
-        }
+        
         first.setBeingFighting(null);
         second.setBeingFighting(null);
 
@@ -98,11 +93,10 @@ public class Fight extends Thread {
         pBroadcast[1] = second;
         if (first.hitSkill.roll() >= first.hitLevel) {
             damage = Math.floor(first.getHitDamage());
-            if (first.isPlayer) {
                 first
                         .increaseExperience((int) ((second.level - first.level + 5) * damage));
-            }
-            first.tell(Util.uppercaseFirst("Your attack " + getDamageString((int)damage) + " " + second.getShort() + ". [" + (int) damage + " damage]"));
+l
+first.tell(Util.uppercaseFirst("Your attack " + getDamageString((int)damage) + " " + second.getShort() + ". [" + (int) damage + " damage]"));
 
             fightRoom.say(Communication.WHITE + "%1 " + getDamageString((int)damage) + " %2. [" + (int) damage + " damage]",
                     pBroadcast);

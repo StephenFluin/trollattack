@@ -46,6 +46,7 @@ public class Being implements Cloneable {
     public boolean canTeach = false;
     
     private Class beingClass = null;
+    public String busyDoing = "";
 
     Room actualRoom = null;
 
@@ -648,10 +649,10 @@ public class Being implements Cloneable {
         while (i.hasNext()) {
             count++;
             Equipment droppable = i.next();
-            equipment.remove(droppable);
             forFloor.add(droppable);
         }
         for(Equipment e : forFloor) {
+        	equipment.remove(forFloor);
         	getActualRoom().addItem(e);
         }
 
@@ -665,6 +666,7 @@ public class Being implements Cloneable {
     }
 
     public void kill() {
+    	busyDoing = "dead";
     	dropAllEquipment();
         dropAll();
         save();

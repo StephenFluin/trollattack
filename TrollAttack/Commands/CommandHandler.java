@@ -62,13 +62,14 @@ public class CommandHandler {
 		registerCommand(new Trance("trance"));
 		registerCommand(new Consider("consider"));
 		registerCommand(new Inventory("inventory"));
-		registerCommand(new Equipment("equiptment"));
+		registerCommand(new Equipment("equipment"));
 		registerCommand(new Wear("wear"));
 		registerCommand(new Level("level"));
 		registerCommand(new Eat("eat"));
 		registerCommand(new Drink("drink"));
 		registerCommand(new Fill("fill"));
 		registerCommand(new Score("score"));
+		registerCommand(new Report("report"));
 		registerCommand(new Remove("remove"));
         registerCommand(new Follow("follow"));
 		registerCommand(new Say("say"));
@@ -178,6 +179,11 @@ public class CommandHandler {
 	}
 	public String handleCommand( String commandString) {
 	    player.setLastActive(TrollAttack.getTime());
+	    
+	    if(player.busyDoing.length() > 0) {
+	    	player.tell("You can't do that, you are " + player.busyDoing.toUpperCase() + ".");
+	    	return null;
+	    }
 	    String[] commandParts = commandString.split(" ");
 		String commandParameter = "";
 		if(commandParts.length > 0 ) {
@@ -424,7 +430,7 @@ public class CommandHandler {
 	class Prompt extends Command {
 	    public Prompt(String s) { super(s, false); }
 	    public boolean execute() { 
-            player.tell("Current Prompt: " + player.getPromptString()); 
+            player.tell("Current Prompt: " + Util.decolor(player.getPromptString())); 
             return false;
         }
 	    public boolean execute(String command) {
@@ -729,6 +735,15 @@ public class CommandHandler {
             return true;
 	    }
 	}
+	class Report extends Command {
+		public Report(String s) { super(s, false); }
+		public boolean execute() {
+			String report = "HP: " + player.hitPoints + "/" + player.maxHitPoints + " Mana: " + player.manaPoints + "/" + player.maxManaPoints;
+			player.tell("You report: " + report);
+			player.roomSay("%1 reports: " + report);
+			return true;
+		}
+	}
 	class Level extends Command {
 	    public Level(String s) {
 	        super( s, false );
@@ -774,8 +789,9 @@ public class CommandHandler {
             return false;
         }
         public boolean execute(String s) {
+        	s = Util.decolor(s);
             for(Player p : TrollAttack.gamePlayers) {
-                s = Util.decolor(s);
+                
                 if(p == player) {
                     player.tell(Communication.CYAN + "You chat, \"" + s + "\".");
                 } else {
@@ -815,7 +831,7 @@ public class CommandHandler {
             if(victim == null) {
                 player.tell("He/She isn't online right now.");
             }
-            player.tell(Communication.WHITE + "You tell " + victim.getShort() + ", \"" + s + "\".");
+            player.tell(Communication.WHITE + "You tell " + victim.getShort() + ", \"" + message + "\".");
             return true;
         }
     }
@@ -1110,7 +1126,7 @@ public class CommandHandler {
 			player.tell("Player Commands:");
 			player.tell("kill, cast, get, drop, prompt, trance");
 			player.tell("stand, sit, rest, sleep");
-			player.tell("consider, inventory, equiptment, wear, remove");
+			player.tell("consider, inventory, equipment, wear, remove");
 			player.tell("Game Commands");
 			player.tell("look, quit, exit, help");
             return true;

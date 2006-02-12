@@ -35,7 +35,6 @@ public class TrollAttack {
 
     static Background backGround;
 
-    public static Communication unusedCommunication;
     
     static Calendar cal = new GregorianCalendar();
 
@@ -57,6 +56,7 @@ public class TrollAttack {
     public static LinkedList<Reset> gameResets;
     
     public static LinkedList<Room> gameRooms;
+    public static LinkedList<Communication> gameCommunications = new LinkedList<Communication>();
     
     public static AbilityHandler abilityHandler = new AbilityHandler();
 
@@ -68,9 +68,9 @@ public class TrollAttack {
 
     public static CommandHandler ch;
 
-    public static int maxIdleTime= 60 * 20;
+    public static int maxIdleTime= 60 * 30;
 
-    public static String version = "0.80.2";
+    public static String version = "0.80.4";
 
     public static void main(String[] args) {
         message("Starting TrollAttack, version: " + version);
@@ -82,10 +82,10 @@ public class TrollAttack {
         Communication io = new TelnetServer();
         //Communication io2 = new ImClient();
         
-        unusedCommunication = io;
         // Done reading data files.
         backGround = new Background();
         backGround.start();
+        //debug("main done.");
 
     }
 
@@ -263,8 +263,7 @@ public class TrollAttack {
 
             }
         }
-        for(int i = puntPlayers.size() - 1;i >= 0;i++) {
-            Player currentPlayer = puntPlayers.get(i);
+        for(Player currentPlayer : puntPlayers) {
             message("Punting player " + currentPlayer.getShort()
                     + " for idleness.");
             currentPlayer.interrupt("You have been idle for more than "
@@ -316,14 +315,18 @@ public class TrollAttack {
             p.handleCommand("save");
             p.handleCommand("quit");
         }
+        gameOver = true;
         try {
             Thread.sleep(200);
         } catch(Exception e) {
             
         }
-        gameOver = true;
-        unusedCommunication.close();
+        
+        for(Communication c : gameCommunications) {
+        	c.shutdown();
+        }
         message("Game shutting down.");
+        //message(gameCommunications.toString());
        
     }
 }

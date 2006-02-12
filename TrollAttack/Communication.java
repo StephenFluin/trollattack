@@ -35,7 +35,7 @@ public abstract class Communication extends Thread {
     public abstract void close();
     public abstract void waitForUser();
     public void run() {
-        //TrollAttack.debug("Creating new communication (wait for user step).");
+    	TrollAttack.gameCommunications.add(this);
         waitForUser();
         //TrollAttack.debug("Send and Receive methods have been registered, prompting for login.");
         String inputLine = "";
@@ -72,12 +72,12 @@ public abstract class Communication extends Thread {
                     inputLine = getLine();
                     player.handleCommand(inputLine);
                 } catch (Exception e) {
-                    TrollAttack.message("Lost connection to " + player.getShort());
+                    TrollAttack.message(player.getShort() + " logged out.");
                     break;
                 }
             }
 
-            close();
+            TrollAttack.gameCommunications.remove(this);
         } catch (Exception e) {
             TrollAttack.error("Exception in Server: " + e.toString());
             e.printStackTrace();
@@ -139,10 +139,12 @@ public abstract class Communication extends Thread {
                     player.tell("Incorrect password or player not found.");
                 }
             } catch (NullPointerException e) {
-                if(attempts++ < 100) {
-	            	tmpPlayer = null;
-	            	TrollAttack.message("Authentication failure (" + attempts + ").");
+                if(TrollAttack.gameOver) {
+	            	return null;
+	            	
                 } else {
+                	TrollAttack.message(getID() + "Authentication failure (" + attempts++ + ").");
+                	tmpPlayer = null;
                 	return null;
                 }
 	                //e.printStackTrace();
@@ -170,7 +172,11 @@ public abstract class Communication extends Thread {
             string = wordwrap(string);
         }
         string = color(string);
-        send(string);
+        try{
+        	send(string);
+        } catch(NullPointerException e) {
+        	//TrollAttack.message("Can't print, socket no longer exists.");
+        }
     }
     public abstract void send(String string);
 
@@ -240,6 +246,10 @@ public abstract class Communication extends Thread {
             list.add(c);
         }
         return list;
+    }
+    
+    public void shutdown() {
+    	
     }
 
     public static final String GREY = "&A";

@@ -365,7 +365,8 @@ public class Player extends Being {
         	
         }
         tell("Your spirit finds its way back the planet, and you find yourself again.");
-       
+       busyDoing = "";
+       getActualRoom().addBeing(this);
     }
 
     public void score() {
