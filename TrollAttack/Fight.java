@@ -79,11 +79,13 @@ public class Fight extends Thread {
         fightRoom.say("%1 KILLED %2.", pBroadcast);
         loser.getActualRoom()
         .removeBeing(loser.name);
-        loser.kill(winner);
-
         
         first.setBeingFighting(null);
         second.setBeingFighting(null);
+        loser.kill(winner);
+
+        
+
 
     }
 
@@ -95,8 +97,7 @@ public class Fight extends Thread {
             damage = Math.floor(first.getHitDamage());
                 first
                         .increaseExperience((int) ((second.level - first.level + 5) * damage));
-l
-first.tell(Util.uppercaseFirst("Your attack " + getDamageString((int)damage) + " " + second.getShort() + ". [" + (int) damage + " damage]"));
+                first.tell(Util.uppercaseFirst("Your attack " + getDamageString((int)damage) + " " + second.getShort() + ". [" + (int) damage + " damage]"));
 
             fightRoom.say(Communication.WHITE + "%1 " + getDamageString((int)damage) + " %2. [" + (int) damage + " damage]",
                     pBroadcast);

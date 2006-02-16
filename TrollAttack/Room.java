@@ -14,6 +14,7 @@ public class Room {
 
     //public Exit east, west , north, south, northEast, northWest, southEast,
     // southWest, up, down;
+    private boolean noWander = false;
 
     public String description = "", title = "";
 
@@ -23,6 +24,7 @@ public class Room {
 
     public LinkedList<Exit> roomExits = new LinkedList<Exit>();
 
+    
     public Room(int vnum, String title, String description, LinkedList<Exit> exits) {
         this.vnum = vnum;
         //this.east = east; this.west = west; this.north = north; this.south =
@@ -61,6 +63,7 @@ public class Room {
         attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
         attribs.add(Util.nCreate(doc, "title", title));
         attribs.add(Util.nCreate(doc, "description", description + ""));
+        attribs.add(Util.nCreate(doc, "nowander", getNoWander() ? "true" : "false"));
         Iterator<Exit> eachExit = roomExits.iterator();
         while (eachExit.hasNext()) {
             Exit exit = eachExit.next();
@@ -493,5 +496,12 @@ public class Room {
     public LinkedList<Being> getRoomBeings() {
         return roomBeings;
     }
+
+	public boolean getNoWander() {
+		return noWander;
+	}
+	public void setNoWander(boolean canWanderIntoThisRoom) {
+		this.noWander = canWanderIntoThisRoom;
+	}
 
 }

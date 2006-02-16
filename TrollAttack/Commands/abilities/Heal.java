@@ -30,7 +30,7 @@ public class Heal extends Spell {
             return false;
         } else {
 
-            //player.tell("You pass a healing hand over " + mob.getShort() + ".");
+            player.tell("You pass a healing hand over " + victim.getShort() + ".");
             Being[] players = {player, victim};
             player.getActualRoom().say("%1 passes a healing hand over %2.", players);
             victim.increaseHitPoints( strength );

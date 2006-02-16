@@ -24,6 +24,7 @@ import TrollAttack.Classes.AbilityData;
 import TrollAttack.Items.*;
 
 
+
 public class CommandHandler {
 	LinkedList commandList;
 	Build builder;
@@ -52,7 +53,7 @@ public class CommandHandler {
 		registerCommand(new Get("get"));
 		registerCommand(new Give("give"));
 		registerCommand(new Drop("drop"));
-		registerCommand(new Sacrafice("sacrafice"));
+		registerCommand(new Sacrifice("sacrifice"));
 		registerCommand(new Favor("favor"));
 		registerCommand(new Look("look"));
 		registerCommand(new Cast("cast"));
@@ -143,6 +144,7 @@ public class CommandHandler {
 		    registerCommand(new iStat("istat"));
 		    registerCommand(new iSet("iset"));
 		    registerCommand(new mStat("mstat"));
+		    registerCommand(new rStat( "rstat"));
 		    registerCommand(new rEdit( "redit"));
 			
 			registerCommand(new Savearea("savearea"));
@@ -300,7 +302,7 @@ public class CommandHandler {
                 return false;
 			} else {
 			    player.tell("You slay " + mob.getShort() + " in cold blood.");
-			    Being[] pBroadcast = {player, player, mob};
+			    Being[] pBroadcast = {player, mob};
 			    player.getActualRoom().say(Communication.RED + "%1 slays %2 in cold blood.", pBroadcast);
 			}
             return true;
@@ -377,25 +379,40 @@ public class CommandHandler {
             return true;
 	    }
 	}
-	class Sacrafice extends Command {
-	    public Sacrafice(String s) { super(s, false);}
+	class Sacrifice extends Command {
+	    public Sacrifice(String s) { super(s, false);}
 	    public boolean execute() { 
-            player.tell("Sacrafice what?"); 
+            player.tell("Sacrifice what?"); 
             return false;
         }
 	    public boolean execute(String command) {
-	      Item i = player.getActualRoom().removeItem( command );
-           if(i == null) {
-               player.tell("You can't find that here.");
-               return false;
-           } else {
-               player.tell("You sacrafice " + i.getShort() + " to your deity and receive one gold coin.");
-               player.gold++;
-               player.roomSay(i.getShort() + " is sacrificed to " + player.getShort() + "'s deity.");
-               player.increaseFavor((int)(Math.random() * 3 + 2));
-           }
-           return true;
-	    }
+	    	int count;
+	    	if(command.compareToIgnoreCase("all") == 0) {
+		        count = -1;
+		        command = "";
+		    } else {
+		        count = 1;
+		    }
+	    	Item item = null;
+	    	while( ( count-- != 0 ) && (item == null ) ) {
+		        item = player.getActualRoom().removeItem(	command		);
+		    
+				if(item == null) {
+					if(count == 0) {
+					    player.tell("You can't find that here!");
+					} else {
+					    return false;
+					}
+				} else {
+					player.tell("You sacrifice " + item.getShort() + " to your deity and receive one gold coin.");
+					player.gold++;
+					player.roomSay(item.getShort() + " is sacrificed to " + player.getShort() + "'s deity.");
+					player.increaseFavor((int)(Math.random() * 3 + 2));
+					item = null;
+				}
+	    	}
+	    	return true;
+    	}
 	}
 	class ChangeState extends Command {
 	    int newState;
@@ -415,7 +432,8 @@ public class CommandHandler {
 		            
 		            player.setState( newState );
 		            player.tell("You are now " + player.getDoing() + ".");
-		            player.roomSay(player.getShort() + " is now " + player.getDoing() + ".");		        }
+		            player.roomSay(player.getShort() + " is now " + player.getDoing() + ".");		        
+		        }
 	        }
             return true;
 	    }
@@ -540,6 +558,7 @@ public class CommandHandler {
 	    public Trance(String s) { super(s, true); }
 	    public boolean execute() {
 	        player.tell("You enter a trance.");
+	        player.roomSay("%1 enters a trance.");
 	        player.increaseManaPoints ( 5 );
 	        try {
 	            Thread.sleep(4000);
@@ -561,8 +580,8 @@ public class CommandHandler {
 			    player.tell("You don't have that!");
                return false;
 			} else {
-			    player.tell( player.wearItem( newWear ) );
-                player.roomSay("%1 wears something.");
+			    player.wearItem( newWear );
+         
 			}
             return true;
 			
@@ -580,7 +599,7 @@ public class CommandHandler {
 	            player.tell("You don't have that!");
                return false;
 	        } else {
-	            player.tell( player.eatItem( newEat ) );
+	            player.eatItem( newEat );
 	        }
             return true;
 	    }
@@ -661,9 +680,7 @@ public class CommandHandler {
         }
 	    public boolean execute(String command) {
 	        
-            //@TODO! make the command do the work here, so we
-            // can get a better return value.
-            player.tell( player.removeItem( command ) );
+            player.removeItem( command );
             return true;
 	    }
 	}
@@ -1366,6 +1383,7 @@ public class CommandHandler {
 	            e.printStackTrace();
 	        }
             player.tell("You assign " + p.getShort() + " " + newArea.filename +"(" + newArea.low + "-" + newArea.high + ").");
+            p.tell(player.getShort() + " assigns you the area " + newArea.filename + "("  + newArea.low + "-" + newArea.high + ").");
 	        return true;
 	    }
 	}
@@ -1452,7 +1470,13 @@ public class CommandHandler {
             return true;
 	    }
 	}
-	
+	class rStat extends Command {
+		public rStat(String s) { super(s); }
+		public boolean execute() {
+			builder.rStat(player.getActualRoom());
+			return true;
+		}
+	}
 	class mStat extends Command {
 	    public mStat(String s) { super(s, false); }
 	    public boolean execute() {
@@ -1616,6 +1640,7 @@ public class CommandHandler {
                     return false;
 		        } else {
 		            player.getActualRoom().addBeing(newMobile);
+		            newMobile.setCurrentRoom(player.getCurrentRoom());
 		            player.tell("You invoke " + newMobile.getShort() + ".");
 		            player.getActualRoom().say(player.getShort() + " invokes " + newMobile.getShort() + ".",  player);
 		        }
@@ -1674,8 +1699,10 @@ public class CommandHandler {
             return false;
 	    }
 	    public boolean execute(String s) {
-	        if(player.isMobile() && player.switched != null) {
+	        // If you are a player that is already switched, you should switch back.
+	    	if(player.isMobile() && player.switched != null) {
 	            player.switched.switchWith(player.switched);
+	            player.tell("You switch back to your former self.");
 	        }
 	        Being being = player.getActualRoom().getBeing(s, player);
 	        if(being == null) {
@@ -1693,6 +1720,7 @@ public class CommandHandler {
 	        }
 	        
 	        p.switchWith(mob);
+	        player.tell("You switch with " + mob.getShort());
             return true;
 	    }
 	}
@@ -1864,7 +1892,6 @@ public class CommandHandler {
             return true;
 		}
 	}
-    
     public static boolean handleSpell(Being player, String spellString) {
         String[] spellParts = spellString.split(" ");
         String spellParameter = "";
@@ -1915,5 +1942,4 @@ public class CommandHandler {
         return results;
         
     }
-
 }

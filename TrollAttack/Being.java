@@ -34,7 +34,7 @@ public class Being implements Cloneable {
     public int currentRoom = 1, state = 0, hunger = 0, thirst = 0,
             practiceSessions;
 
-    int strength, intelligence, wisdom, dexterity, constitution, charisma,
+    public int strength, intelligence, wisdom, dexterity, constitution, charisma,
             luck;
 
     public LinkedList<Item> beingItems = new LinkedList<Item>();
@@ -60,6 +60,7 @@ public class Being implements Cloneable {
     // Allows mobiles to do anything a player can do, is this dangerous or
     // memory hoggery?
     public CommandHandler ch = null;
+    private CommandHandler backupCH = null;
 
     public Roll hitDamage;
 
@@ -480,20 +481,21 @@ public class Being implements Cloneable {
         return null;
     }
 
-    public String eatItem(Item newEat) {
-        Food newEaty;
+    public void eatItem(Item newEat) {
+        Food newEaty = null;
         try {
             newEaty = (Food) newEat;
         } catch (ClassCastException e) {
-            return "You can't eat that!";
+            tell("You can't eat that!");
         }
         if (hunger < 1) {
-            return "You are too full to eat that.";
+            tell( "You are too full to eat that.");
         } else {
             hunger -= newEaty.getQuality();
             beingItems.remove(newEaty);
-            return "You eat " + newEat.getShort() + " and are now "
-                    + getHungerString() + ".";
+            tell( "You eat " + newEat.getShort() + " and are now "
+                    + getHungerString() + ".");
+            roomSay("%1 eats " + newEat.getShort() + ".");
 
         }
     }
@@ -569,33 +571,46 @@ public class Being implements Cloneable {
             return "unknowningly thirsty";
         }
     }
-
-    public String wearItem(Item newWear) {
-        Equipment newWearEquipment;
+    public void wearItem(Item newWear) {
+    	wearItem(newWear, true);
+    }
+    public void wearItem(Item newWear, boolean alertWorld) {
+        Equipment newWearEquipment = null;
         if(newWear instanceof Equipment) {
             newWearEquipment = (Equipment) newWear;
         } else {
-            return "You don't know how to wear that (Can't make it a piece of eq)!";
+        	if(alertWorld) {
+        		tell( "You don't know how to wear that (Can't make it a piece of eq)!");
+        	}
+        	return;
         }
 
         for(Equipment tmpEq : equipment) {
             if (tmpEq.wearLocation == null) {
-                return "The game can't figure out how to wear thing thing, wierd!";
+                if(alertWorld) {
+                	tell( "The game can't figure out how to wear thing thing, wierd!");
+                }
+                return;
             }
             if (tmpEq.wearLocation
                     .compareToIgnoreCase(newWearEquipment.wearLocation) == 0) {
-                return "You are already wearing something where this would go!";
+            	if(alertWorld) {
+            		tell( "You are already wearing something where this would go!");
+            	}
+                return;
             }
 
         }
         equipment.add(newWearEquipment);
         beingItems.remove(newWear);
-        return "You wear " + newWear.getShort();
+        if(alertWorld) {
+	        tell( "You wear " + newWear.getShort());
+	        roomSay("%1 wears " + newWear.getShort());
+        }
 
     }
 
-    public String removeItem(String name) {
-        String result = "";
+    public void removeItem(String name) {
         Equipment inHand = null;
         for(Equipment test : equipment) {
             if (Util.contains(test.getName(), name)) {
@@ -606,12 +621,13 @@ public class Being implements Cloneable {
             }
         }
         if (inHand == null) {
-            return "You aren't wearing that!";
+            tell( "You aren't wearing that!");
         } else {
-            result = "You remove " + inHand.shortDesc + ".";
+           tell( "You remove " + inHand.shortDesc + ".");
             equipment.remove(inHand);
+            roomSay("%1 removes " + inHand.getShort() + ".");
         }
-        return result;
+
 
     }
 
@@ -678,11 +694,12 @@ public class Being implements Cloneable {
     }
 
     public void roomSay(String string) {
-        if (getActualRoom() == null) {
-
+        if(TrollAttack.gameRooms != null) {
+        	getActualRoom().say(Util.uppercaseFirst(string), this);
         } else {
-            getActualRoom().say(Util.uppercaseFirst(string), this);
+        	TrollAttack.debug("Not saying words because mud isn't ready.");
         }
+    	
     }
 
     public void score() {
@@ -767,8 +784,21 @@ public class Being implements Cloneable {
         return false;
     }
 
-    public void switchWith(Being b) {
-    }
+    public void switchWith(Being being) {
+        if (being == this && switched != null && backupCH != null) {
+              // unswitch
+              
+              switched.setSwitched(null);
+              setSwitched( null );
+              ch = backupCH;
+          } else {
+              // switch
+              backupCH = ch;
+              ch = being.ch;
+              being.setSwitched(this);
+              switched = being;
+          }
+      }
 
     public void setSwitched(Being b) {
         switched = b;
@@ -872,6 +902,7 @@ public class Being implements Cloneable {
         } else {
             tell("You close the door.");
             roomSay("%1 closes the door.");
+            exit.getDestinationRoom().say("The door to the " + exit.getOtherExit().getDirectionName() + " closes.");
             exit.close();
             return true;
         }
@@ -888,6 +919,7 @@ public class Being implements Cloneable {
         } else {
             tell("You open the door.");
             roomSay("%1 opens the door.");
+            exit.getDestinationRoom().say("The door to the " + exit.getOtherExit().getDirectionName() + " opens.");
             exit.open();
             return true;
         }
@@ -1043,8 +1075,10 @@ public class Being implements Cloneable {
         //TrollAttack.debug("Roll looks like: " + chance.toString());
         Exit randomExit = getActualRoom().roomExits.get(chance.roll() - 1);
         
-        // Makes sure that mobiles don't leave their area.
-        while(Area.testRoom(randomExit.getDestinationRoom(), TrollAttack.gameAreas) != getActualArea()) {
+        // Makes sure that mobiles don't leave their area, or enter a nowander room.
+        // randomly guesses at ALL exits 5 times until it finds one that 
+        // is fit for a being to wander into.
+        while(Area.testRoom(randomExit.getDestinationRoom(), TrollAttack.gameAreas) != getActualArea() || randomExit.getDestinationRoom().getNoWander()) {
             if(safety-- < 0) {
                 TrollAttack.error("Tried " + safety + " times without finding a useable exit for wandering!");
                 return;
@@ -1061,6 +1095,11 @@ public class Being implements Cloneable {
         }
         ch.handleCommand(randomExit.getDirectionName());
     }
+
+	public void sacAll() {
+		// TODO Auto-generated method stub
+		
+	}
 
 
 

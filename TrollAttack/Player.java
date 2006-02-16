@@ -31,7 +31,7 @@ import TrollAttack.Items.Weapon;
  */
 public class Player extends Being {
     //String prompt = "&G<&R%h&G/&R%H&G-&z%x&G> %T";
-    private CommandHandler backupCH = null;
+
 
     private String password = "";
 
@@ -139,7 +139,7 @@ public class Player extends Being {
 
     public void tell(String s, boolean wrapAtEnd) {
         if (switched != null) {
-            communication.print("BODY:" + s + (wrapAtEnd ? Util.wrapChar : ""));
+            communication.print(Communication.CYAN + "BODY:" + s + (wrapAtEnd ? Util.wrapChar : ""));
         } else {
             communication.print(s + (wrapAtEnd ? Util.wrapChar : ""));
         }
@@ -164,21 +164,7 @@ public class Player extends Being {
         return canEdit(mobile.vnum);
     }
 
-    public void switchWith(Being being) {
-      if (being == this && switched != null && backupCH != null) {
-            // unswitch
-            
-            switched.setSwitched(null);
-            setSwitched( null );
-            ch = backupCH;
-        }/* else {
-            // switch
-            backupCH = ch;
-            ch = being.ch;
-            being.switched = this;
-            switched = being;
-        }*/
-    }
+
 
     public boolean canEdit(Item item) {
         return canEdit(item.vnum);
@@ -359,7 +345,7 @@ public class Player extends Being {
         	int i = 10;
         	while(i-- > 0) {
     			tell("Your spirit floats rapidly over the astral plane, looking for a way to return.");
-        		Thread.sleep(10000);
+        		Thread.sleep(1000);
         	}
         } catch(Exception e) {
         	

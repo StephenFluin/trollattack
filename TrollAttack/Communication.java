@@ -143,6 +143,7 @@ public abstract class Communication extends Thread {
 	            	return null;
 	            	
                 } else {
+                	e.printStackTrace();
                 	TrollAttack.message(getID() + "Authentication failure (" + attempts++ + ").");
                 	tmpPlayer = null;
                 	return null;

@@ -201,7 +201,7 @@ public class DataReader {
         while (itemIterator.hasNext()) {
             Item newItem = TrollAttack.getItem(new Integer((String) itemIterator
                     .next()));
-            p.wearItem((Item) newItem.clone());
+            p.wearItem((Item) newItem.clone(), false);
         }
         return p;
 
@@ -321,6 +321,7 @@ public class DataReader {
         int vnum = 0;
         LinkedList<Exit> exits;
         String title = "", description = "";
+        boolean noWander = false;
 
         // Cycle through each of the rooms in the linked list.
         for(Hashtable room : roomList) {
@@ -328,7 +329,13 @@ public class DataReader {
             vnum = new Integer((String) room.get("vnum")).intValue();
             title = (String) room.get("title");
             description = (String) room.get("description");
+            if(room.get("nowander") == null) {
+            	noWander = false;
+            } else {
+            	noWander = new Boolean(((String)room.get("nowander"))).booleanValue();
+            }
             newRoom = new Room(vnum, title, description, exits);
+            newRoom.setNoWander(noWander);
             rooms.add(newRoom);
             
             // Goes through all known exits and checks the hash for them.
@@ -449,7 +456,7 @@ public class DataReader {
                     for(Object currentMobileItem : mobileItems) {
                         Item newItem = TrollAttack.getItem(new Integer(
                                 (String) currentMobileItem));
-                        resetMobile.wearItem((Item) newItem);
+                        resetMobile.wearItem((Item) newItem, false);
                     }
 
                 } else {

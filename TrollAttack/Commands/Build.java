@@ -29,6 +29,19 @@ public class Build {
     public void redit(String s) {
         String[] parts = s.split(" ");
         s = parts[0];
+        
+        if(s.startsWith("now")) {
+        	boolean noWander  = player.getActualRoom().getNoWander();
+        	player.getActualRoom().setNoWander(!noWander);
+        	if(!noWander) {
+        		player.tell("You prevent mobiles from wandering into this room.");
+        	} else {
+        		player.tell("You allow mobiles to wander into this room.");
+        	}
+        	return;
+        }
+       
+        
         if(parts.length < 2) {
             player.tell(s + " command needs more info.");
             return;
@@ -133,6 +146,10 @@ public class Build {
     }
     public void mStat(Being being) {
         player.tell(Util.mStat(being));
+    }
+    public void rStat(Room room) {
+    	player.tell("Name:\t\t" + room.title + Util.wrapChar +
+    				"No Wander:\t(" + (room.getNoWander() ? "X" : " ") + ")");
     }
     
     
@@ -303,9 +320,9 @@ public class Build {
                     return;
                 } else if(item.getType().compareToIgnoreCase(Armor.getItemType()) == 0) {
                     Armor armor = (Armor)item;
-                    if(attr.compareToIgnoreCase("armorclass") == 0) {
+                    if(attr.compareToIgnoreCase("ac") == 0) {
                         armor.setArmorClass(Util.intize(player, value));
-                    } else if(attr.compareToIgnoreCase("wearlocation") == 0) {
+                    } else if(attr.startsWith("wear")) {
                         armor.setWearLocation(value);
                     }
                     return;
@@ -383,6 +400,18 @@ public class Build {
                 mobile.hitLevel = intValue;
             } else if(attr.compareToIgnoreCase("level") == 0) {
                 mobile.level = intValue;
+            } else if(attr.startsWith("str")) {
+                mobile.strength = intValue;
+            } else if(attr.startsWith("con")) {
+                mobile.constitution = intValue;
+            } else if(attr.startsWith("cha")) {
+                mobile.charisma = intValue;
+            } else if(attr.startsWith("dex")) {
+                mobile.dexterity = intValue;
+            } else if(attr.startsWith("int")) {
+                mobile.intelligence = intValue;
+            } else if(attr.startsWith("wis")) {
+                mobile.wisdom = intValue;
             } else if(attr.compareToIgnoreCase("trainer") == 0) {
                 if(value.length() < 4) {
                     mobile.canTeach = (!mobile.canTeach);

@@ -1,19 +1,18 @@
 Todo List / Ideas:
 
+shops should work
 having two people fight gives only one of them experience upon death
-switch doesn't seem to work
-rich troll doesn't give any experience
 follow caused an infinite loop saying "you aren't following anything"
+eating/drinking needs to be bounded better
+Fix Experience System
 
-Others can't see you trancing.
-sending tells repeats the name of the person you are sending to.
 Help files
 Convert .are files to my xml format.
 Make each area aware of all of its own rooms, mobiles, items, and players (for saving
 	so we don't always have to scan all of the junk in the game)
 Make int minPosition work, instead of boolean mustBePeaceful
 Work on channels and player preferences.
-Fix Experience System
+
 5. Pets and Mountable Mobiles
 6. Swimming and Water
 Movement points

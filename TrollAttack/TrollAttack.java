@@ -70,7 +70,7 @@ public class TrollAttack {
 
     public static int maxIdleTime= 60 * 30;
 
-    public static String version = "0.80.4";
+    public static String version = "0.81";
 
     public static void main(String[] args) {
         message("Starting TrollAttack, version: " + version);
