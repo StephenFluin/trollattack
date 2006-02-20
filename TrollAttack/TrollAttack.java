@@ -329,4 +329,9 @@ public class TrollAttack {
         //message(gameCommunications.toString());
        
     }
+
+	public static void replaceRoom(Room r, Shop shop) {
+		gameRooms.remove(r);
+		gameRooms.add(shop);
+	}
 }

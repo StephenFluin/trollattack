@@ -11,6 +11,9 @@ package TrollAttack;
 import TrollAttack.Items.Item;
 import java.util.LinkedList;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 /**
  * @author PeEll
  * 
@@ -26,7 +29,7 @@ public class Exit {
 
     private boolean isDoor, isLockable;
 
-    private boolean open, locked;
+    private boolean open, locked, noWander;
 
     private Item key;
 
@@ -35,11 +38,12 @@ public class Exit {
             "southeast" };
 
     public Exit(int dest, int direction) {
-        this(dest, direction, false, false, null);
+        this(dest, direction, false, false, false, null);
     }
 
-    public Exit(int dest, int direct, boolean isDoor, boolean isLocked,
+    public Exit(int dest, int direct, boolean nowander, boolean isDoor, boolean isLocked,
             Item doorKey) {
+    	noWander = nowander;
         destination = dest;
         direction = direct;
         this.isDoor = isDoor;
@@ -149,6 +153,12 @@ public class Exit {
         }
     }
 
+    public void setNoWander(boolean noWander) {
+    	this.noWander = noWander;
+    }
+    public boolean isNoWander() {
+    	return noWander;
+    }
     public boolean isDoor() {
         return isDoor;
     }
@@ -217,5 +227,21 @@ public class Exit {
         } else {
             return "0" + direction;
         }
+    }
+    
+    public Node toNode(Document doc) {
+        Node n = doc.createElement(getDirectionName());
+        Node ex = Util.nCreate(doc, "vnum", getDestination() + "");
+        n.appendChild(ex);
+        if (isDoor())
+            n.appendChild(Util.nCreate(doc, "door", isOpen() ? "open"
+                    : "closed"));
+        if (isLockable())
+            n.appendChild(Util.nCreate(doc, "lockable", getKey().vnum
+                    + ""));
+        if (isNoWander()) {
+        	n.appendChild(Util.nCreate(doc, "nowander", "true"));
+        }
+        return n;
     }
 }

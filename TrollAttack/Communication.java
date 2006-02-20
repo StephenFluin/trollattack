@@ -172,7 +172,11 @@ public abstract class Communication extends Thread {
         if (shouldWrap) {
             string = wordwrap(string);
         }
-        string = color(string);
+        if(player.shouldColor) {
+        	string = color(string);
+        } else {
+        	string = decolor(string);
+        }
         try{
         	send(string);
         } catch(NullPointerException e) {
@@ -270,5 +274,27 @@ public abstract class Communication extends Thread {
     public static final String DARKCYAN = "&DC";
     public static final String DARKWHITE = "&DW";
 
-
+	public String decolor(String s) {
+	    s = s.replaceAll("([^&]|^)&C", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&P", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&W", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&Y", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&G", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&R", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&B", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&A", "$1" + "");
+	
+	    // Darks
+	    s = s.replaceAll("([^&]|^)&DC", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&DP", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&DW", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&DY", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&DG", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&DR", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&DB", "$1" + "");
+	    s = s.replaceAll("([^&]|^)&DA", "$1" + "");
+	    
+        s = s.replaceAll("&&", "&");
+        return s;
+	}
 }

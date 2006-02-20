@@ -7,6 +7,8 @@
  * to Stephen Fluin.
  */
 package TrollAttack.Commands.abilities;
+import java.util.LinkedList;
+
 import TrollAttack.*;
 import TrollAttack.Commands.*;
 
@@ -46,4 +48,6 @@ public class Scan extends Ability {
         player.tell("You can't see any farther.");
         return true;
     }
+    
+
 }

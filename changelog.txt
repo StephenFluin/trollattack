@@ -1,0 +1,8 @@
+2/18/06  - Updated wandering code to handle exits with nowander, and remove rare problems.
+2/19/06  - Added Track ability
+2/19/06  - Fixed Stats savings for players
+2/19/06  - Updated mset (added reroll)
+2/19/06  - Began shop code (redit shop, list)
+2/19/06  - Added player config
+2/19/06  - Redid damage and armorclass (fight) code
+2/10/06  - Added player config (shouldcolor)

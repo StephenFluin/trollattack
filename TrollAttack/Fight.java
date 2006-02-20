@@ -33,6 +33,8 @@ public class Fight extends Thread {
     public Fight(Being a, Being b) {
         first = a;
         second = b;
+        first.setBeingFighting(second);
+        second.setBeingFighting(first);
         fightRoom = a.getActualRoom();
         pBroadcast[0] = first;
         pBroadcast[1] = second;
@@ -43,8 +45,7 @@ public class Fight extends Thread {
     }
 
     public void run() {
-        first.setBeingFighting(second);
-        second.setBeingFighting(first);
+
         while (first.hitPoints > 0 && second.hitPoints > 0) {
             try {
                 Thread.sleep(1000);
@@ -69,7 +70,7 @@ public class Fight extends Thread {
             loser = first;
         }
         
-        int experienceIncrease = (int) (winner.getAverageHitDamage() * loser.maxHitPoints);
+        int experienceIncrease = (int) (loser.getAverageHitDamage() * loser.maxHitPoints);
         first
         .increaseExperience(experienceIncrease);
         
@@ -89,22 +90,24 @@ public class Fight extends Thread {
 
     }
 
-    public void runRound(Being first, Being second) {
-        double damage;
+    public String runRound(Being first, Being second) {
+        String result = "";
+    	double damage;
         pBroadcast[0] = first;
         pBroadcast[1] = second;
         if (first.hitSkill.roll() >= first.hitLevel) {
-            damage = Math.floor(first.getHitDamage());
+            damage = Math.floor(first.getHitDamage() - (first.getArmorClass() / 10));
                 first
                         .increaseExperience((int) ((second.level - first.level + 5) * damage));
                 first.tell(Util.uppercaseFirst("Your attack " + getDamageString((int)damage) + " " + second.getShort() + ". [" + (int) damage + " damage]"));
 
-            fightRoom.say(Communication.WHITE + "%1 " + getDamageString((int)damage) + " %2. [" + (int) damage + " damage]",
-                    pBroadcast);
             second.hitPoints = second.hitPoints - (int) damage;
+            fightRoom.say(Communication.WHITE + "%1 " + getDamageString((int)damage) + " %2.[" + (int)damage + " damage]", pBroadcast);
+            
         } else {
 
         }
+        return result;
 
     }
     public String getDamageString(int damage) {

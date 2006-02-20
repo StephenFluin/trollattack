@@ -46,6 +46,7 @@ public class Player extends Being {
     private Area area;
     
     public boolean authenticated = false;
+    public boolean shouldColor = true;
 
     public double timePlayed = 0;
 
@@ -286,6 +287,13 @@ public class Player extends Being {
         attribs.add(Util.nCreate(doc, "title", title + ""));
         attribs.add(Util.nCreate(doc, "prompt", getPromptString()));
         attribs.add(Util.nCreate(doc, "class", getClassName() + ""));
+        attribs.add(Util.nCreate(doc, "strength", strength + ""));
+        attribs.add(Util.nCreate(doc, "constitution", constitution + ""));
+        attribs.add(Util.nCreate(doc, "charisma", charisma + ""));
+        attribs.add(Util.nCreate(doc, "dexterity", dexterity + ""));
+        attribs.add(Util.nCreate(doc, "intelligence", intelligence + ""));
+        attribs.add(Util.nCreate(doc, "wisdom", wisdom + ""));
+        attribs.add(Util.nCreate(doc, "shouldcolor", shouldColor + ""));
         
 
         if (getArea() != null)
@@ -433,6 +441,20 @@ public class Player extends Being {
         tell(Communication.CYAN + "Welcome to Troll Attack!  We hope you enjoy your time here.  If you have any questions, send an email to questions@trollattack.com.");
         return password;
     }
+
+	public void setStats(int str, int con, int cha, int dex, int inte, int wis) {
+		strength = str;
+		constitution = con;
+		charisma = cha;
+		dexterity = dex;
+		intelligence = inte;
+		wisdom = wis;
+		
+	}
+
+	public void setFavor(int i) {
+		favor = i;
+	}
 
 
     

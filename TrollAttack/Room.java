@@ -18,7 +18,7 @@ public class Room {
 
     public String description = "", title = "";
 
-    private LinkedList<Item> roomItems = new LinkedList<Item>();
+    public LinkedList<Item> roomItems = new LinkedList<Item>();
 
     public LinkedList<Being> roomBeings = new LinkedList<Being>();
 
@@ -63,20 +63,13 @@ public class Room {
         attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
         attribs.add(Util.nCreate(doc, "title", title));
         attribs.add(Util.nCreate(doc, "description", description + ""));
-        attribs.add(Util.nCreate(doc, "nowander", getNoWander() ? "true" : "false"));
+        if(getNoWander() ) {
+        	attribs.add(Util.nCreate(doc, "nowander", getNoWander() ? "true" : "false"));        	
+        }
         Iterator<Exit> eachExit = roomExits.iterator();
         while (eachExit.hasNext()) {
             Exit exit = eachExit.next();
-            Node n = doc.createElement(exit.getDirectionName());
-            Node ex = Util.nCreate(doc, "vnum", exit.getDestination() + "");
-            n.appendChild(ex);
-            if (exit.isDoor())
-                n.appendChild(Util.nCreate(doc, "door", exit.isOpen() ? "open"
-                        : "closed"));
-            if (exit.isLockable())
-                n.appendChild(Util.nCreate(doc, "lockable", exit.getKey().vnum
-                        + ""));
-            attribs.add(n);
+            attribs.add(exit.toNode(doc));
         }
         /*
          * Node itemList = doc.createElement("itemList");
@@ -239,7 +232,7 @@ public class Room {
     }
 
     public void say(String s, Being ignoreSinglePlayer) {
-        Being[] pBroadcast = { ignoreSinglePlayer, ignoreSinglePlayer };
+        Being[] pBroadcast = { ignoreSinglePlayer };
         say(s, pBroadcast);
     }
 
@@ -250,21 +243,13 @@ public class Room {
     // Any player that matches who they are talking to
     // is replaced with you.
     public void say(String s, Being[] players) {
-        Boolean onList = false;
         try {
             for (Being person : roomBeings) {
                 //TrollAttack.debug("Displaying mesage for: " + person.getShort());
                 String message = s;
-                for (int j = 0; j < ( players.length ); j++) {
-                    try {
-                    	message = message.replaceAll("%" + (j+1), players[j]
-                            .getShort(person));
-                    	//TrollAttack.debug("Replacing %" + (j+1) + " with " + players[j].getShort(person));
-                    } catch (NullPointerException e) {
-                    	//TrollAttack.debug("Tried to say the message '" + message + "' to " + players[j] + "'(" + j + ").");
-                    }
-                }
+                message = Util.replaceBeings(message, players, person);
 
+                //TrollAttack.debug("Message after replaces: " + message);
                 if(players.length > 0 && person == players[0]) {
                     //Ignore this person entirely.
                 } else {
@@ -502,6 +487,18 @@ public class Room {
 	}
 	public void setNoWander(boolean canWanderIntoThisRoom) {
 		this.noWander = canWanderIntoThisRoom;
+	}
+
+    // Makes sure that mobiles don't leave their area, or enter a nowander room.
+	public LinkedList<Exit> getWanderableExits() {
+		LinkedList<Exit> exitList = new LinkedList<Exit>();
+		Area thisArea = Area.testRoom(this, TrollAttack.gameAreas);
+		for(Exit e : roomExits) {
+			if(Area.test(e.getDestination(), TrollAttack.gameAreas) == thisArea && !e.isNoWander()) {
+				exitList.add(e);
+			}
+		}
+		return exitList;
 	}
 
 }

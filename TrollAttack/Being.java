@@ -226,7 +226,15 @@ public class Being implements Cloneable {
     }
     
     public int getHitDamage() {
-        return hitDamage.roll();
+    	int result = hitDamage.roll();
+    	for(Equipment tmpEq : equipment) {
+    		if(tmpEq instanceof Weapon) {
+    			Weapon w = (Weapon)tmpEq;
+    			result += w.damage.roll();
+    		}
+    	}
+    	result += strength / 4;
+    	return hitDamage.roll();
     }
 
     public int getAverageHitDamage() {
@@ -359,8 +367,8 @@ public class Being implements Cloneable {
      */
     public void increaseExperience(int e) {
         experience += e;
-        if (experience > Util.experienceLevel(level)) {
-            tell("You have attained level " + ++level + ".");
+        if (experience > Util.experienceLevel(level) && isPlayer) {
+            tell("You have attained level " + ++level + " (" + experience + "/" + Util.experienceLevel(level) + ").");
             int healthIncrease = (int) (Math.random() * 9) + constitution / 2
                     - 2;
             int manaIncrease = (int) (Math.random() * 9) + wisdom / 2 - 2;
@@ -378,11 +386,9 @@ public class Being implements Cloneable {
             maxManaPoints += manaIncrease;
             movePoints += moveIncrease;
             maxMovePoints += moveIncrease;
-            hitDamage.sizeOfDice += (int) (Math.random() * 3) + strength
-                    - ((strength / 2) < 2 ? 0 : strength / 2 - 2);
+            hitDamage.sizeOfDice += constitution / 6;
             hitDamage.addition++;
-            hitSkill.sizeOfDice += (int) (Math.random() * 1) + dexterity
-                    - ((dexterity / 2) < 2 ? 0 : dexterity / 2 - 2);
+            hitSkill.sizeOfDice += dexterity / 6;
             rehash();
         }
     }
@@ -487,6 +493,7 @@ public class Being implements Cloneable {
             newEaty = (Food) newEat;
         } catch (ClassCastException e) {
             tell("You can't eat that!");
+            return;
         }
         if (hunger < 1) {
             tell( "You are too full to eat that.");
@@ -580,7 +587,7 @@ public class Being implements Cloneable {
             newWearEquipment = (Equipment) newWear;
         } else {
         	if(alertWorld) {
-        		tell( "You don't know how to wear that (Can't make it a piece of eq)!");
+        		tell( "This can't be worn!");
         	}
         	return;
         }
@@ -1069,36 +1076,26 @@ public class Being implements Cloneable {
     }
 
     public void wander() {
-        //TrollAttack.debug(getShort() + " is wandering!");
-        int safety = 5;
-        Roll chance = new Roll("1d" + getActualRoom().roomExits.size());
-        //TrollAttack.debug("Roll looks like: " + chance.toString());
-        Exit randomExit = getActualRoom().roomExits.get(chance.roll() - 1);
-        
-        // Makes sure that mobiles don't leave their area, or enter a nowander room.
-        // randomly guesses at ALL exits 5 times until it finds one that 
-        // is fit for a being to wander into.
-        while(Area.testRoom(randomExit.getDestinationRoom(), TrollAttack.gameAreas) != getActualArea() || randomExit.getDestinationRoom().getNoWander()) {
-            if(safety-- < 0) {
-                TrollAttack.error("Tried " + safety + " times without finding a useable exit for wandering!");
-                return;
-            }
-            try {
-                randomExit = getActualRoom().roomExits.get(chance.roll() - 1);
-            } catch(IndexOutOfBoundsException e) {
-                TrollAttack.error("Index out of bounds error!");
-                e.printStackTrace();
-                TrollAttack.debug("Chance: " + chance.toString() + ", exits: " + getActualRoom().roomExits.size());
-                TrollAttack.debug("Room:" + getActualRoom().vnum + "currentroom: " + currentRoom);
-                TrollAttack.debug("Look Data:" + getActualRoom().look(this));
-            }
-        }
+        LinkedList<Exit> exitList = getActualRoom().getWanderableExits();
+        Roll chance = new Roll("1d" + exitList.size());
+        Exit randomExit = exitList.get(chance.roll() - 1);
+
         ch.handleCommand(randomExit.getDirectionName());
     }
 
 	public void sacAll() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public int getArmorClass() {
+		int result = 0;
+		for(Equipment e : equipment) {
+			if(e instanceof Armor) {
+				result += ((Armor)e).armorClass;
+			}
+		}
+		return 0;
 	}
 
 

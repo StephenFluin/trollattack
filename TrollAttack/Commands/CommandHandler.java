@@ -69,6 +69,8 @@ public class CommandHandler {
 		registerCommand(new Eat("eat"));
 		registerCommand(new Drink("drink"));
 		registerCommand(new Fill("fill"));
+		registerCommand(new List("list"));
+		registerCommand(new Configure("configure"));
 		registerCommand(new Score("score"));
 		registerCommand(new Report("report"));
 		registerCommand(new Remove("remove"));
@@ -745,6 +747,49 @@ public class CommandHandler {
             return true;
 	    }
 	}
+	class List extends Command {
+		public List(String s) { super( s , false); }
+		public boolean execute() {
+			if(player.getActualRoom() instanceof Shop) {
+				Shop s = (Shop)player.getActualRoom();
+				player.tell(s.list());
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+	class Configure extends Command {
+		public Configure(String s) { super(s, false); }
+		public boolean execute() {
+			if(!(player instanceof Player)) {
+				player.tell("Not a player!");
+				return false;
+			}
+			player.tell("Usage: configure <property> True|False" + Util.wrapChar +
+						"Valid Properties: shouldcolor" + Util.wrapChar + Util.wrapChar +
+						"Current Settings:" + Util.wrapChar +
+						"Show Colors: (" + (((Player)player).shouldColor ? "X" : " ") + ")");
+			return false;
+		}
+		public boolean execute(String command) {
+			if(!(player instanceof Player)) {
+				return false;
+			}
+			String[] parts = Util.split(command);
+			if(parts.length != 2) {
+				return execute();
+			}
+			if(parts[0].startsWith("sh")) {
+				((Player)player).shouldColor = new Boolean(parts[1]).booleanValue();
+			} else {
+				player.tell("Not a valid setting.");
+				return execute();
+			}
+			player.tell("You change your settings.");
+			return true;
+		}
+	}
 	class Score extends Command {
 	    public Score(String s) { super( s , false); }
 	    public boolean execute() {
@@ -1290,15 +1335,16 @@ public class CommandHandler {
 	class rList extends Command {
 	    public rList(String s) { super(s, false); }
 	    public boolean execute() {
-		    player.tell(Communication.GREEN +"Rooms in the VNUM range of this area:");
-		    player.tell(Communication.CYAN + "VNUM\tTitle" + Communication.WHITE);
+		    String result = Communication.GREEN +"Rooms in the VNUM range of this area:" + Util.wrapChar;
+		    result += Communication.CYAN + "VNUM\tTitle" + Communication.WHITE;
 		    int high = player.getActualArea().high;
 		    int low = player.getActualArea().low;
 		    for(Room room : TrollAttack.gameRooms) {
 		        if(room.vnum >= low && room.vnum  <= high) {
-		            player.tell(room.vnum + "\t" + room.title);
+		        	result += room.vnum + "\t" + room.title + Util.wrapChar;
 		        }
 		    }
+		    player.tell(result);
             return true;
 		}
 	}
@@ -1462,7 +1508,10 @@ public class CommandHandler {
 	    public rEdit(String s) { super(s); }
 	    public boolean execute() { 
             player.tell("Usage: redit <command>"); 
-            player.tell("Commands: exit, bexit, title, description");
+            player.tell("Commands: exit, bexit, title, description, destroy");
+            player.tell("Examples:");
+            player.tell("redit bexit east 300");
+            player.tell("redit title The Dungeon");
             return false;
         }
 	    public boolean execute( String s ) {

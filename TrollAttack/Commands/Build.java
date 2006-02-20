@@ -42,10 +42,7 @@ public class Build {
         }
        
         
-        if(parts.length < 2) {
-            player.tell(s + " command needs more info.");
-            return;
-        }
+        
         String command = parts[1];
         
         for(int i = 2;i < parts.length;i++) {
@@ -54,11 +51,18 @@ public class Build {
         
         if(s.startsWith("exit")) {
             editExit(command, false);
-            player.tell("You forge a pathway in one direction.");
+            return;
         } else if(s.startsWith("bexit")) {
            editExit(command, true);
-           player.tell("You forge a pathway in both directions.");
-        } else if(s.startsWith("title")) {
+           return;
+        } else if(s.startsWith("shop")) {
+        	editShop(command);
+        }
+        if(parts.length < 2) {
+            player.tell(s + " command needs more info.");
+            return;
+        }
+        if(s.startsWith("title")) {
             player.getActualRoom().title = command;
             player.tell("You change the title of the room.");
         } else if(s.startsWith("desc")) {
@@ -75,8 +79,8 @@ public class Build {
     public void editExit(String s, boolean reciprocol) {
         String[] parts = s.split(" ");
         if(parts.length < 1) {
-            player.tell("Usage: redit bexit <direction> <destination> [door|nodoor] [lockable <key vnum>|notlockable]");
-            player.tell("       redit exit <direction> <destination> [door|nodoor] [lockable <key vnum>|notlockable]");
+            player.tell("Usage: redit bexit <direction> <destination> [door|nodoor] [lockable <key vnum>|notlockable] [wanderable|nowanderable]");
+            player.tell("       redit exit <direction> <destination> [door|nodoor] [lockable <key vnum>|notlockable] [wanderable|nowanderable");
             player.tell("The bexit command will make a link from your current room to the destination, AND a link from the destination to this room.  This is the standard way to make exits.");
             player.tell(Util.wrapChar + "Example: redit bexit east 10023 door");
             return;
@@ -144,12 +148,85 @@ public class Build {
         }
         
     }
+    public void editShop(String command) {
+    	if(command.length() < 1) {
+    		player.tell("Usage: redit shop add <vnum>" + Util.wrapChar +
+    					"       redit shop remove <vnum>" + Util.wrapChar +
+    					"       redit shop create" + Util.wrapChar +
+    					"       redit shop destroy");
+    		return;
+    	}
+    	if(command.startsWith("c")) {
+    		if(player.getActualRoom() instanceof Shop) {
+    			player.tell("This is already a shop.");
+    			return;
+    		} else {
+    			player.tell("You turn this room into a SHOP!");
+    			TrollAttack.replaceRoom(player.getActualRoom(), new Shop(player.getActualRoom()));
+    		}
+    	}
+    	if(player.getActualRoom() instanceof Shop) {
+    		Shop s = ((Shop)player.getActualRoom());
+    		if(command.startsWith("a")) {
+    			Item i = null;
+    			if(Util.split(command).length > 1) {
+    				i = TrollAttack.getItem(Util.intize(Util.split(command)[1]));
+    			}
+        		if(i == null) {
+        			player.tell("That isn't a valid item.");
+        			return;
+        		} else {
+        			s.addShopItem(i);
+        			player.tell("You add " + i.getShort() + " to this shop.");
+        		}
+        	} else if(command.startsWith("r")) {
+        		Item removal = null;
+        		if(Util.split(command).length != 2) {
+        			player.tell("What do you want to remove?");
+        			return;
+        		}
+        		for(Item i : s.shopItems) {
+        			if(Util.contains(i.getShort(),  Util.split(command)[1])) {
+        				removal = i;
+        				break;
+        			}
+        		}
+        		if(removal != null) {
+        			s.shopItems.remove(removal);
+        			player.tell("You remove " + removal.getShort() + " from this shop.");
+        		} else {
+        			player.tell("There is nothing in this shop by that name.");
+        		}
+        		
+        	} else if(command.startsWith("dest")) {
+        		//Room r = new Room(player.getActualRoom());
+        		player.tell("the game doesn't yet know how to convert a shop back to a room, email PeELl and tell him to get off of his but.");
+        	}
+    	} else {
+    		player.tell("You can only do this to a shop!");
+    		return;
+    	}
+    	
+    }
     public void mStat(Being being) {
         player.tell(Util.mStat(being));
     }
     public void rStat(Room room) {
-    	player.tell("Name:\t\t" + room.title + Util.wrapChar +
-    				"No Wander:\t(" + (room.getNoWander() ? "X" : " ") + ")");
+    	String message = "Name:\t\t" + room.title + Util.wrapChar +
+    				"No Wander:\t(" + (room.getNoWander() ? "X" : " ") + ")"+ Util.wrapChar + 
+    				"Shop (" + ( room instanceof Shop ? "X" : " " ) + ")"+ Util.wrapChar;
+    	for(Exit e : room.roomExits) {
+    		message += "Exit " + e.getDirectionName() + " to " + e.getDestination()+ Util.wrapChar;
+    		if(e.isDoor()) {
+    			message += "    Door: " + (e.isOpen() ? "open" : "closed")+ Util.wrapChar;
+    		}
+    		if(e.isLockable()) {
+    			message += "    Lockable: Locked: (" + ( e.isLocked() ? "X" : " " ) + ")  Key=" + e.getKey()+ Util.wrapChar;
+    		}
+    		message += "    No Wander (" + ( e.isNoWander() ? "X" : " " ) + ")"+ Util.wrapChar;
+    		
+    	}
+    	player.tell(message);
     }
     
     
@@ -370,7 +447,10 @@ public class Build {
             } catch(Exception e) {
                 
             }
-            if(attr.compareToIgnoreCase("hp") == 0) {
+            if(attr.compareToIgnoreCase("reroll") == 0) {
+            	Roll c = new Roll("3d6");
+            	mobile.setStatistics(c.roll(), c.roll(), c.roll(), c.roll(), c.roll(), c.roll(), c.roll());
+            } else if(attr.compareToIgnoreCase("hp") == 0) {
                 mobile.hitPoints = intValue;
             } else if(attr.compareToIgnoreCase("hp") == 0) {
                 mobile.hitPoints = intValue;

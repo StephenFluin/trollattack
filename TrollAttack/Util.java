@@ -289,6 +289,21 @@ public class Util {
         return result;
     }
     
+    static public String replaceBeings(String message, Being[] beings, Being forWhom) {
+        for (int j = 0; j < ( beings.length ); j++) {
+            try {
+            	message = message.replaceAll("%" + (j+1), beings[j].getShort(forWhom));
+            	//TrollAttack.debug("Replacing %" + (j+1) + " with " + beings[j].getShort(forWhom));
+            } catch (NullPointerException e) {
+            	//TrollAttack.debug("Tried to say the message '" + message + "' to " + players[j] + "'(" + j + ").");
+            }
+        }
+        return message;
+    }
+    static public String replaceBeings(String message, Being[] beings) {
+    	return replaceBeings(message, beings, null);
+    }
+    
     public static String getMOTD() {
         String MOTD =
              

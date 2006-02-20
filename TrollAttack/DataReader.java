@@ -128,6 +128,9 @@ public class DataReader {
         if (hash.get("thirst") == null) {
             hash.put("thirst", 0 + "");
         }
+        if (hash.get("shouldcolor") == null) {
+        	hash.put("shouldcolor", "true");
+        }
         // TrollAttack.message("About to createa new player (Area " +
         // (String)hash.get("area") + "...");
 
@@ -157,6 +160,14 @@ public class DataReader {
                 .get("password"), 
                 (hash.get("class") != null ? hash.get("class") : "" ) 
                 );
+        p.setFavor( hash.get("favor") != null ? new Integer(hash.get("favor")).intValue() : 0);
+        p.setStats(		hash.get("strength") != null ? new Integer(hash.get("strength")).intValue() : 0,
+        				hash.get("constitution") != null ? new Integer(hash.get("constitution")).intValue() : 0,
+        				hash.get("charisma") != null ? new Integer(hash.get("charisma")).intValue() : 0,
+						hash.get("dexterity") != null ? new Integer(hash.get("dexterity")).intValue() : 0,
+						hash.get("intelligence") != null ? new Integer(hash.get("intelligence")).intValue() : 0,
+						hash.get("wisdom") != null ? new Integer(hash.get("wisdom")).intValue() : 0);
+        p.shouldColor = new Boolean(hash.get("shouldcolor")).booleanValue();
         
         //TrollAttack.debug("Player's class is turning out to be..." + ( hash.get("class") != null ? hash.get("class") : "" ) );
         
@@ -165,7 +176,6 @@ public class DataReader {
         for(Object current : abilities) {
             if(current == null) {
                 TrollAttack.error("Current ability is null when loading pfile!");
-                TrollAttack.debug(abilities.toString());
             } else {
                 Hashtable<String, String> data = null;
                 try {
@@ -334,7 +344,21 @@ public class DataReader {
             } else {
             	noWander = new Boolean(((String)room.get("nowander"))).booleanValue();
             }
-            newRoom = new Room(vnum, title, description, exits);
+            if(room.get("shop") != null) {
+            	newRoom = new Shop(vnum, title, description, exits);
+            	//LinkedList<HashTable<String,Object>> = new
+            	//TrollAttack.debug(room.get("shop").toString());
+            	Hashtable h = (Hashtable)room.get("shop");
+            	if(h.get("item") != null) {
+            		LinkedList<String> items = linkedListify(((Hashtable)room.get("shop")).get("item"));
+                	for(String s : items) {
+                		int i = new Integer(s).intValue();
+                		((Shop)newRoom).addShopItem(TrollAttack.getItem(i));
+                	}
+            	}
+            } else {
+            	newRoom = new Room(vnum, title, description, exits);
+            }
             newRoom.setNoWander(noWander);
             rooms.add(newRoom);
             

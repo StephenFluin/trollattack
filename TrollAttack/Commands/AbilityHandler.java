@@ -13,12 +13,15 @@ import TrollAttack.Commands.abilities.BurningHand;
 import TrollAttack.Commands.abilities.Heal;
 import TrollAttack.Commands.abilities.MagicMissile;
 import TrollAttack.Commands.abilities.Scan;
+import TrollAttack.Commands.abilities.Track;
+
 import java.util.LinkedList;
 
 public class AbilityHandler {
     private LinkedList<Ability>  abilities = new LinkedList<Ability>();
     public AbilityHandler() {
         register(new Scan());
+        register(new Track());
         register(new Heal());
         register(new MagicMissile());
         register(new BurningHand());
