@@ -342,6 +342,10 @@ public class CommandHandler {
 					    return false;
 					}
 				} else {
+					if((item.weight + player.getCarryingWeight()) > player.getCarryingMax()) {
+						player.tell("You aren't strong enough to carry that, it weighs " + item.weight + ".");
+						return false;
+					}
 					player.tell("You get " + item.getShort() + ".");
 					player.roomSay(player.getShort() + " gets " + item.getShort() + ".");
 					player.addItem(item);
@@ -755,6 +759,7 @@ public class CommandHandler {
 				player.tell(s.list());
 				return true;
 			} else {
+				player.tell("This isn't a shop.");
 				return false;
 			}
 		}
@@ -1458,7 +1463,12 @@ public class CommandHandler {
 	        for(int i = 2;i < parts.length;i++) {
 	            keywords += " " + parts[i];
 	        }
-            Item newItem = TrollAttack.getItem(new Integer(parts[0]).intValue());
+	        Item newItem;
+	        try{
+	        	newItem = TrollAttack.getItem(new Integer(parts[0]).intValue());
+	        } catch(NumberFormatException e) {
+	        	return execute();
+	        }
             if(newItem != null) {
                 player.tell("That vnum is already in use. Type 'ilist' to see what items you have already created in this area.");
                 return false;
@@ -1641,6 +1651,7 @@ public class CommandHandler {
 		                
 		            } else {
 		                area.save(TrollAttack.gameRooms, TrollAttack.gameMobiles, TrollAttack.gameItems);
+		                player.tell("You save '" + area.filename + "'.");
 		            }
 	            }
 	        } else {

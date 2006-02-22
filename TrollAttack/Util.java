@@ -265,6 +265,7 @@ public class Util {
                 + mobile.maxMovePoints + wrapChar;
         result += "Level:\t" + mobile.level + "\t" + "Gold:\t" + mobile.gold
                 + wrapChar;
+        result += "Carrying:\t" + mobile.getCarryingWeight() + " (Max: " + mobile.getCarryingMax() + ")" + Util.wrapChar;
         result += "Strength:\t" + mobile.strength + "\t" + "Constitution:\t" + mobile.constitution
         	+ wrapChar;
         result += "Charisma:\t" + mobile.charisma + "\t" + "Dexterity:\t" + mobile.dexterity

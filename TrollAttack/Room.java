@@ -43,7 +43,13 @@ public class Room {
             exit.setRoom(this);
         }
     }
-
+	public Room(Shop s) {
+		this(s.vnum, s.title, s.description, s.roomExits);
+		roomBeings = s.roomBeings;
+		setNoWander(getNoWander());
+		roomItems = s.roomItems;
+		TrollAttack.replaceRoom(s, this);
+	}
     public String toString() {
         String returnValue = vnum + ":" + title;
         int i = 0;
@@ -71,6 +77,11 @@ public class Room {
             Exit exit = eachExit.next();
             attribs.add(exit.toNode(doc));
         }
+        
+        if(this instanceof Shop) {
+        	attribs.add(((Shop)this).toShopNode(doc));
+        }
+        
         /*
          * Node itemList = doc.createElement("itemList");
          * 

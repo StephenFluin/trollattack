@@ -1,8 +1,13 @@
-2/18/06  - Updated wandering code to handle exits with nowander, and remove rare problems.
-2/19/06  - Added Track ability
-2/19/06  - Fixed Stats savings for players
-2/19/06  - Updated mset (added reroll)
-2/19/06  - Began shop code (redit shop, list)
-2/19/06  - Added player config
-2/19/06  - Redid damage and armorclass (fight) code
-2/10/06  - Added player config (shouldcolor)
+2/18/06 - Updated wandering code to handle exits with nowander, and remove rare problems.
+2/19/06 - Added Track ability
+2/19/06 - Fixed Stats savings for players
+2/19/06 - Updated mset (added reroll)
+2/19/06 - Began shop code (redit shop, list)
+2/19/06 - Added player config
+2/19/06 - Redid damage and armorclass (fight) code
+2/19/06 - Added player config (shouldcolor)
+2/21/06 - Fixed nowander exits
+2/21/06 - Finished shop creation/destroying code
+2/21/06 - Added "buy" command.
+2/21/06 - Made fountains not pickupable.
+Upgrade to version 0.82

@@ -70,7 +70,7 @@ public class TrollAttack {
 
     public static int maxIdleTime= 60 * 30;
 
-    public static String version = "0.81";
+    public static String version = "0.82";
 
     public static void main(String[] args) {
         message("Starting TrollAttack, version: " + version);
@@ -330,8 +330,14 @@ public class TrollAttack {
        
     }
 
-	public static void replaceRoom(Room r, Shop shop) {
+	public static void replaceRoom(Room r, Room newRoom) {
+		if(!gameRooms.contains(r)) {
+			TrollAttack.error("Room list doesn't contain the room we are trying to replace.");
+		}
+		if(gameRooms.contains(newRoom)) {
+			TrollAttack.error("Room list already contains the room we are trying to replace with.");
+		}
 		gameRooms.remove(r);
-		gameRooms.add(shop);
+		gameRooms.add(newRoom);
 	}
 }

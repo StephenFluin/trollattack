@@ -1098,6 +1098,22 @@ public class Being implements Cloneable {
 		return 0;
 	}
 
+	public int getCarryingMax() {
+		if(level > 50 || isBuilder()) {
+			return 100000;
+		}
+		return strength * 15;
+	}
+
+	public int getCarryingWeight() {
+		int weight = 0;
+		for(Item i : beingItems) {
+			weight += i.weight;
+		}
+		return weight;
+	}
+	
+
 
 
 

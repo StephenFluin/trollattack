@@ -41,9 +41,12 @@ public class Build {
         	return;
         }
        
-        
-        
-        String command = parts[1];
+        String command;
+        if(parts.length > 1) {
+        	command = parts[1];
+        } else {
+        	command = "";
+        }
         
         for(int i = 2;i < parts.length;i++) {
             command += " " + parts[i];
@@ -133,6 +136,24 @@ public class Build {
                     bexit.setDoor(true);
                 }
             }
+            if(Util.contains(s, "nowander")) {
+            	exit.setNoWander(!exit.isNoWander());
+            	String message = "";
+            	if(exit.isNoWander()) {
+            		message = "Mobiles can no longer wander to the " + exit.getDirectionName() + ".";
+            	} else {
+            		message = "Mobiles can once again wander to the " + exit.getDirectionName() + ".";
+            	}
+            	if(reciprocol) {
+            		bexit.setNoWander(exit.isNoWander());
+            		if(bexit.isNoWander()) {
+                		message += Util.wrapChar + "Mobiles can no longer wander from the " + exit.getDirectionName() + ".";
+                	} else {
+                		message += "Mobiles can once again wander from the " + exit.getDirectionName() + ".";
+                	}
+            	}
+            	player.tell(message);
+            }
             if(Util.contains(s, "lockable")) {
                 Item key = null;
                 try {
@@ -162,7 +183,11 @@ public class Build {
     			return;
     		} else {
     			player.tell("You turn this room into a SHOP!");
-    			TrollAttack.replaceRoom(player.getActualRoom(), new Shop(player.getActualRoom()));
+    			Room r = player.getActualRoom();
+    			Shop s = new Shop(player.getActualRoom());
+    			TrollAttack.replaceRoom(player.getActualRoom(), s);
+
+    			return;
     		}
     	}
     	if(player.getActualRoom() instanceof Shop) {
@@ -199,8 +224,9 @@ public class Build {
         		}
         		
         	} else if(command.startsWith("dest")) {
-        		//Room r = new Room(player.getActualRoom());
-        		player.tell("the game doesn't yet know how to convert a shop back to a room, email PeELl and tell him to get off of his but.");
+        		Room r = new Room(s);
+        		player.tell("You turn this shop back into a normal room!");
+        		TrollAttack.replaceRoom(player.getActualRoom(), r);
         	}
     	} else {
     		player.tell("You can only do this to a shop!");
@@ -397,10 +423,12 @@ public class Build {
                     return;
                 } else if(item.getType().compareToIgnoreCase(Armor.getItemType()) == 0) {
                     Armor armor = (Armor)item;
-                    if(attr.compareToIgnoreCase("ac") == 0) {
+                    if(attr.compareToIgnoreCase("ac") == 0 || attr.compareToIgnoreCase("armorclass") == 0) {
                         armor.setArmorClass(Util.intize(player, value));
+                        player.tell("You set " + armor.getShort() + "'s armor class to " + value + ".");
                     } else if(attr.startsWith("wear")) {
                         armor.setWearLocation(value);
+                        player.tell("You set " + armor.getShort() + "'s wear location to " + value + ".");
                     }
                     return;
                 } else if(item.getType().compareToIgnoreCase(Food.getItemType()) == 0) {

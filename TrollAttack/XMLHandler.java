@@ -51,6 +51,7 @@ public class XMLHandler {
          * I would like section to look like this: item=List[x] { [1]: {vnum=1,
          * name=sword} [2]: {vnum=2, name=sword2, ... , item=List[2] {...}}
          */
+        //TrollAttack.debug(sections.toString());
         return sections;
     }
 
