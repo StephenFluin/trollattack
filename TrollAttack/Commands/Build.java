@@ -40,6 +40,41 @@ public class Build {
         	}
         	return;
         }
+        if(s.startsWith("nof")) {
+        	if(parts.length != 2) {
+        		player.tell("Usage: redit nofloor <damage>");
+        		return;
+        	}
+        	int noFloor = player.getActualRoom().noFloor;
+        	if(noFloor != 0) {
+        		player.getActualRoom().noFloor = 0;
+        		player.tell("You prevent beings from falling through the floor.");
+        	} else {
+        		player.getActualRoom().noFloor = Util.intize(player, parts[1]);
+        		player.tell("You remove the floor from the room, allowing creatures to fall to the room below causing " + player.getActualRoom().noFloor + " damage.");
+        	}
+        	return;
+        }
+        if(s.startsWith("pus")) {
+        	if(parts.length == 1 && player.getActualRoom().push != null) {
+        		player.tell("You eliminate the pushing forces from this room.");
+        		player.getActualRoom().push = null;
+        		return;
+        	} else if(parts.length >= 4) {
+        		String message = parts[3];
+        		for(int i = 4;i<parts.length;i++) {
+        			message += " " + parts[i];
+        		}
+        		int dir = Exit.getDirection(parts[1]);
+        		int wait = Util.intize(parts[2]);
+        		
+        		Push p = new Push(dir , wait, message);
+        		player.getActualRoom().push = p;
+        		player.tell("You create a pushing force that will send beings to the " + Exit.directionName(dir) + " after " + wait/1000 + " seconds.");
+        	} else {
+        		player.tell("Usage: redit push <direction> <wait> <message>");
+        	}
+        }
        
         String command;
         if(parts.length > 1) {
@@ -313,14 +348,6 @@ public class Build {
         } else if(s.startsWith("high")) {
             area.high = Util.intize(player, command);
             player.tell("Area range changed to " + area.low + "-" + area.high + ".");
-        }  else {
-            player.tell("Usage: area <command> <value>");
-            player.tell("Possible Commands:");
-            player.tell("\tfilename <new file name>");
-            player.tell("\tname <new name>");
-            player.tell("\thigh <new high vnum>");
-            player.tell("\tlow <new low vnum>");
-            return;
         }
         
         
@@ -357,10 +384,10 @@ public class Build {
             
         }
     }
-    public void area() {
+    public String area() {
 
-        player.tell("Your area " + (player.getArea().frozen ? "<frozen>" : "") + ": " + player.getArea().filename + "\n" + player.getArea().name);
-        player.tell("Vnum range:\t" + player.getArea().low + "-" + player.getArea().high);
+        return "Your area " + (player.getArea().frozen ? "<frozen>" : "") + ": " + player.getArea().filename + "\n" + player.getArea().name + Util.wrapChar +
+        "Vnum range:\t" + player.getArea().low + "-" + player.getArea().high;
         
     }
     public void iSet(String[] parts) {

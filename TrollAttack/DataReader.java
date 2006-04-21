@@ -131,6 +131,9 @@ public class DataReader {
         if (hash.get("shouldcolor") == null) {
         	hash.put("shouldcolor", "true");
         }
+        if (hash.get("showvnums") == null) {
+        	hash.put("showvnums", "false");
+        }
         // TrollAttack.message("About to createa new player (Area " +
         // (String)hash.get("area") + "...");
 
@@ -329,9 +332,11 @@ public class DataReader {
 
         LinkedList rooms = new LinkedList();
         int vnum = 0;
+        int water = 0;
         LinkedList<Exit> exits;
         String title = "", description = "";
         boolean noWander = false;
+        int noFloor = 0;
 
         // Cycle through each of the rooms in the linked list.
         for(Hashtable room : roomList) {
@@ -344,6 +349,8 @@ public class DataReader {
             } else {
             	noWander = new Boolean(((String)room.get("nowander"))).booleanValue();
             }
+
+            
             if(room.get("shop") != null) {
             	newRoom = new Shop(vnum, title, description, exits);
             	//LinkedList<HashTable<String,Object>> = new
@@ -361,6 +368,30 @@ public class DataReader {
             }
             newRoom.setNoWander(noWander);
             rooms.add(newRoom);
+            
+            if(room.get("nofloor") == null) {
+            	noFloor = 0;
+            } else {
+            	noFloor = new Integer(((String)room.get("nofloor"))).intValue();
+            }
+            newRoom.noFloor = noFloor;
+            // 0 Means dry, 1 means water-air match, 2 means underwater
+            if(room.get("water") == null) {
+            	water = 0;
+            } else {
+            	water = new Integer(((String)room.get("water"))).intValue();
+            }
+            newRoom.water = water;
+            
+            if(room.get("push") != null) {
+            	Hashtable<String, String> data = (Hashtable<String, String>)room.get("push");
+            	int direction = Exit.getDirection(data.get("direction"));
+            	int wait = new Integer(data.get("wait")).intValue();
+            	String message = data.get("message");
+            	Push push = new Push(direction, wait, message);
+            	newRoom.push = push;
+            }
+            
             
             // Goes through all known exits and checks the hash for them.
             for (int i = 1; i < Exit.directionList.length; i++) {
@@ -555,7 +586,13 @@ public class DataReader {
                     hitLevel, hitSkill, hitDamage, clicks, shortDesc, longDesc, wander);
             newMobile.canTeach = canTeach;
             newMobile.setBeingClass( ( mobile.get("class") != null ? mobile.get("class") : "" ) );
-            
+            newMobile.gold = (mobile.get("gold") != null ? new Integer(mobile.get("gold")).intValue() : 0);
+            newMobile.setStats(		mobile.get("strength") != null ? new Integer(mobile.get("strength")).intValue() : 0,
+    				mobile.get("constitution") != null ? new Integer(mobile.get("constitution")).intValue() : 0,
+    				mobile.get("charisma") != null ? new Integer(mobile.get("charisma")).intValue() : 0,
+					mobile.get("dexterity") != null ? new Integer(mobile.get("dexterity")).intValue() : 0,
+					mobile.get("intelligence") != null ? new Integer(mobile.get("intelligence")).intValue() : 0,
+					mobile.get("wisdom") != null ? new Integer(mobile.get("wisdom")).intValue() : 0);
             //System.out.println("Created: " + itemList[vnum].toString());
             mobiles.add(newMobile);
         }

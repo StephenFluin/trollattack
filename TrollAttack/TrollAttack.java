@@ -70,7 +70,7 @@ public class TrollAttack {
 
     public static int maxIdleTime= 60 * 30;
 
-    public static String version = "0.82";
+    public static String version = "0.84";
 
     public static void main(String[] args) {
         message("Starting TrollAttack, version: " + version);
@@ -124,7 +124,8 @@ public class TrollAttack {
     }
 
     static public void message(String string) {
-        System.out.println("SYSTEM:" + string);
+    	cal = new GregorianCalendar();
+        System.out.println("(" + TrollAttack.cal.getTime().toString() + ") "  + string);
     }
 
     static public Player getPlayer(String s) {

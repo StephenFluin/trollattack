@@ -58,6 +58,36 @@ public class CommandMove extends Command {
                 }
             }
             
+            // Deal with specially typed rooms that we enter.
+            // If the room has a push, set up a thread to wait and do it without blocking anyone.
+            if(player.getActualRoom().push != null) {
+            	player.getActualRoom().push.execute(player);
+            }
+            
+            // If the room has no floor, DROP them!
+            if(player.getActualRoom().noFloor != 0) {
+            	Room destination = player.getActualRoom().getLink(Exit.DOWN);
+            	if(destination == null) {
+            		
+            	} else {
+            		int damage = player.getActualRoom().noFloor;
+            		player.roomSay(player.getShort() + " falls down as they enter the room.");
+            		player.getActualRoom().removeBeing(player);
+            		String rNum = "";
+            		if(player.isBuilder()) {
+            			rNum = " (" + player.getActualRoom().vnum + ")";
+            		}
+            		
+            		player.setCurrentRoom(destination);
+            		destination.addBeing(player);
+            		;
+            		
+            		player.tell("You fall down as you enter a room without a floor, causing " +  damage + " damage." + rNum);
+            		player.increaseHitPoints(-(damage));
+            		player.roomSay(Util.uppercaseFirst(player.getShort()) + " falls from above.");
+            	}
+            }
+            
 		} else {
 			player.tell(Communication.GREEN + "Alas, you cannot go that way.");
             return false;

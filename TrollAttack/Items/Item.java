@@ -112,6 +112,7 @@ public class Item implements Cloneable {
 		    attribs.add(Util.nCreate(doc, "long", longDesc + ""));
 		    attribs.add(Util.nCreate(doc, "weight", weight + ""));
 		    attribs.add(Util.nCreate(doc, "type", getType() + ""));
+		    attribs.add(Util.nCreate(doc, "cost", cost + ""));
 		    attribs.add(getTypeNode(doc));
 		    for(int i = 0; i < attribs.length(); i++) {
 		        

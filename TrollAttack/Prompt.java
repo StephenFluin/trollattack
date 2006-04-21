@@ -51,6 +51,7 @@ public class Prompt {
         prompt = prompt.replaceAll("%X", experienceToLevel + "");
         prompt = prompt.replaceAll("%r", roomVnum + "");
         prompt = prompt.replaceAll("%g", gold + "");
+        prompt = prompt.replaceAll("%c", Util.wrapChar);
         return prompt;
     }
 

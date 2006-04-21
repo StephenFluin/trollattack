@@ -350,6 +350,7 @@ public class Being implements Cloneable {
 
     public void increaseHitPoints(int increase) {
         hitPoints += increase;
+        //TrollAttack.debug("HP is now " + hitPoints + " for " + getShort() + " - " + increase);
         if (hitPoints > maxHitPoints) {
             hitPoints = maxHitPoints;
         }
@@ -675,7 +676,7 @@ public class Being implements Cloneable {
             forFloor.add(droppable);
         }
         for(Equipment e : forFloor) {
-        	equipment.remove(forFloor);
+        	equipment.remove(e);
         	getActualRoom().addItem(e);
         }
 
@@ -734,6 +735,16 @@ public class Being implements Cloneable {
         tell("Mobiles don't need to save, use savearea.");
     }
 
+	public void setStats(int str, int con, int cha, int dex, int inte, int wis) {
+		strength = str;
+		constitution = con;
+		charisma = cha;
+		dexterity = dex;
+		intelligence = inte;
+		wisdom = wis;
+		
+	}
+    
     public Communication getCommunication() {
         return null;
     }

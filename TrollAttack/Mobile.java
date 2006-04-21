@@ -99,7 +99,13 @@ public class Mobile extends Being implements Cloneable {
                 : "false"));
         attribs.add(Util.nCreate(doc, "wander", isWanderer() ? "true" : "false"));
         attribs.add(Util.nCreate(doc, "class", getClassName() + ""));
-
+        attribs.add(Util.nCreate(doc, "gold", gold + ""));
+        attribs.add(Util.nCreate(doc, "strength", strength + ""));
+        attribs.add(Util.nCreate(doc, "constitution", constitution + ""));
+        attribs.add(Util.nCreate(doc, "charisma", charisma + ""));
+        attribs.add(Util.nCreate(doc, "dexterity", dexterity + ""));
+        attribs.add(Util.nCreate(doc, "intelligence", intelligence + ""));
+        attribs.add(Util.nCreate(doc, "wisdom", wisdom + ""));
         for(Node newAttrib : attribs) {
             m.appendChild(newAttrib);
         }

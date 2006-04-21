@@ -47,6 +47,7 @@ public class Player extends Being {
     
     public boolean authenticated = false;
     public boolean shouldColor = true;
+    public boolean showVnum = false;
 
     public double timePlayed = 0;
 
@@ -294,6 +295,7 @@ public class Player extends Being {
         attribs.add(Util.nCreate(doc, "intelligence", intelligence + ""));
         attribs.add(Util.nCreate(doc, "wisdom", wisdom + ""));
         attribs.add(Util.nCreate(doc, "shouldcolor", shouldColor + ""));
+        attribs.add(Util.nCreate(doc, "showvnums", showVnum + ""));
         
 
         if (getArea() != null)
@@ -442,15 +444,6 @@ public class Player extends Being {
         return password;
     }
 
-	public void setStats(int str, int con, int cha, int dex, int inte, int wis) {
-		strength = str;
-		constitution = con;
-		charisma = cha;
-		dexterity = dex;
-		intelligence = inte;
-		wisdom = wis;
-		
-	}
 
 	public void setFavor(int i) {
 		favor = i;

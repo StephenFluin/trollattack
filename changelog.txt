@@ -11,3 +11,15 @@
 2/21/06 - Added "buy" command.
 2/21/06 - Made fountains not pickupable.
 Upgrade to version 0.82
+3/01/06 - Fixed nowander rooms.
+3/01/06 - Fixed DropAllEquipment (wasn't removing)
+3/02/06 - Updated area command
+3/02/06 - Created aSet command
+3/02/06 - Created buy command
+3/02/06 - Added more attributes to mobiles.
+3/05/06 - Finished and tested Push and NoFloor room properties.
+3/06/06 - Added "showvnums" config.
+Upgrade to version .83
+3/20/06 - Fixed timestamp on system messages.
+4/21/06 - Added additional prompt code.
+Upgrade to version .84

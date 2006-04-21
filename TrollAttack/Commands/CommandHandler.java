@@ -70,6 +70,7 @@ public class CommandHandler {
 		registerCommand(new Drink("drink"));
 		registerCommand(new Fill("fill"));
 		registerCommand(new List("list"));
+		registerCommand(new Buy("buy"));
 		registerCommand(new Configure("configure"));
 		registerCommand(new Score("score"));
 		registerCommand(new Report("report"));
@@ -764,6 +765,34 @@ public class CommandHandler {
 			}
 		}
 	}
+	class Buy extends Command {
+		public Buy(String s) { super( s, false); }
+		public boolean execute() {
+			player.tell("Usage: buy <item>");
+			return false;
+		}
+		public boolean execute(String s) {
+			if(!(player.getActualRoom() instanceof Shop)) {
+				player.tell("This isn't a shop.");
+				return false;
+			}
+			Shop shop = (Shop)player.getActualRoom();
+			for(Item i : shop.shopItems) {
+				if(Util.contains(i.getName(), s)) {
+					if(player.gold > i.cost) {
+						player.gold -= i.cost;
+						player.addItem((Item)i.clone());
+						player.tell("You purchase " + i.getShort());
+						return true;
+					} else {
+						player.tell("You don't have enough money to buy that!");
+						return false;
+					}
+				}
+			}
+			return false;
+		}
+	}
 	class Configure extends Command {
 		public Configure(String s) { super(s, false); }
 		public boolean execute() {
@@ -771,10 +800,14 @@ public class CommandHandler {
 				player.tell("Not a player!");
 				return false;
 			}
-			player.tell("Usage: configure <property> True|False" + Util.wrapChar +
+			String string = "Usage: configure <property> True|False" + Util.wrapChar +
 						"Valid Properties: shouldcolor" + Util.wrapChar + Util.wrapChar +
 						"Current Settings:" + Util.wrapChar +
-						"Show Colors: (" + (((Player)player).shouldColor ? "X" : " ") + ")");
+						"Show Colors: (" + (((Player)player).shouldColor ? "X" : " ") + ")";
+			if(player instanceof Player && player.isBuilder()) {
+				string += Util.wrapChar + "Show Vnums: (" + (((Player)player).showVnum ? "X" : " ") + ")";
+			}
+			player.tell(string);
 			return false;
 		}
 		public boolean execute(String command) {
@@ -785,8 +818,10 @@ public class CommandHandler {
 			if(parts.length != 2) {
 				return execute();
 			}
-			if(parts[0].startsWith("sh")) {
+			if(parts[0].startsWith("shou")) {
 				((Player)player).shouldColor = new Boolean(parts[1]).booleanValue();
+			} if(parts[0].startsWith("show") && player.isBuilder()) {
+				((Player)player).showVnum = new Boolean(parts[1]).booleanValue();
 			} else {
 				player.tell("Not a valid setting.");
 				return execute();
@@ -1518,7 +1553,7 @@ public class CommandHandler {
 	    public rEdit(String s) { super(s); }
 	    public boolean execute() { 
             player.tell("Usage: redit <command>"); 
-            player.tell("Commands: exit, bexit, title, description, destroy");
+            player.tell("Commands: exit, bexit, title, description, nowander, nofloor, destroy");
             player.tell("Examples:");
             player.tell("redit bexit east 300");
             player.tell("redit title The Dungeon");
@@ -1609,16 +1644,50 @@ public class CommandHandler {
 	class myArea extends Command {
 	    public myArea(String s) { super(s); }
 	    public boolean execute() {
-	            return execute("");
-	    }
-	    public boolean execute(String s) {
-	        if(player.getArea() == null) {
+	    	if(player.getArea() == null) {
 	            player.tell("You don't have an area!");
-	            return false;
+	        } else {
+	        	player.tell(builder.area());
 	        }
-	        builder.aSet(player.getArea(), s );
-            return true;
+          return false;
 	    }
+	}
+	class aSet extends Command {
+		public aSet(String s) { super(s); }
+		public boolean execute(String s) {
+			if(player.getArea() == null) {
+				player.tell("You don't have an area!");
+				return false;
+			} else {
+				if(player.level > 55) {
+					Area edit = null;
+					for(Area a : TrollAttack.gameAreas) {
+						if(a.filename.startsWith(s)) {
+							edit = a;
+							break;
+						}
+					}
+					if(edit == null) {
+						player.tell("There is no such area.");
+					} else {
+						String[] parts = s.split(" ");
+						if(parts.length < 2) {
+							return execute();
+						}
+						String command = parts[1];
+						for(int i = 2;i<parts.length;i++) {
+							command += " " + parts[i];
+						}
+						builder.aSet(edit, command);
+					}
+				} else {
+					player.tell("You aren't high enough level to do this, ask someone 55 and up!");
+					return false;
+				}
+			}
+			return true;
+		}
+		
 	}
 	class Savearea extends Command {
 	    public Savearea(String s) {
@@ -1640,9 +1709,12 @@ public class CommandHandler {
 	    public boolean execute(String s) {
 	        if(player.level >= 60) {
 	            if(s.compareToIgnoreCase("all") == 0 ) {
+	            	int i = 0;
 		            for(Area area : TrollAttack.gameAreas ) {
 		                area.save(TrollAttack.gameRooms, TrollAttack.gameMobiles, TrollAttack.gameItems);
+		                i++;
 		            }
+		            player.tell("You save " + i + " areas.");
 	            } else {
 		            Area area = Area.findArea(s,TrollAttack.gameAreas);
 		            if(area == null) {

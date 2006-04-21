@@ -15,6 +15,9 @@ public class Room {
     //public Exit east, west , north, south, northEast, northWest, southEast,
     // southWest, up, down;
     private boolean noWander = false;
+    public int noFloor = 0;
+    public Push push = null;
+    public int water = 0;
 
     public String description = "", title = "";
 
@@ -71,6 +74,15 @@ public class Room {
         attribs.add(Util.nCreate(doc, "description", description + ""));
         if(getNoWander() ) {
         	attribs.add(Util.nCreate(doc, "nowander", getNoWander() ? "true" : "false"));        	
+        }
+        if(noFloor != 0) {
+        	attribs.add(Util.nCreate(doc, "nofloor", noFloor + ""));
+        }
+        if(water > 0) {
+        	attribs.add(Util.nCreate(doc, "water", water + ""));
+        }
+        if(push != null) {
+        	attribs.add(push.toNode(doc));
         }
         Iterator<Exit> eachExit = roomExits.iterator();
         while (eachExit.hasNext()) {
@@ -225,7 +237,11 @@ public class Room {
             }
 
         }
-        String look = Communication.WHITE + title + Util.wrapChar +
+        String vnumString = "";
+        if(player instanceof Player && ((Player)player).showVnum) {
+        	vnumString = " <" + vnum + ">";
+        }
+        String look = Communication.WHITE + title + vnumString + Util.wrapChar +
                     Communication.YELLOW + description + Util.wrapChar +
                     Communication.WHITE + exits + Util.wrapChar + 
                     objects +
@@ -505,7 +521,7 @@ public class Room {
 		LinkedList<Exit> exitList = new LinkedList<Exit>();
 		Area thisArea = Area.testRoom(this, TrollAttack.gameAreas);
 		for(Exit e : roomExits) {
-			if(Area.test(e.getDestination(), TrollAttack.gameAreas) == thisArea && !e.isNoWander()) {
+			if(Area.test(e.getDestination(), TrollAttack.gameAreas) == thisArea && !e.isNoWander() && !e.getDestinationRoom().getNoWander()) {
 				exitList.add(e);
 			}
 		}

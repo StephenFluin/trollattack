@@ -6,6 +6,7 @@ follow caused an infinite loop saying "you aren't following anything"
 eating/drinking needs to be bounded better
 Fix Experience System
 script to grid tabbed data
+"scan nw"
 
 Help files
 Convert .are files to my xml format.
