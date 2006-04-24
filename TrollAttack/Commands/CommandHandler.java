@@ -801,9 +801,10 @@ public class CommandHandler {
 				return false;
 			}
 			String string = "Usage: configure <property> True|False" + Util.wrapChar +
-						"Valid Properties: shouldcolor" + Util.wrapChar + Util.wrapChar +
+						"Valid Properties: shouldcolor, extraformatting" + Util.wrapChar + Util.wrapChar +
 						"Current Settings:" + Util.wrapChar +
-						"Show Colors: (" + (((Player)player).shouldColor ? "X" : " ") + ")";
+						"Show Colors: (" + (((Player)player).shouldColor ? "X" : " ") + ")" + Util.wrapChar +
+						"Extra Formatting: (" + (((Player)player).extraFormatting ? "X" : " ") + ")";
 			if(player instanceof Player && player.isBuilder()) {
 				string += Util.wrapChar + "Show Vnums: (" + (((Player)player).showVnum ? "X" : " ") + ")";
 			}
@@ -820,8 +821,10 @@ public class CommandHandler {
 			}
 			if(parts[0].startsWith("shou")) {
 				((Player)player).shouldColor = new Boolean(parts[1]).booleanValue();
-			} if(parts[0].startsWith("show") && player.isBuilder()) {
+			} else if(parts[0].startsWith("show") && player.isBuilder()) {
 				((Player)player).showVnum = new Boolean(parts[1]).booleanValue();
+			} else if(parts[0].startsWith("ext")) {
+				((Player)player).extraFormatting = new Boolean(parts[1]).booleanValue();
 			} else {
 				player.tell("Not a valid setting.");
 				return execute();

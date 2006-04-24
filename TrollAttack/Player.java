@@ -47,6 +47,7 @@ public class Player extends Being {
     
     public boolean authenticated = false;
     public boolean shouldColor = true;
+    public boolean extraFormatting = false;
     public boolean showVnum = false;
 
     public double timePlayed = 0;
@@ -295,6 +296,7 @@ public class Player extends Being {
         attribs.add(Util.nCreate(doc, "intelligence", intelligence + ""));
         attribs.add(Util.nCreate(doc, "wisdom", wisdom + ""));
         attribs.add(Util.nCreate(doc, "shouldcolor", shouldColor + ""));
+        attribs.add(Util.nCreate(doc, "extraformatting", extraFormatting + ""));
         attribs.add(Util.nCreate(doc, "showvnums", showVnum + ""));
         
 

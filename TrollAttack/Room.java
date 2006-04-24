@@ -213,6 +213,9 @@ public class Room {
             } else {
                 color = Communication.GREEN;
             }
+            if(player instanceof Player && ((Player)player).extraFormatting) {
+            	color += "I:";
+            }
             objects += color + currentItem.getLong();
             objects += Util.wrapChar;
             n++;
@@ -231,17 +234,26 @@ public class Room {
             Being currentBeing = eachBeing.next();
             //TrollAttack.debug("Found mobile " + currentBeing.toString());
             if (currentBeing != player) {
+            	if(player instanceof Player && ((Player)player).extraFormatting) {
+                	mobiles += "M:";
+                }
                 mobiles += Communication.PURPLE + currentBeing.getLong();
                 mobiles += Util.wrapChar;
             } else {
             }
 
         }
-        String vnumString = "";
-        if(player instanceof Player && ((Player)player).showVnum) {
-        	vnumString = " <" + vnum + ">";
+        String vnumString = "", extraFormatting = "";
+        if(player instanceof Player) {
+        	if(((Player)player).showVnum) {
+        		vnumString = " <" + vnum + ">";
+        	}
+        	if(((Player)player).extraFormatting) {
+        		extraFormatting = "<>";
+        	}
         }
-        String look = Communication.WHITE + title + vnumString + Util.wrapChar +
+        
+        String look = Communication.WHITE + extraFormatting + title + vnumString + extraFormatting + Util.wrapChar +
                     Communication.YELLOW + description + Util.wrapChar +
                     Communication.WHITE + exits + Util.wrapChar + 
                     objects +

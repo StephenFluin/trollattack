@@ -109,6 +109,7 @@ public class TelnetServer extends Communication {
                 line = line.substring(0,location-1) + line.substring(location+1);
             }
         }
+        TrollAttack.debug(line);
         return line;
     }
     public void send(String string) {
