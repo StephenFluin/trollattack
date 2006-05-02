@@ -175,6 +175,7 @@ public class DataReader {
 						hash.get("wisdom") != null ? new Integer(hash.get("wisdom")).intValue() : 0);
         p.shouldColor = new Boolean(hash.get("shouldcolor")).booleanValue();
         p.extraFormatting = new Boolean(hash.get("extraformatting")).booleanValue();
+        p.showVnum = new Boolean(hash.get("showvnums")).booleanValue();
         
         //TrollAttack.debug("Player's class is turning out to be..." + ( hash.get("class") != null ? hash.get("class") : "" ) );
         
