@@ -19,15 +19,17 @@ public class Background extends Thread {
     public void run() {
         while (!TrollAttack.gameOver) {
 
-            /**
-             * Every 60 seconds, CLICK!
-             */
+            
             
             if (time % 10 == 0) {
                 TrollAttack.healBeings();
                 TrollAttack.wanderLust();
                 
             }
+            
+            /**
+             * Every 60 seconds, CLICK!
+             */
             if (time % 60 == 0) {
                 for (Reset reset : TrollAttack.gameResets) {
                     reset.run();
@@ -40,6 +42,7 @@ public class Background extends Thread {
             }
             if (time % (60 * 30) == 0) {
                 TrollAttack.hungerStrike(6);
+               
             }
 
 
