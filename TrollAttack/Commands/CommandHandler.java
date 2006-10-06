@@ -1631,6 +1631,8 @@ public class CommandHandler {
 	    public iSet(String s) { super(s, false); }
 	    public boolean execute() {
 	        player.tell("Usage: iset <item name> <attribute> <value>");
+	        player.tell("Possible attributes:");
+	        player.tell("name short long weight cost type");
             return false;
 	    }
 	    public boolean execute(String s) {
