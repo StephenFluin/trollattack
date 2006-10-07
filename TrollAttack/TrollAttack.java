@@ -27,7 +27,9 @@ import TrollAttack.Classes.Class;
 
 
 public class TrollAttack {
-    static Document document;
+	public static String version = "0.84.5";
+	
+	static Document document;
 
     static public boolean gameOver = false;
     
@@ -70,7 +72,7 @@ public class TrollAttack {
 
     public static int maxIdleTime= 60 * 30;
 
-    public static String version = "0.84";
+    
 
     public static void main(String[] args) {
         message("Starting TrollAttack, version: " + version);

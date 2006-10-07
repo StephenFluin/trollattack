@@ -201,6 +201,7 @@ public class Player extends Being {
         }
         getActualRoom().removeBeing(this);
         TrollAttack.gamePlayers.remove(this);
+        //TrollAttack.debug("Removed the player from the game, now just need to close the connection.");
         closeConnection();
     }
 

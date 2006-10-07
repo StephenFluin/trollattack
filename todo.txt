@@ -7,7 +7,7 @@ eating/drinking needs to be bounded better
 Fix Experience System
 script to grid tabbed data
 "scan nw"
-
+invisibility
 Help files
 Convert .are files to my xml format.
 Make each area aware of all of its own rooms, mobiles, items, and players (for saving

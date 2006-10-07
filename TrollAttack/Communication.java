@@ -107,8 +107,10 @@ public abstract class Communication extends Thread {
                 } else {
 
                     player.tell(name + "'s password:");
+                    //TrollAttack.debug("Login Problems - Start");
                     pass = getLine();
                     tmpPlayer = DataReader.readPlayerFile(name);
+                    //TrollAttack.debug("Login Problems - Read player file.");
                     if (tmpPlayer != null) {
                         Player offendingPlayer = null;
                         for(Player p : TrollAttack.gamePlayers) {
@@ -116,20 +118,24 @@ public abstract class Communication extends Thread {
                                 offendingPlayer = p;
                                 break;
                             } else {
-                               // TrollAttack.debug("Found a player " + p.getShort() + ", but he is not " + tmpPlayer.getShort());
+                               //TrollAttack.debug("Found a player " + p.getShort() + ", but he is not " + tmpPlayer.getShort());
                             }
                         }
                         if(offendingPlayer != null) {
+                        	//TrollAttack.debug("Login Problems - Double login.");
                             offendingPlayer.tell("You are attempting to log in, that means you are OUT OF HERE!");
+                            
                             offendingPlayer.save();
+                            //TrollAttack.debug("Login Problems - saved.");
                             offendingPlayer.quit();
+                            //TrollAttack.debug("Login Problems - fquited.");
                         }
                         tmpPlayer.authenticated = true;
-                        TrollAttack.message("Created player "
-                                + tmpPlayer.getShort());
+                        TrollAttack.message("Player "
+                                + tmpPlayer.getShort() + " joined the game.");
                     } else {
                         TrollAttack.message("Could not create player (" + name
-                                + ":" + pass + ").");
+                                + ":" + "***" + ").");
                     }
 
                 }

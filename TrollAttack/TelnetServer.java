@@ -90,26 +90,27 @@ public class TelnetServer extends Communication {
         return ss;
     }
     public String getLine() throws NullPointerException {
-        String line;
+        String line = null;
     	try {
-             line = in.readLine();
+    		line = in.readLine();
+             
+//          remove backspaces from inputLine
+            if(line.contains("\010")) {
+                 //TrollAttack.debug("Problem.");
+             }
+             while(line.contains("\010")) {
+                 //TrollAttack.debug(line);
+                 int location = line.indexOf("\010");
+                 if(location == 0) {
+                     line = line.substring(1);
+                 } else {
+                     line = line.substring(0,location-1) + line.substring(location+1);
+                 }
+             }
         } catch(Exception e) {
-            throw new NullPointerException("Problem with getLine.");
+            //throw new NullPointerException("Problem with getLine.");
         }
-//      remove backspaces from inputLine
-        if(line.contains("\010")) {
-            //TrollAttack.debug("Problem.");
-        }
-        while(line.contains("\010")) {
-            //TrollAttack.debug(line);
-            int location = line.indexOf("\010");
-            if(location == 0) {
-                line = line.substring(1);
-            } else {
-                line = line.substring(0,location-1) + line.substring(location+1);
-            }
-        }
-        //TrollAttack.debug(line);
+
         return line;
     }
     public void send(String string) {

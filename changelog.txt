@@ -23,3 +23,6 @@ Upgrade to version .83
 3/20/06 - Fixed timestamp on system messages.
 4/21/06 - Added additional prompt code.
 Upgrade to version .84
+10/07/06 - Updated login code
+10/07/06 - Turned of every-line debugging.
+Upgrade to version .84.5
