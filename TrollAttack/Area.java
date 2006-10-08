@@ -9,6 +9,7 @@ package TrollAttack;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
@@ -111,10 +112,18 @@ public class Area {
     }
     
     /**
-     * Saving works by loading everything in the game into hashtables and
-     * linkedlists, and then saving only the files that we wanted to
-     * change/update.
-     *  
+     * Saving works by loading everything known to be in the game from the 
+     * given list of rooms, mobiles, and items.  It then dumps this information 
+     * into hashtables and linkedlists, and then saving only the files that we 
+     * wanted to change/update.
+     * 
+     * We may want to change this from taking in 3 lists to just accessing game 
+     * data directly.  Also, eventually we probably want each area to be aware 
+     * of its own information instead of storing all of this data in the game.
+     * 
+     *  @param gameRooms A list of rooms that we know about.
+     *  @param gameMobiles A list of mobiles that we know about.
+     *  @param gameItems A list of items that we know about.
      */
     public void save(LinkedList<Room> gameRooms, LinkedList<Mobile> gameMobiles,
             LinkedList<Item> gameItems) {
@@ -135,7 +144,6 @@ public class Area {
             Area.addToList(doc, areasList, currentRoom);
 
         }
-
         for (Mobile currentMobile : gameMobiles) {
             Area.addToList(doc, areasList, currentMobile);
         }
@@ -144,7 +152,7 @@ public class Area {
             Area.addToList(doc, areasList, currentItem);
         }
 
-        /* Deleting old files... */
+        /* Delete only the file we are saving... */
         File dir = new File("Areas");
         FilenameFilter filter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
@@ -153,6 +161,7 @@ public class Area {
         };
         File[] children = dir.listFiles(filter);
         if (children == null) {
+        	TrollAttack.debug("Couldn't find the area file we are trying to delete before we rewrite it.");
             throw (new Error("Couldn't find area files."));
             // Either dir does not exist or is not a directory
         } else {
@@ -164,7 +173,7 @@ public class Area {
         try {
             if (areasList.get(filename) == null) {
                 TrollAttack
-                        .message("The area doesn't contain info to be saved, or there is no document.");
+                        .message("The game isn't aware of any items, rooms, or mobiles belonging to this area, so it can't be found.");
             } else {
                 Util.XMLPrint((Document) areasList.get(filename), "Areas/"
                         + filename);
@@ -306,5 +315,51 @@ public class Area {
         n.appendChild(room.toNode(((Document) rooms)));
         //n.appendChild(room.toNode(doc));
     }
+    
+    public boolean equals(Area a) {
+    	return (a.filename.equals(filename) && a.frozen == frozen && a.high == high && a.low == low && a.name.equals(name));
+    }
+
+    /**
+     * Deletes an area from the entire game.  Removes the area from the game 
+     * listing, deletes all associated resets, relocates all players within it, 
+     * and deletes the file storing the area.
+     *
+     */
+	public void delete() {
+		TrollAttack.gameAreas.remove(this);
+		
+		
+		ArrayList<Reset> deletionList = new ArrayList<Reset>();
+		for(Reset r : TrollAttack.gameResets) {
+			if(r.area == this) {
+				deletionList.add(r);
+			}
+		}
+		for(Reset r : deletionList) {
+			TrollAttack.gameResets.remove(r);
+		}
+		
+		for(Player p : TrollAttack.gamePlayers) {
+			Area pArea, eArea;
+			pArea = p.getActualArea();
+			eArea = new Area();
+			if(pArea == this || pArea.equals(eArea)) {
+				
+				p.transport(1);
+				p.interrupt(Communication.WHITE + "The place where you were no longer is.");
+			} else {
+				//p.interrupt("Sorry to bother you, but you weren't in the area that just got deleted (You are in " + p.getActualArea().toString() + " and we are deleting " + toString() + "!");
+			}
+			if(p.getArea() == this) {
+				p.setArea(null);
+			}
+		}
+		
+		File areaFile = new File("Areas/" + filename);
+		areaFile.delete();
+		
+		
+	}
 
 }

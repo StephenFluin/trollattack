@@ -26,3 +26,8 @@ Upgrade to version .84
 10/07/06 - Updated login code
 10/07/06 - Turned of every-line debugging.
 Upgrade to version .84.5
+10/07/06 - Revised "aset" functionality
+10/08/06 - Began adding comments.
+10/08/06 - Moved default room creation from Being to Room.
+10/08/06 - Added getRestOfCommand Util.
+Upgrade to version .85

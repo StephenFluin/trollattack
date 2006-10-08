@@ -27,25 +27,35 @@ public class Room {
 
     public LinkedList<Exit> roomExits = new LinkedList<Exit>();
 
+    /**
+     * A constructor that automatically generates the default title and 
+     * description, and empty exit list.
+     * @param vnum The vnum of the new room.
+     */
+    public Room(int vnum) {
+    	this(vnum, "A Freshly Created Room",
+	    	               "Change the title of this room by typing \"redit title <new title>\".   Enter the description of this room by typing \"redit desc <description>\".",
+	    	               new java.util.LinkedList<Exit>());
+    }
     
     public Room(int vnum, String title, String description, LinkedList<Exit> exits) {
         this.vnum = vnum;
-        //this.east = east; this.west = west; this.north = north; this.south =
-        // south;
-        //this.northEast = northEast; this.northWest = northWest;
-        // this.southEast = southEast; this.southWest = southWest;
-        //this.up = up; this.down = down;
+
         roomExits = exits;
         this.title = title;
         this.description = description;
-        // TrollAttack.message("Creating room with up and down: " + up + " and "
-        // + down + ".");
+
+        
         Iterator<Exit> eachExit = roomExits.iterator();
         while (eachExit.hasNext()) {
             Exit exit = eachExit.next();
             exit.setRoom(this);
         }
     }
+    /**
+     * Downcasts a shop to a room.
+     * @param s A shop that we want to downcast.
+     */
 	public Room(Shop s) {
 		this(s.vnum, s.title, s.description, s.roomExits);
 		roomBeings = s.roomBeings;
@@ -53,6 +63,7 @@ public class Room {
 		roomItems = s.roomItems;
 		TrollAttack.replaceRoom(s, this);
 	}
+	
     public String toString() {
         String returnValue = vnum + ":" + title;
         int i = 0;
@@ -261,26 +272,29 @@ public class Room {
         return look;
     }
 
-    /*
-     * public void addPlayer(Player player) { roomBeings.add(player); } public
-     * void removePlayer(Player player) { roomBeings.delete(player); }
+    /**
+     * Does a "say" in the room where the message is external to all beings in the room.
      */
     public void say(String s) {
         Being[] pBroadcast = {};
         say(s, pBroadcast);
     }
 
+    /**
+     * Does a "say" in the room where the message is external to all 
+     * players except the single player listed.  For the single player listed, 
+     * @param s Message to be said.
+     * @param ignoreSinglePlayer The player for which this "say" will be first person.
+     */
     public void say(String s, Being ignoreSinglePlayer) {
         Being[] pBroadcast = { ignoreSinglePlayer };
         say(s, pBroadcast);
     }
 
-    // players works like this:
-    // 1 is ignored
-    // 1 is %1
-    // 2 is %2 ...
-    // Any player that matches who they are talking to
-    // is replaced with you.
+    /**
+     * The say function works by replacing %1 with being 1 in the list and 
+     * then saying each message from the perspective of the recipient being.
+     */
     public void say(String s, Being[] players) {
         try {
             for (Being person : roomBeings) {
@@ -300,33 +314,6 @@ public class Room {
         }
     }
 
-    /*public String open(int direction) {
-        while (roomExits.itemsRemain()) {
-            Exit exit = (Exit) roomExits.getNext();
-            if (exit.getDirection() == direction) {
-                roomExits.reset();
-
-                return exit.open();
-            } else {
-                //TrollAttack.message(direction + "!=" +
-                // exit.getDirectionName());
-            }
-        }
-        roomExits.reset();
-        return "You can't find that door.";
-    }
-
-    public String close(int direction) {
-        while (roomExits.itemsRemain()) {
-            Exit exit = (Exit) roomExits.getNext();
-            if (exit.getDirection() == direction) {
-                roomExits.reset();
-                return exit.close();
-            }
-        }
-        roomExits.reset();
-        return "You can't find that door.";
-    }*/
 
     public String setLink(int direction, int destination) {
         if (destination == 0) {

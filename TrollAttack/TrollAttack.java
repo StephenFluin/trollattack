@@ -27,7 +27,7 @@ import TrollAttack.Classes.Class;
 
 
 public class TrollAttack {
-	public static String version = "0.84.5";
+	public static String version = "0.85";
 	
 	static Document document;
 
@@ -91,17 +91,6 @@ public class TrollAttack {
 
     }
 
-    /**
-     * print function takes in a string and uses the system out as well as a
-     * wrapLength in order to make sure that the string is not too long to fit
-     * on the chosen screen.
-     * 
-     * @param string
-     */
-    static public void print(String string) {
-        print(string, true);
-    }
-
     public static void addPlayer(Player player) {
         gamePlayers.add(player);
     }
@@ -111,11 +100,7 @@ public class TrollAttack {
             currentPlayer.interrupt(message);
         }
     }
-    
 
-    static public void print(String string, boolean shouldWrap) {
-        //io.print(string, shouldWrap);
-    }
 
     static public void error(String string) {
         System.out.println("ERROR:" + string);
@@ -284,14 +269,21 @@ public class TrollAttack {
         }
     }
 
+    /**
+     * This is a very important function that loads areas, classes, 
+     * items, mobiles, and rooms from the xml files that contain them. 
+     * This can be called when the game is just starting up, or to 
+     * clean up the game in-game.
+     *
+     */
     public static void reloadWorld() {
-        /* Surprisingly, the order here is important. You can't create the rooms
+        
+    	/* Surprisingly, the order here is important. You can't create the rooms
          * if you don't already have the info about the mobs that will be in them.
          * You can't create the mobs, unless you have the info about the items that
          * they will carry.  And you can't create the Mobs unless you have the info
          * about their classes.
          */
-        
         TrollAttack.gameResets = new LinkedList<Reset>();
         TrollAttack.myData = new DataReader();
         TrollAttack.gameAreas = TrollAttack.myData.getAreas();
@@ -300,6 +292,10 @@ public class TrollAttack {
         TrollAttack.gameMobiles = TrollAttack.myData.getMobiles();
         TrollAttack.gameRooms = TrollAttack.myData.getRooms();
         
+        /**
+         * Runs all of the resets at least once, this ensures game is set up properly 
+         * without waiting for the first tick.
+         */ 
         for(Reset reset : gameResets) {
             reset.run();
         }

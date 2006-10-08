@@ -290,6 +290,16 @@ public class Util {
         return result;
     }
     
+    /**
+     * Method to take a message and populate %n with the correct name for the correct 
+     * recipients.  When the being being populated is the being for whom the message 
+     * is generated, the string "you" is used.
+     * 
+     * @param message
+     * @param beings Beings that will be puplated into the message.
+     * @param forWhom Being for whom this message is being generated.
+     * @return
+     */
     static public String replaceBeings(String message, Being[] beings, Being forWhom) {
         for (int j = 0; j < ( beings.length ); j++) {
             try {
@@ -393,4 +403,15 @@ public class Util {
         //TrollAttack.debug("Escaped string to: " + s.replaceAll("&", "&&"));
     	return s.replaceAll("&", "&&");
     }
+
+	public static String getRestOfCommand(String[] parts) {
+		if(parts.length < 2) {
+			return "";
+		}
+		String command = parts[1];
+		for(int i = 2;i<parts.length;i++) {
+			command += " " + parts[i];
+		}
+		return command;
+	}
 }

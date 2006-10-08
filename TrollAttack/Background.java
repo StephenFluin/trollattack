@@ -18,8 +18,6 @@ public class Background extends Thread {
     // Order by most frequent to least frequent for organization.
     public void run() {
         while (!TrollAttack.gameOver) {
-
-            
             
             if (time % 10 == 0) {
                 TrollAttack.healBeings();

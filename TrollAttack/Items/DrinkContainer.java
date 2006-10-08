@@ -25,7 +25,7 @@ import TrollAttack.Util;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class DrinkContainer extends Equipment {
+public class DrinkContainer extends Item {
     int volume = 0, capacity = 0;
     public DrinkContainer(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);

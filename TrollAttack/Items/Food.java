@@ -22,7 +22,7 @@ import TrollAttack.Util;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class Food extends Equipment {
+public class Food extends Item {
     int quality = 0;
     public Food(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);

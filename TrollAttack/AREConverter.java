@@ -36,8 +36,8 @@ public class AREConverter {
             return;
         }
         print("Reading: '" + areaFile.getAbsolutePath() + "'.");
-        EasyReader in = new EasyReader(areaFile.getAbsolutePath());
-
+        //EasyReader in = new EasyReader(areaFile.getAbsolutePath());
+        /*
         String area = "";
         while (!in.isEOF()) {
             area += in.stringInputLine() + "\n";
@@ -68,7 +68,7 @@ public class AREConverter {
         SHOPS = sections.group(10);
         SPECIALS = sections.group(11);
         Area areaResult = handleAreaData(AREA); 
-
+*/
     }
 
     private static Area handleAreaData(String area) {

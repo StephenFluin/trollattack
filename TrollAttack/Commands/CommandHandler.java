@@ -117,6 +117,7 @@ public class CommandHandler {
 		    registerCommand(new unfreeze("unfreeze"));
 		    registerCommand(new UnQuit("unquit"));
 		    registerCommand(new Switch("switch"));
+		    registerCommand(new aSet("aset"));
             registerCommand(new sSet("sset"));
             registerCommand(new cSet("cset"));
             registerCommand(new cCreate("ccreate"));
@@ -1249,13 +1250,16 @@ public class CommandHandler {
 	       int room;
 	        try {
 	           try {
-	               room = Util.intize(null, s);
+	               // Try to create an integer out of the room first.
+	        	   room = Util.intize(null, s);
 	           } catch(NumberFormatException e) {
+	        	   // If we weren't given an valid integer, then try and find an active player name.
 	               Player p = TrollAttack.getPlayer(s);
 	               if(p == null) {
 	                   player.tell("This isn't a valid vnum or player name.");
 	                   return false;
 	               } else {
+	            	   // We have a valid player, so set room to be where they are so we can go there.
 	                   room = p.getCurrentRoom();
 	               }
 	           }
@@ -1379,7 +1383,7 @@ public class CommandHandler {
 	    public rList(String s) { super(s, false); }
 	    public boolean execute() {
 		    String result = Communication.GREEN +"Rooms in the VNUM range of this area:" + Util.wrapChar;
-		    result += Communication.CYAN + "VNUM\tTitle" + Communication.WHITE;
+		    result += Communication.CYAN + "VNUM\tTitle" + Util.wrapChar + Communication.WHITE;
 		    int high = player.getActualArea().high;
 		    int low = player.getActualArea().low;
 		    for(Room room : TrollAttack.gameRooms) {
@@ -1659,37 +1663,18 @@ public class CommandHandler {
 	}
 	class aSet extends Command {
 		public aSet(String s) { super(s); }
+		public boolean execute() {
+			player.tell("Usage: aset <command>" + Util.wrapChar + 
+					"Possible Commands: name filename low high" + Util.wrapChar +
+					builder.area());
+			return false;
+		}
 		public boolean execute(String s) {
 			if(player.getArea() == null) {
 				player.tell("You don't have an area!");
 				return false;
-			} else {
-				if(player.level > 55) {
-					Area edit = null;
-					for(Area a : TrollAttack.gameAreas) {
-						if(a.filename.startsWith(s)) {
-							edit = a;
-							break;
-						}
-					}
-					if(edit == null) {
-						player.tell("There is no such area.");
-					} else {
-						String[] parts = s.split(" ");
-						if(parts.length < 2) {
-							return execute();
-						}
-						String command = parts[1];
-						for(int i = 2;i<parts.length;i++) {
-							command += " " + parts[i];
-						}
-						builder.aSet(edit, command);
-					}
-				} else {
-					player.tell("You aren't high enough level to do this, ask someone 55 and up!");
-					return false;
-				}
 			}
+			builder.aSet(s);
 			return true;
 		}
 		

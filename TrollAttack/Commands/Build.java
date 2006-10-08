@@ -308,46 +308,60 @@ public class Build {
         player.tell("Vnums:\t" + area.low + "-" + area.high);
         player.tell("Frozen:\t(" + (area.frozen ? "X" : " " ));
     }
-    public void aSet(Area area, String command) {
-        String[] parts = command.split(" ");
-        String s = parts[0];
+    public void aSet(String command) {
+        String[] parts = Util.split(command);
         if(parts.length < 2) {
-            area();
+            player.tell("Usage: aset name|filename|low|high value");
             return;
         }
-        command = parts[1];
-        for(int i = 2;i<parts.length;i++) {
-            command += " " + parts[i];
-        }
-        if(s.startsWith("name")) {
-            area.name = command;
+        Area area = player.getArea();
+        String value = Util.getRestOfCommand(parts);
+        if(command.startsWith("name")) {
+            area.name = value;
             player.tell("Area name changed to '" + area.name + "'");
-        } else if(s.startsWith("filename")) {
+        } else if(command.startsWith("filename")) {
             if(parts[1].length() < 3) {
                 player.tell("Area filename must be at least 3 characters long.");
             } else {
                 if(!parts[1].endsWith(".xml")) {
                     parts[1] += ".xml";
                 }
+                
+                // Check to make sure that an area of that filename doesn't exist.
+                for(Area a : TrollAttack.gameAreas) {
+                	if(a.filename.equals(parts[1])) {
+                		player.tell("That filename already exists, check \"alist\"!");
+                		return;
+                	}
+                }
+                
                 String oldFilename = area.filename;
                 area.filename = parts[1];
                 LinkedList<Room> r = TrollAttack.gameRooms;
                 LinkedList<Mobile> m = TrollAttack.gameMobiles;
                 LinkedList<Item> i = TrollAttack.gameItems;
-                area.save((LinkedList<Room>)r, m, i);
+                area.save(r, m, i);
+                
+                TrollAttack.message("Renaming area from " + oldFilename + " to " + area.filename + ".");
                 File oldFile = new File("Areas/" + oldFilename);
-                TrollAttack.message("Deleting file Areas/" + oldFilename + ".");
+                if(!oldFile.canWrite()) {
+                	TrollAttack.error("Don't have write ability for " + oldFilename + ", meaning we can't delete it.");
+                }
                 oldFile.delete();
                 
                 
                 player.tell("Area filename changed to '" + parts[1] + "'");
             }
-        } else if(s.startsWith("low")) {
-            area.low = Util.intize(player, command);
+        } else if(command.startsWith("low")) {
+            area.low = Util.intize(player, value);
             player.tell("Area range changed to " + area.low + "-" + area.high + ".");
-        } else if(s.startsWith("high")) {
-            area.high = Util.intize(player, command);
+        } else if(command.startsWith("high")) {
+            area.high = Util.intize(player, value);
             player.tell("Area range changed to " + area.low + "-" + area.high + ".");
+        } else if(command.startsWith("delete")) {
+        	area.delete();
+        	player.tell("The area that once was, is no more!");
+        	TrollAttack.message("Area deletion: " + area.filename);
         }
         
         
@@ -385,8 +399,10 @@ public class Build {
         }
     }
     public String area() {
-
-        return "Your area " + (player.getArea().frozen ? "<frozen>" : "") + ": " + player.getArea().filename + "\n" + player.getArea().name + Util.wrapChar +
+    	if(player.getArea() == null) {
+    		return "You have no area!";
+    	}
+        return "Your area " + (player.getArea().frozen ? "<frozen>" : "") + ": " + player.getArea().filename + Util.wrapChar + player.getArea().name + Util.wrapChar +
         "Vnum range:\t" + player.getArea().low + "-" + player.getArea().high;
         
     }

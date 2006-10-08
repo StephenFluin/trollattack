@@ -83,6 +83,13 @@ public class Being implements Cloneable {
         return currentRoom;
     }
 
+    /**
+     * Returns the room that the being currently occupies.  Figures out
+     * which room the being is in by asking the game to return the room that
+     * matches the id stored in currentRoom.  If for some reason the room 
+     * can't be figured out, the being will be moved to the index room.
+     * @return
+     */
     public Room getActualRoom() {
         Room result = TrollAttack.getRoom(currentRoom);
         // can't optimize with actualRoom because reloadWorld can't update it..
@@ -96,6 +103,11 @@ public class Being implements Cloneable {
         return result;
     }
 
+    /**
+     * Returns the area discovered using the currentRoom VNUM from the list 
+     * of areas in gameAreas.
+     * @return The Area found using the currentRoom vnum and the game areas.
+     */
     public Area getActualArea() {
         return Area.test(currentRoom, TrollAttack.gameAreas);
     }
@@ -163,9 +175,18 @@ public class Being implements Cloneable {
         luck = stats[6];
     }
 
+    /**
+     * Send the being the visible information about 
+     * the room they are currently in.
+     *
+     */
     public void look() {
         look(getActualRoom());
     }
+    /**
+     * Send the being information about the given room.
+     * @param room
+     */
     public void look(Room room) {
         tell(room.look(this), false);
     }
@@ -178,6 +199,11 @@ public class Being implements Cloneable {
         return getShort(null);
     }
 
+    /**
+     * Gets the short of this being from the perspective of the given being.
+     * @param whoAmI The being this is being generated for.
+     * @return Returns the short description of the being, unless this is the being it is for.  Then "you".
+     */
     public String getShort(Being whoAmI) {
         if (whoAmI == this) {
             return "you";
@@ -240,6 +266,12 @@ public class Being implements Cloneable {
     public int getAverageHitDamage() {
         return hitDamage.getAverage();
     }
+   
+    /**
+     * Returns the string containing the prompt of the being with
+     * all of the variables replaced with their appropriate values.
+     * @return
+     */
     public String getPrompt() {
         return myPrompt.showPrompt(
                 hitPoints, 
@@ -256,6 +288,12 @@ public class Being implements Cloneable {
     public void prompt() {
         prompt( getPrompt());
     }
+    
+    /**
+     * Returns the string containing the prompt of the being, containing
+     * unreplaced variables.
+     * @return
+     */
     public String getPromptString() {
         return myPrompt.getPrompt();
     }
@@ -322,11 +360,22 @@ public class Being implements Cloneable {
     public void tell(String s) {
         tell(s, true);
     }
+    
+    /**
+     * Sends the given message to the being as an interrupt, meaning
+     * that after the message, we also send a fresh prompt.
+     * @param message The message to be sent to the being.
+     */
     public void interrupt(String message) {
         tell(Util.wrapChar + message +
                 Util.wrapChar + getPrompt(), false);
         
     }
+    
+    /**
+     * Sends the string s to the being after sending the wrapping character.
+     * @param s the String to be sent to the being.
+     */
     public void prompt(String s) {
         tell(Util.wrapChar + s, false);
     }
@@ -1036,6 +1085,13 @@ public class Being implements Cloneable {
     public void move(int direction) {
         ch.handleCommand(Exit.directionName(direction));
     }
+    
+    /**
+     * Moves this being to the given vnum. (Room is found by asking game via vnum).
+     * If the given VNUM is valid but doesn't exist yet, we attempt to create the room.
+     * @param vnum The VNUM of the room that we are trying to go to.
+     * @return True if we successfully go to destination room, false if permission is denied.
+     */
     public boolean transport(int vnum) {
         int oldRoom = getCurrentRoom();
         getActualRoom().removeBeing(this);
@@ -1045,11 +1101,7 @@ public class Being implements Cloneable {
             if(canEdit(vnum)) {
                 tell("Waving your hand, you form order from swirling chaos, and step into a new reality...");
             
-	               newRoom = new Room(
-	    	               vnum,
-	    	               "A Freshly Created Room",
-	    	               "Change the title of this room by typing \"redit title <new title>\".   Enter the description of this room by typing \"redit desc <description>\".",
-	    	               new java.util.LinkedList<Exit>());
+	               newRoom = new Room(vnum);
 	    	        TrollAttack.gameRooms.add(newRoom);
 	    	        Area.test(vnum, TrollAttack.gameAreas).areaRooms.add(newRoom);
 	    	        setCurrentRoom(newRoom);
