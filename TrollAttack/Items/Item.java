@@ -2,12 +2,12 @@
 
 package TrollAttack.Items;
 
+import java.util.Vector;
 import java.util.Hashtable;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import TrollAttack.LinkedList;
 import TrollAttack.Roll;
 import TrollAttack.Util;
 
@@ -105,7 +105,7 @@ public class Item implements Cloneable {
 	public Node toNode(Document doc) {
 		   
 		    Node m = doc.createElement("item");
-		    LinkedList attribs = new LinkedList();
+		    Vector attribs = new Vector();
 		    attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
 		    attribs.add(Util.nCreate(doc, "name", name + ""));
 		    attribs.add(Util.nCreate(doc, "short", getShort()));
@@ -114,9 +114,9 @@ public class Item implements Cloneable {
 		    attribs.add(Util.nCreate(doc, "type", getType() + ""));
 		    attribs.add(Util.nCreate(doc, "cost", cost + ""));
 		    attribs.add(getTypeNode(doc));
-		    for(int i = 0; i < attribs.length(); i++) {
+		    for(int i = 0; i < attribs.size(); i++) {
 		        
-		        Node newAttrib = (Node)attribs.getNext();
+		        Node newAttrib = (Node)attribs.get(i);
 		        m.appendChild(newAttrib);
 		    }
 		    

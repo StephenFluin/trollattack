@@ -4,7 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.LinkedList;
+import java.util.Vector;
 /*
  * Created on Jun 8, 2005
  *
@@ -251,8 +251,8 @@ public abstract class Communication extends Thread {
 
     public abstract String getLine() throws NullPointerException;
 
-    public static LinkedList<Channel> getChannels() {
-        LinkedList<Channel> list = new LinkedList<Channel>();
+    public static Vector<Channel> getChannels() {
+        Vector<Channel> list = new Vector<Channel>();
         for(Channel c : Channel.values()) {
             list.add(c);
         }

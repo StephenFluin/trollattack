@@ -8,7 +8,8 @@
  */
 package TrollAttack.Items;
 
-import TrollAttack.LinkedList;
+import java.util.Vector;
+
 
 /**
  * @author PeEll
@@ -18,7 +19,7 @@ import TrollAttack.LinkedList;
  */
 public class WearLocation {
     private static int internalPointer = 0;
-    private LinkedList wearLocations;
+    private Vector wearLocations;
     private String name;
     private int value;
     private WearLocation(String name) {

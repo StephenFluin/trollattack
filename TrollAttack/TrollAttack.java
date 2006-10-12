@@ -15,7 +15,7 @@ package TrollAttack;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
+import java.util.Vector;
 
 //import org.jivesoftware.smack.PacketCollector;
 import org.w3c.dom.Document;
@@ -27,7 +27,7 @@ import TrollAttack.Classes.Class;
 
 
 public class TrollAttack {
-	public static String version = "0.85";
+	public static String version = "0.86";
 	
 	static Document document;
 
@@ -47,18 +47,18 @@ public class TrollAttack {
      */
     public static DataReader myData;
 
-    public static LinkedList<Area> gameAreas;
+    public static Vector<Area> gameAreas;
 
-    public static LinkedList<Item> gameItems;
+    public static Vector<Item> gameItems;
 
-    public static LinkedList<Mobile> gameMobiles;
+    public static Vector<Mobile> gameMobiles;
 
-    public static LinkedList<Player> gamePlayers;
-    public static LinkedList<Class> gameClasses;
-    public static LinkedList<Reset> gameResets;
+    public static Vector<Player> gamePlayers;
+    public static Vector<Class> gameClasses;
+    public static Vector<Reset> gameResets;
     
-    public static LinkedList<Room> gameRooms;
-    public static LinkedList<Communication> gameCommunications = new LinkedList<Communication>();
+    public static Vector<Room> gameRooms;
+    public static Vector<Communication> gameCommunications = new Vector<Communication>();
     
     public static AbilityHandler abilityHandler = new AbilityHandler();
 
@@ -77,7 +77,7 @@ public class TrollAttack {
     public static void main(String[] args) {
         message("Starting TrollAttack, version: " + version);
 
-        gamePlayers = new LinkedList<Player>();
+        gamePlayers = new Vector<Player>();
 
         reloadWorld();
         
@@ -181,7 +181,7 @@ public class TrollAttack {
 
     static public void wanderLust() {
         Roll chance = new Roll("1d10");
-        LinkedList<Mobile> wanderers = new LinkedList<Mobile>();
+        Vector<Mobile> wanderers = new Vector<Mobile>();
         for(Area area : gameAreas) {
             if(!area.frozen) {
                 for(Room room : area.areaRooms) {
@@ -244,7 +244,7 @@ public class TrollAttack {
     }
 
     static public void puntIdlePlayers(int time) {
-        LinkedList<Player> puntPlayers = new LinkedList<Player>();
+        Vector<Player> puntPlayers = new Vector<Player>();
         for(Player currentPlayer : gamePlayers) {
             if (currentPlayer.getIdleTime() > time) {
                 puntPlayers.add(currentPlayer);
@@ -284,7 +284,7 @@ public class TrollAttack {
          * they will carry.  And you can't create the Mobs unless you have the info
          * about their classes.
          */
-        TrollAttack.gameResets = new LinkedList<Reset>();
+        TrollAttack.gameResets = new Vector<Reset>();
         TrollAttack.myData = new DataReader();
         TrollAttack.gameAreas = TrollAttack.myData.getAreas();
         TrollAttack.gameClasses = TrollAttack.myData.getClasses();
@@ -309,7 +309,7 @@ public class TrollAttack {
     public static void shutdown() {
         broadcast(Communication.RED + "MUD Shutting down NOW!");
         while(gamePlayers.size() > 0){
-            Player p = gamePlayers.getFirst();
+            Player p = gamePlayers.remove(0);
             p.interrupt(Communication.WHITE + "The game forces you to save and quit.");
             p.handleCommand("save");
             p.handleCommand("quit");

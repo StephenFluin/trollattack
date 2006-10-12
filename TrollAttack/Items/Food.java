@@ -12,7 +12,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import TrollAttack.Effect;
-import TrollAttack.LinkedList;
 import TrollAttack.Roll;
 import TrollAttack.Util;
 
@@ -30,21 +29,14 @@ public class Food extends Item {
     public Food(Item i) {
         this(i.vnum, i.weight, i.cost, i.name, i.shortDesc, i.longDesc);
     }
-    
-    public LinkedList effects = new LinkedList();
-    
+        
     public void setQuality(int dmg) {
         quality = dmg;
     }
     public int getQuality() {
         return quality;
     }
-    public void setEffects(LinkedList newEffects) {
-        effects = newEffects;
-    }
-    public void addEffect(Effect effect) {
-        effects.add(effect);
-    }
+
     public String getType() {
         return getItemType();
     }

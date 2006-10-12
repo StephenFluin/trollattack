@@ -7,7 +7,7 @@
  * to Stephen Fluin.
  */
 package TrollAttack.Commands.abilities;
-import java.util.LinkedList;
+import java.util.Vector;
 
 import TrollAttack.*;
 import TrollAttack.Commands.*;

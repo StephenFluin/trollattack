@@ -9,7 +9,7 @@
 package TrollAttack.Commands;
 
 import TrollAttack.*;
-import java.util.LinkedList;
+import java.util.Vector;
 import java.io.File;
 
 import TrollAttack.Items.*;
@@ -337,9 +337,9 @@ public class Build {
                 
                 String oldFilename = area.filename;
                 area.filename = parts[1];
-                LinkedList<Room> r = TrollAttack.gameRooms;
-                LinkedList<Mobile> m = TrollAttack.gameMobiles;
-                LinkedList<Item> i = TrollAttack.gameItems;
+                Vector<Room> r = TrollAttack.gameRooms;
+                Vector<Mobile> m = TrollAttack.gameMobiles;
+                Vector<Item> i = TrollAttack.gameItems;
                 area.save(r, m, i);
                 
                 TrollAttack.message("Renaming area from " + oldFilename + " to " + area.filename + ".");

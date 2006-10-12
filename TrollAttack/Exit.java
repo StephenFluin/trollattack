@@ -9,7 +9,7 @@ package TrollAttack;
  */
 
 import TrollAttack.Items.Item;
-import java.util.LinkedList;
+import java.util.Vector;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -56,7 +56,7 @@ public class Exit {
             DOWN = 6, NORTHEAST = 7, NORTHWEST = 9, SOUTHWEST = 8,
             SOUTHEAST = 10;
 
-    public static LinkedList sortExitList(LinkedList exitList) {
+    public static Vector sortExitList(Vector exitList) {
         return exitList;
     }
 

@@ -31,3 +31,8 @@ Upgrade to version .84.5
 10/08/06 - Moved default room creation from Being to Room.
 10/08/06 - Added getRestOfCommand Util.
 Upgrade to version .85
+10/11/06 - Added "bug" command.
+10/11/06 - Changed LinkedLists to synchronized Vectors to stop concurrentmodification errors.
+Upgrade to version .86
+10/12/06 - Changed "consider" command to be more helpful.
+10/12/06 - Fixed mobile reset wear to be silent.

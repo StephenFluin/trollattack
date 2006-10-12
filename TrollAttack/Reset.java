@@ -154,7 +154,7 @@ public abstract class Reset {
 
         public void execute() {
             if (mobile.countExactEquipment(item) < limit) {
-                mobile.wearItem(item);
+                mobile.wearItem(item, false);
             } else {
             }
         }

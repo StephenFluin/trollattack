@@ -1,7 +1,7 @@
 package TrollAttack;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -196,7 +196,7 @@ public class Player extends Being {
             stopFollowing();
         }
         while(!followers.isEmpty()) {
-            Being follower = followers.getFirst();
+            Being follower = followers.remove(0);
             follower.stopFollowing();
         }
         getActualRoom().removeBeing(this);
@@ -267,7 +267,7 @@ public class Player extends Being {
         doc.appendChild(n);
         Node m = doc.createElement("player");
         n.appendChild(m);
-        LinkedList<Node> attribs = new LinkedList<Node>();
+        Vector<Node> attribs = new Vector<Node>();
         attribs.add(Util.nCreate(doc, "name", getName() + ""));
         attribs.add(Util.nCreate(doc, "hitPoints", hitPoints + ""));
         attribs.add(Util.nCreate(doc, "maxHitPoints", maxHitPoints + ""));

@@ -1,7 +1,7 @@
 package TrollAttack;
 
 import java.util.Hashtable;
-import java.util.LinkedList;
+import java.util.Vector;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -73,8 +73,8 @@ public class XMLHandler {
 
             Object currentValue = hash.get(kid.getNodeName());
             if (currentValue != null) {
-                if (currentValue.getClass() == LinkedList.class) {
-                    LinkedList list = (LinkedList) currentValue;
+                if (currentValue.getClass() == Vector.class) {
+                    Vector list = (Vector) currentValue;
                     if (kid.getChildNodes().item(0).getNodeType() != Node.TEXT_NODE) {
                         Hashtable hashy = new Hashtable();
                         hashProcess(kid, hashy, depth + 1);
@@ -84,7 +84,7 @@ public class XMLHandler {
                     }
                 } else {
                     Object tmp = currentValue;
-                    LinkedList ll = new LinkedList();
+                    Vector ll = new Vector();
                     hash.put(kid.getNodeName(), ll);
                     ll.add(tmp);
                     if (kid.getChildNodes().item(0).getNodeType() != Node.TEXT_NODE) {

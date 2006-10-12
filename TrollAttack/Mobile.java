@@ -4,7 +4,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import TrollAttack.Commands.CommandHandler;
-import java.util.LinkedList;
+import java.util.Vector;
 
 /*
  * Created on May 5, 2005
@@ -79,7 +79,7 @@ public class Mobile extends Being implements Cloneable {
     public Node toNode(Document doc) {
 
         Node m = doc.createElement("mobile");
-        LinkedList<Node> attribs = new LinkedList<Node>();
+        Vector<Node> attribs = new Vector<Node>();
         attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
         attribs.add(Util.nCreate(doc, "name", name + ""));
         attribs.add(Util.nCreate(doc, "level", level + ""));

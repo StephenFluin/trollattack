@@ -12,7 +12,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import TrollAttack.Effect;
-import TrollAttack.LinkedList;
 import TrollAttack.Roll;
 import TrollAttack.Util;
 
@@ -32,19 +31,12 @@ public class Weapon extends Equipment {
     }
     
     public Roll damage = new Roll("0d0");
-    public LinkedList effects = new LinkedList();
     
     public void setDamage(String dmg) {
         damage = new Roll(dmg);
     }
     public int getHitDamage() {
         return damage.roll();
-    }
-    public void setEffects(LinkedList newEffects) {
-        effects = newEffects;
-    }
-    public void addEffect(Effect effect) {
-        effects.add(effect);
     }
     public String getType() {
         return getItemType();

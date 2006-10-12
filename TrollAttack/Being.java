@@ -1,7 +1,7 @@
 package TrollAttack;
 
 import java.util.*;
-import java.util.LinkedList;
+import java.util.Vector;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -28,8 +28,27 @@ import TrollAttack.Items.*;
  * Preferences - Java - Code Style - Code Templates
  */
 public class Being implements Cloneable {
-    public int hitPoints, maxHitPoints, manaPoints, maxManaPoints, movePoints,
-            maxMovePoints, hitLevel, experience, level, favor, gold, weight;
+    public int hitPoints;
+    public int maxHitPoints;
+    public int manaPoints;
+    public int maxManaPoints;
+    public int movePoints;
+    public int maxMovePoints;
+
+    public int experience;
+    public int gold;
+    public int weight;
+    public int level;
+    /**
+     * The amount of favor this being has with its deity.
+     */
+    public int favor;
+    
+    /**
+     * 
+     */
+    public int hitLevel;
+
 
     public int currentRoom = 1, state = 0, hunger = 0, thirst = 0,
             practiceSessions;
@@ -37,8 +56,8 @@ public class Being implements Cloneable {
     public int strength, intelligence, wisdom, dexterity, constitution, charisma,
             luck;
 
-    public LinkedList<Item> beingItems = new LinkedList<Item>();
-    public LinkedList<Being> followers = new LinkedList<Being>();
+    public Vector<Item> beingItems = new Vector<Item>();
+    public Vector<Being> followers = new Vector<Being>();
     
     public Being switched = null;
     private Being following;
@@ -55,13 +74,17 @@ public class Being implements Cloneable {
     public Hashtable<Ability, AbilityData> getAbilitiesData() {
         return abilitiesData;
     }
-    public LinkedList<Equipment> equipment = new LinkedList<Equipment>();
+    public Vector<Equipment> equipment = new Vector<Equipment>();
 
     // Allows mobiles to do anything a player can do, is this dangerous or
     // memory hoggery?
     public CommandHandler ch = null;
     private CommandHandler backupCH = null;
 
+    /**
+     * A dice roll that determines how much damage the player does 
+     * regardless of their weapons.
+     */
     public Roll hitDamage;
 
     public Roll hitSkill;
@@ -263,6 +286,10 @@ public class Being implements Cloneable {
     	return hitDamage.roll();
     }
 
+    /**
+     * Calculates the average hit damage this being will do based on their hit damage and their weapons.
+     * @return The average hit damage this being will do.
+     */
     public int getAverageHitDamage() {
         return hitDamage.getAverage();
     }
@@ -628,9 +655,20 @@ public class Being implements Cloneable {
             return "unknowningly thirsty";
         }
     }
+    
+    /**
+     * Wears the given item visibly to other beings.
+     * @param newWear The item to be worn.
+     */
     public void wearItem(Item newWear) {
     	wearItem(newWear, true);
     }
+    
+    /**
+     * Adds the given item to the being's equipment in use.
+     * @param newWear The item to wear.
+     * @param alertWorld Whether or not this is visible to other beings.
+     */
     public void wearItem(Item newWear, boolean alertWorld) {
         Equipment newWearEquipment = null;
         if(newWear instanceof Equipment) {
@@ -717,7 +755,7 @@ public class Being implements Cloneable {
 
 
         Iterator<Equipment> i = equipment.iterator();
-        LinkedList<Equipment> forFloor = new LinkedList<Equipment>();
+        Vector<Equipment> forFloor = new Vector<Equipment>();
         int count = 0;
         while (i.hasNext()) {
             count++;
@@ -1139,7 +1177,7 @@ public class Being implements Cloneable {
     }
 
     public void wander() {
-        LinkedList<Exit> exitList = getActualRoom().getWanderableExits();
+        Vector<Exit> exitList = getActualRoom().getWanderableExits();
         Roll chance = new Roll("1d" + exitList.size());
         Exit randomExit = exitList.get(chance.roll() - 1);
 

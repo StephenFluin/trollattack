@@ -8,6 +8,7 @@
  */
 package TrollAttack.Items;
 
+import java.util.Vector;
 import java.util.Hashtable;
 
 import org.w3c.dom.Attr;
@@ -15,7 +16,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import TrollAttack.Effect;
-import TrollAttack.LinkedList;
 import TrollAttack.Roll;
 import TrollAttack.Util;
 
@@ -34,7 +34,7 @@ public class DrinkContainer extends Item {
         this(i.vnum, i.weight, i.cost, i.name, i.shortDesc, i.longDesc);
     }
     
-    public LinkedList effects = new LinkedList();
+    public Vector effects = new Vector();
     
     public void setup(int volume, int capac) {
         setVolume(volume);
@@ -55,7 +55,7 @@ public class DrinkContainer extends Item {
     public int getVolume() {
         return volume;
     }
-    public void setEffects(LinkedList newEffects) {
+    public void setEffects(Vector newEffects) {
         effects = newEffects;
     }
     public void addEffect(Effect effect) {

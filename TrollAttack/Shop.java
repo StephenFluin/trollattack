@@ -1,6 +1,6 @@
 package TrollAttack;
 
-import java.util.LinkedList;
+import java.util.Vector;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -9,9 +9,9 @@ import TrollAttack.Items.Item;
 
 public class Shop extends Room {
 
-	public LinkedList<Item> shopItems = new LinkedList<Item>();
+	public Vector<Item> shopItems = new Vector<Item>();
 	
-	public Shop(int vnum, String title, String description, LinkedList<Exit> exits) {
+	public Shop(int vnum, String title, String description, Vector<Exit> exits) {
 		 super(vnum, title, description, exits);
 	}
 	public Shop(Room r) {

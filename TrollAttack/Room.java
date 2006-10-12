@@ -1,7 +1,7 @@
 package TrollAttack;
 
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.Vector;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -21,11 +21,11 @@ public class Room {
 
     public String description = "", title = "";
 
-    public LinkedList<Item> roomItems = new LinkedList<Item>();
+    public Vector<Item> roomItems = new Vector<Item>();
 
-    public LinkedList<Being> roomBeings = new LinkedList<Being>();
+    public Vector<Being> roomBeings = new Vector<Being>();
 
-    public LinkedList<Exit> roomExits = new LinkedList<Exit>();
+    public Vector<Exit> roomExits = new Vector<Exit>();
 
     /**
      * A constructor that automatically generates the default title and 
@@ -35,10 +35,10 @@ public class Room {
     public Room(int vnum) {
     	this(vnum, "A Freshly Created Room",
 	    	               "Change the title of this room by typing \"redit title <new title>\".   Enter the description of this room by typing \"redit desc <description>\".",
-	    	               new java.util.LinkedList<Exit>());
+	    	               new java.util.Vector<Exit>());
     }
     
-    public Room(int vnum, String title, String description, LinkedList<Exit> exits) {
+    public Room(int vnum, String title, String description, Vector<Exit> exits) {
         this.vnum = vnum;
 
         roomExits = exits;
@@ -79,7 +79,7 @@ public class Room {
     public Node toNode(Document doc) {
 
         Node m = doc.createElement("room");
-        LinkedList<Node> attribs = new LinkedList<Node>();
+        Vector<Node> attribs = new Vector<Node>();
         attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
         attribs.add(Util.nCreate(doc, "title", title));
         attribs.add(Util.nCreate(doc, "description", description + ""));
@@ -134,12 +134,12 @@ public class Room {
     }
 
     public void freeze() {
-        LinkedList<Item> newItemList = new LinkedList<Item>();
+        Vector<Item> newItemList = new Vector<Item>();
         for (Item i : roomItems) {
             newItemList.add(TrollAttack.getItem(i.vnum));
         }
         roomItems = newItemList;
-        LinkedList<Being> newBeingList = new LinkedList<Being>();
+        Vector<Being> newBeingList = new Vector<Being>();
         for (Being b : roomBeings) {
             if(!b.isPlayer()) {
                 newBeingList.add(TrollAttack.getMobile(b.getVnum()));
@@ -156,13 +156,13 @@ public class Room {
         for (int i = 0; i < roomItems.size(); i++) {
             roomVnums[i] = new Integer(((Item) roomItems.get(i)).vnum);
         }
-        roomItems = new LinkedList();
+        roomItems = new Vector();
         for (int i = 0; i < roomVnums.length; i++) {
             roomItems.add(new Item(TrollAttack.getItem(roomVnums[i])));
         }
         try {
             Integer[] mobileVnums = new Integer[roomBeings.size()];
-            LinkedList<Being> roomMobiles = new LinkedList<Being>();
+            Vector<Being> roomMobiles = new Vector<Being>();
             int i = 0;
             for (Being tmp : roomBeings) {
                 if (tmp.isPlayer()) {
@@ -504,7 +504,7 @@ public class Room {
         return null;
     }
 
-    public LinkedList<Being> getRoomBeings() {
+    public Vector<Being> getRoomBeings() {
         return roomBeings;
     }
 
@@ -516,8 +516,8 @@ public class Room {
 	}
 
     // Makes sure that mobiles don't leave their area, or enter a nowander room.
-	public LinkedList<Exit> getWanderableExits() {
-		LinkedList<Exit> exitList = new LinkedList<Exit>();
+	public Vector<Exit> getWanderableExits() {
+		Vector<Exit> exitList = new Vector<Exit>();
 		Area thisArea = Area.testRoom(this, TrollAttack.gameAreas);
 		for(Exit e : roomExits) {
 			if(Area.test(e.getDestination(), TrollAttack.gameAreas) == thisArea && !e.isNoWander() && !e.getDestinationRoom().getNoWander()) {

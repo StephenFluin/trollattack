@@ -15,10 +15,10 @@ import TrollAttack.Commands.abilities.MagicMissile;
 import TrollAttack.Commands.abilities.Scan;
 import TrollAttack.Commands.abilities.Track;
 
-import java.util.LinkedList;
+import java.util.Vector;
 
 public class AbilityHandler {
-    private LinkedList<Ability>  abilities = new LinkedList<Ability>();
+    private Vector<Ability>  abilities = new Vector<Ability>();
     public AbilityHandler() {
         register(new Scan());
         register(new Track());
@@ -42,7 +42,7 @@ public class AbilityHandler {
         return null;
     }
 
-    public LinkedList<Ability> getList() {
+    public Vector<Ability> getList() {
         TrollAttack.debug("Master list of abilities is being used, there are currently " + abilities.size());
         return abilities;
     }

@@ -9,7 +9,7 @@
 package TrollAttack.Commands.abilities;
 import TrollAttack.*;
 import TrollAttack.Commands.*;
-import java.util.LinkedList;
+import java.util.Vector;
 import java.util.PriorityQueue;
 
 public class Track extends Ability {
@@ -20,11 +20,11 @@ public class Track extends Ability {
         player.tell("Usage: track <being>");
         return false;
     }
-    public LinkedList<Path> trackTasks;
+    public Vector<Path> trackTasks;
     public boolean run(Being player, String command) {
-    	trackTasks = new LinkedList<Path>();
+    	trackTasks = new Vector<Path>();
         double tmpProficiency = player.getProficiency(this);
-        LinkedList<Path> now;
+        Vector<Path> now;
         int distance = 0;
         
         Path n = new Path( player.getActualRoom(), command );
@@ -32,10 +32,10 @@ public class Track extends Ability {
         now = trackTasks;
         
         while(tmpProficiency > 0) {
-        	trackTasks = new LinkedList<Path>();
+        	trackTasks = new Vector<Path>();
         	for(Path p : now) {
         		if(p.track() != null) {
-        			player.tell("You sense something to the " + p.path.getFirst().getDirectionName() + ".");
+        			player.tell("You sense something to the " + p.path.get(0).getDirectionName() + ".");
         			return true;
         		}
         	}
@@ -52,11 +52,11 @@ public class Track extends Ability {
         return false;
     }
     class Path {
-    	public LinkedList<Exit> path;
+    	public Vector<Exit> path;
     	public Room room;
     	public String name;
     	public Path(Room r, String name) {
-    		path = new LinkedList<Exit>();
+    		path = new Vector<Exit>();
     		room = r;
     		this.name = name;
     	}
@@ -64,7 +64,7 @@ public class Track extends Ability {
     		super();
     		room = e.room;
     		name = e.name;
-    		path = new LinkedList<Exit>();
+    		path = new Vector<Exit>();
     		for(Exit exit : e.path) {
     			addExit(exit);
     		}

@@ -14,7 +14,13 @@ package TrollAttack.Commands;
  */
 
 
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.OutputStreamWriter;
+import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Set;
 
@@ -30,7 +36,7 @@ public class CommandHandler {
 	Build builder;
 	Being player;
 	public CommandHandler(Being p) {
-		commandList = new LinkedList(false, 0);
+		commandList = new LinkedList();
 		player = p;
 		//player.tell("Starting command handler.");
 		builder = new Build(player);
@@ -95,6 +101,7 @@ public class CommandHandler {
         registerCommand(new Version("version"));
 		registerCommand(new Where("where"));
 		registerCommand(new Save("save"));
+		registerCommand(new Bug("bug"));
 		
 		registerCommand(new Help("help"));
 		registerCommand(new CommandList("commands"));
@@ -265,7 +272,26 @@ public class CommandHandler {
 	            player.tell("You don't see that here.");
                 return false;
 	        } else {
-	            player.tell(mob.getShort() + ": " + mob.getPrompt());
+	        	float comparison = (((float)mob.hitPoints) - ((float)player.hitPoints)) / ((float)player.hitPoints);
+	        	String result;
+	        	if(comparison > .2) {
+	        		result = mob.getShort() + " looks much tougher than you." + Util.wrapChar;
+	        	} else if(comparison < -.2) {
+	        		result = "You are much tougher than " + mob.getShort() + "." + Util.wrapChar;
+	        	} else {
+	        		result = mob.getShort() + " looks about as tough as you." + Util.wrapChar;
+	        	}
+	        	comparison = (((float)mob.getAverageHitDamage()) - ((float)player.getAverageHitDamage())) / ((float)player.getAverageHitDamage());
+	        	if(comparison > .2) {
+	        		result += mob.getShort() + " looks like he could hurt you a lot.";
+	        	} else if(comparison < -.2) {
+	        		result += mob.getShort() + " probably couldn't hurt you very much.";
+	        	} else {
+	        		result += mob.getShort() + " could hurt you a fair amount.";
+	        	}
+	        	
+	        	
+	            player.tell(result);
 	        }
             return true;
             
@@ -1014,7 +1040,7 @@ public class CommandHandler {
             Set<Ability> classAbilties = player.getBeingClass().getAbilityData().keySet();
             
             Set<Ability> beingAbilities = player.getAbilitiesData().keySet();
-            java.util.LinkedList<Ability> list = new java.util.LinkedList<Ability>();
+            java.util.Vector<Ability> list = new java.util.Vector<Ability>();
             for(Ability ability : classAbilties) {
                 list.add(ability);
             }
@@ -1059,7 +1085,7 @@ public class CommandHandler {
                 return execute();
             }
             Being trainer = null;
-            java.util.LinkedList<Being> beings = player.getActualRoom().getRoomBeings();
+            java.util.Vector<Being> beings = player.getActualRoom().getRoomBeings();
             for(Being being : beings) {
                 if(being.canTeach) {
                     trainer = being;
@@ -1198,6 +1224,26 @@ public class CommandHandler {
 	        player.tell("You save your progress.");
             return true;
 	    }
+	}
+	
+	class Bug extends Command {
+		public Bug(String s) { super(s, false); }
+		public boolean execute() {
+			player.tell("Usage: bug <message>");
+			return false;
+		}
+		public boolean execute(String s) {
+			try {
+				OutputStreamWriter f = new FileWriter("bug-log.txt", true);
+				f.write(player.getName() +"(" + player.getCurrentRoom() + "):" + s + "\n");
+				f.flush();
+				f.close();
+				player.tell("Bug logged, thanks for your feedback!");
+			} catch(Exception e) {
+				return false;
+			}
+			return true;
+		}
 	}
 	/*class Debug1 extends Command {
 	    public Debug1(String s) { super(s, false); }

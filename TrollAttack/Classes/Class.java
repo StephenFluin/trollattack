@@ -9,7 +9,7 @@
 package TrollAttack.Classes;
 
 import java.util.Hashtable;
-import java.util.LinkedList;
+import java.util.Vector;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -85,7 +85,7 @@ public class Class {
     public Node toNode(Document doc) {
            
         Node m = doc.createElement("class");
-        LinkedList<Node> attribs = new LinkedList<Node>();
+        Vector<Node> attribs = new Vector<Node>();
         attribs.add(Util.nCreate(doc, "name", name + ""));
         for(Ability ability : abilitiesData.keySet()) {
             AbilityData data = abilitiesData.get(ability);

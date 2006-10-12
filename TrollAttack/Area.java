@@ -9,9 +9,8 @@ package TrollAttack;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
+import java.util.Vector;
 import java.util.Hashtable;
-import java.util.LinkedList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,7 +36,7 @@ public class Area {
 
     public int defaultClicks;
 
-    public LinkedList<Room> areaRooms;
+    public Vector<Room> areaRooms;
 
     public Area() {
         this(0, 0, "uncategorized.xml", "Uncategorized", 15, true);
@@ -49,7 +48,7 @@ public class Area {
         high = highVnum;
         filename = areaFilename;
         name = areaName;
-        areaRooms = new LinkedList<Room>();
+        areaRooms = new Vector<Room>();
         defaultClicks = clicks;
         this.frozen = frozen;
     }
@@ -84,7 +83,7 @@ public class Area {
     public Node toNode(Document doc) {
 
         Node m = doc.createElement("area");
-        LinkedList<Node> attribs = new LinkedList<Node>();
+        Vector<Node> attribs = new Vector<Node>();
         attribs.add(Util.nCreate(doc, "low", low + ""));
         attribs.add(Util.nCreate(doc, "high", high + ""));
         attribs.add(Util.nCreate(doc, "filename", filename));
@@ -125,8 +124,8 @@ public class Area {
      *  @param gameMobiles A list of mobiles that we know about.
      *  @param gameItems A list of items that we know about.
      */
-    public void save(LinkedList<Room> gameRooms, LinkedList<Mobile> gameMobiles,
-            LinkedList<Item> gameItems) {
+    public void save(Vector<Room> gameRooms, Vector<Mobile> gameMobiles,
+            Vector<Item> gameItems) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         DocumentBuilder builder = null;
@@ -188,7 +187,7 @@ public class Area {
         }
     }
 
-    static public Area findArea(String filename, LinkedList<Area> gameAreas) {
+    static public Area findArea(String filename, Vector<Area> gameAreas) {
         for (Area currentArea : gameAreas) {
             if (filename == null) {
                 filename = "";
@@ -200,7 +199,7 @@ public class Area {
         return null;
     }
 
-    static public Area test(int vnum, LinkedList<Area> gameAreas) {
+    static public Area test(int vnum, Vector<Area> gameAreas) {
         for(Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
                 return currentArea;
@@ -209,7 +208,7 @@ public class Area {
         return new Area();
     }
 
-    static public Area testRoom(Room room, LinkedList<Area> gameAreas) {
+    static public Area testRoom(Room room, Vector<Area> gameAreas) {
         int vnum = room.vnum;
         for (Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
@@ -219,7 +218,7 @@ public class Area {
         return new Area();
     }
 
-    static public Area testMobile(Mobile room, LinkedList<Area> gameAreas) {
+    static public Area testMobile(Mobile room, Vector<Area> gameAreas) {
         int vnum = room.vnum;
         for(Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
@@ -229,7 +228,7 @@ public class Area {
         return new Area();
     }
 
-    static public Area testItem(Item room, LinkedList<Area> gameAreas) {
+    static public Area testItem(Item room, Vector<Area> gameAreas) {
         int vnum = room.vnum;
         for(Area currentArea : gameAreas) {
             if (vnum >= currentArea.low && vnum <= currentArea.high) {
@@ -330,7 +329,7 @@ public class Area {
 		TrollAttack.gameAreas.remove(this);
 		
 		
-		ArrayList<Reset> deletionList = new ArrayList<Reset>();
+		Vector<Reset> deletionList = new Vector<Reset>();
 		for(Reset r : TrollAttack.gameResets) {
 			if(r.area == this) {
 				deletionList.add(r);
