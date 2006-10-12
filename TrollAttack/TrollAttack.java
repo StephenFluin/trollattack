@@ -95,6 +95,10 @@ public class TrollAttack {
         gamePlayers.add(player);
     }
 
+    /**
+     * Sends the given message to all players of the game.
+     * @param message The message sent to each player.
+     */
     public static void broadcast(String message) {
         for (Player currentPlayer : gamePlayers) {
             currentPlayer.interrupt(message);
@@ -325,6 +329,7 @@ public class TrollAttack {
         	c.shutdown();
         }
         message("Game shutting down.");
+        System.exit(0);
         //message(gameCommunications.toString());
        
     }

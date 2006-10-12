@@ -368,20 +368,30 @@ public class Room {
         return getItem(name, false);
     }
 
-    public Item findItem(String name) {
-        return getItem(name);
-    }
-
     public Item removeItem(String name) {
         return getItem(name, true);
     }
-
     public Item getItem(String name, boolean remove) {
+    	return getItem(name, remove, null);
+    }
+    public Item getItem(String name, java.lang.Class objectClass) {
+    	return getItem(name, false, objectClass);
+    }
+    
+    public Item getItem(String name, boolean remove, java.lang.Class objectClass) {
+    	//TrollAttack.debug("looking for a " + name);
         Item newItem = null;        
         for(Item currentItem : roomItems) {
             if (Util.contains(currentItem.name, name)) {
-                newItem = currentItem;
-                break;
+                if(objectClass!= null) {
+                	if(objectClass.isInstance(currentItem)) {
+                		newItem = currentItem;
+                	}
+                } else {
+                	newItem = currentItem;
+                	break;
+                }
+                
             }
         }
         if(remove && newItem != null) {

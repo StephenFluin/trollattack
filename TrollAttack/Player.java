@@ -52,6 +52,7 @@ public class Player extends Being {
 
     public double timePlayed = 0;
 
+
     public Player(Communication com) {
         // Set the default player values here.
         gold = 0;
@@ -202,7 +203,10 @@ public class Player extends Being {
         getActualRoom().removeBeing(this);
         TrollAttack.gamePlayers.remove(this);
         //TrollAttack.debug("Removed the player from the game, now just need to close the connection.");
+        TrollAttack.broadcast(Communication.PURPLE + getShort() + " logged out.");
+        authenticated = false;
         closeConnection();
+        //TrollAttack.debug("Done closing the connection.");
     }
 
     public String getName() {
@@ -324,7 +328,10 @@ public class Player extends Being {
     }
 
     public void handleCommand(String command) {
-        ch.handleCommand(command);
+        if(authenticated  == true) {
+        	ch.handleCommand(command);
+        }
+    	
     }
 
     public int getHitDamage() {

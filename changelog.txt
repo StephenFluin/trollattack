@@ -9,7 +9,7 @@
 2/21/06 - Fixed nowander exits
 2/21/06 - Finished shop creation/destroying code
 2/21/06 - Added "buy" command.
-2/21/06 - Made fountains not pickupable.
+2/21/06 - Made fountains heavy, and players limited in carryweight.
 Upgrade to version 0.82
 3/01/06 - Fixed nowander rooms.
 3/01/06 - Fixed DropAllEquipment (wasn't removing)
@@ -24,7 +24,7 @@ Upgrade to version .83
 4/21/06 - Added additional prompt code.
 Upgrade to version .84
 10/07/06 - Updated login code
-10/07/06 - Turned of every-line debugging.
+10/07/06 - Turned off every-line debugging.
 Upgrade to version .84.5
 10/07/06 - Revised "aset" functionality
 10/08/06 - Began adding comments.
@@ -36,3 +36,10 @@ Upgrade to version .85
 Upgrade to version .86
 10/12/06 - Changed "consider" command to be more helpful.
 10/12/06 - Fixed mobile reset wear to be silent.
+10/12/06 - Fixed login/logout bugs and error handling
+10/12/06 - Fixed eat/drink.
+10/12/06 - Added extra code to ease process of interacting with a particular type of item.
+10/12/06 - Made entire player name necessary to attack another player.
+10/12/06 - Made fountain a type of DrinkCon (useful for giants)
+10/12/06 - Added fastpaths. (arrow keys)
+Upgrdade to version .87

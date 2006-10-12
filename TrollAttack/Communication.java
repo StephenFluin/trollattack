@@ -47,7 +47,8 @@ public abstract class Communication extends Thread {
             }
             player = authenticate(player);
             if (player == null) {
-                close();
+                // The player must have quit while logging in.
+            	close();
                 return;
             }
             
@@ -63,19 +64,29 @@ public abstract class Communication extends Thread {
                             pBroadcast);
 
             player.look();
-            player.tell();
             player.prompt();
             // Main loop of entire game for each player.
             while (player.authenticated == true && !TrollAttack.gameOver) {
                 // TrollAttack.message(ID + ": Accepting command...");
                 try {
                     inputLine = getLine();
+                    // This will be null if the connection has been severed.
+                    if(inputLine == null) {
+                    	player.quit(true);
+                    	TrollAttack.message(player.getShort() + " lost his/her connection.");
+                    }
                     player.handleCommand(inputLine);
+                } catch(NullPointerException e) {
+                	TrollAttack.error(player.getShort() + " caused some sort of problem in Communication");
+                    e.printStackTrace();
+                    break;
                 } catch (Exception e) {
-                    TrollAttack.message(player.getShort() + " logged out.");
+                	TrollAttack.error(player.getShort() + " logged out FOR AN UNKNOWN REASON.");
+                    e.printStackTrace();
                     break;
                 }
             }
+            
 
             TrollAttack.gameCommunications.remove(this);
         } catch (Exception e) {
@@ -90,6 +101,7 @@ public abstract class Communication extends Thread {
         String pass = "";
         int attempts = 0;
         while (tmpPlayer == null) {
+        	
             try {
                 print(Util.getMOTD(), false);
                 player.tell(WHITE +"What is your name (or type "
@@ -97,9 +109,7 @@ public abstract class Communication extends Thread {
                         + " for a new character)?");
                 name = getLine();
                 //TrollAttack.message("Read name " + name + ".");
-                if (name == null) {
-                    continue;
-                }
+
                 if (name.compareToIgnoreCase("new") == 0) {
                     pass = player.interactiveNewPlayer();
                     tmpPlayer = player;
@@ -109,6 +119,9 @@ public abstract class Communication extends Thread {
                     player.tell(name + "'s password:");
                     //TrollAttack.debug("Login Problems - Start");
                     pass = getLine();
+                    if(pass == null) {
+                    	throw new NullPointerException("getlined returned null.");
+                    }
                     tmpPlayer = DataReader.readPlayerFile(name);
                     //TrollAttack.debug("Login Problems - Read player file.");
                     if (tmpPlayer != null) {
@@ -145,22 +158,14 @@ public abstract class Communication extends Thread {
                     player.tell("Incorrect password or player not found.");
                 }
             } catch (NullPointerException e) {
-                if(TrollAttack.gameOver) {
-	            	return null;
-	            	
-                } else {
-                	e.printStackTrace();
-                	TrollAttack.message(getID() + "Authentication failure (" + attempts++ + ").");
-                	tmpPlayer = null;
-                	return null;
-                }
-	                //e.printStackTrace();
-                		
+            	// Connection was probably lost while user attempted to log in.
+            	// This is normal so don't throw anything weird.
+        		return null;		
             } catch (SocketException e) {
                 return null;
             } catch (IOException e) {
-                //e.printStackTrace();
-                TrollAttack.debug("Player quit while logging in.");
+                e.printStackTrace();
+                TrollAttack.debug("IO Exception while logging in.");
                 return null;
             } catch (Exception e) {
                 e.printStackTrace();

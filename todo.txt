@@ -5,7 +5,6 @@ academy shop should have cost
 shops should work
 having two people fight gives only one of them experience upon death
 follow caused an infinite loop saying "you aren't following anything"
-eating/drinking needs to be bounded better
 Fix Experience System
 script to grid tabbed data
 "scan nw"

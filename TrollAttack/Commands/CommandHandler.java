@@ -246,8 +246,53 @@ public class CommandHandler {
 				}
 		    }
 		} else {
+			
 			if(commandString.length() != 0) {
-			    player.tell("Huh?");
+				/**
+				 * Fast paths
+				 * 1  10  5
+				 * 13	  12
+				 * 4  11  6 
+				 */
+			   
+				if(Character.getNumericValue(commandString.charAt(0)) == -1 && commandString.length() >= 3 ) {
+					
+				    for(Character tmp : commandString.toCharArray()) {
+				    	int dir = Character.getNumericValue(tmp);
+				    	switch(dir) {
+					    	case 1: 
+					    		handleCommand("nw");
+					    		break;
+					    	case 10:
+					    		handleCommand("n");
+					    		break;
+					    	case 5:
+					    		handleCommand("ne");
+					    		break;
+					    	case 13: 
+					    		handleCommand("w");
+					    		break;
+					    	case 12:
+					    		handleCommand("e");
+					    		break;
+					    	case 4:
+					    		handleCommand("sw");
+					    		break;
+					    	case 11: 
+					    		handleCommand("s");
+					    		break;
+					    	case 6:
+					    		handleCommand("se");
+					    		break;
+				    	}
+				    	
+				    }    
+
+					
+				} else {
+					player.tell("Huh?");
+				}
+			    
 			}
 			
 		}
@@ -311,6 +356,10 @@ public class CommandHandler {
 				player.tell("You don't see that here.");
                return false;
 			} else {
+				if(mob instanceof Player && !player.getName().equals(s)) {
+					player.tell("To attack a player, you must type their full name!");
+					return false;
+				}
 				//TrollAttack.message("Starting a fight between " + player.getShort() + " and " + mob.getShort());
 			    Fight myFight = new Fight(player, mob );
 				myFight.start();
@@ -645,12 +694,13 @@ public class CommandHandler {
             return false;
         }
 	    public boolean execute(String command) {
-	        Item newDrink = player.findItem(command);
+	        Item newDrink = player.findItem(command, DrinkContainer.class);
 	        if(newDrink == null) {
-	            newDrink = player.getActualRoom().findItem(command);
+	        	//TrollAttack.debug("didn't find a drinkcon");
+	            newDrink = player.getActualRoom().getItem(command, Fountain.class);
 	        }
 	        if(newDrink == null) {
-	            player.tell("You can't find that!");
+	            player.tell("You can't find a drink like that!");
 	            return false;
 	        } else {
 	            player.tell( player.drinkItem( newDrink ) );
@@ -665,16 +715,16 @@ public class CommandHandler {
             return false;
         }
 	    public boolean execute(String command) {
-	        String[] parts = command.split(" ");
+	        String[] parts = Util.split(command);
 	        if(parts.length < 2) {
 	            return execute();
 	        }
-	        Item container = player.findItem(parts[0]);
-	        Item fountain = player.getActualRoom().findItem(parts[1]);
+	        Item container = player.findItem(parts[0], DrinkContainer.class);
+	        Item fountain = player.getActualRoom().getItem(parts[1], Fountain.class);
 	        DrinkContainer newContainer;
 	        Fountain newFountain;
 	        if(container == null) {
-	            player.tell("You don't have that!");
+	            player.tell("You don't have that a container named that!");
 	            return false;
 	        }
             try {
@@ -688,7 +738,7 @@ public class CommandHandler {
 	            return false;
 	        }
 	        if(fountain == null) {
-	            player.tell("You can't find that!");
+	            player.tell("You can't find a water source named that!");
 	            return false;
 	        }
             try {

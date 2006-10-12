@@ -1,7 +1,6 @@
 package TrollAttack;
 
 import java.util.*;
-import java.util.Vector;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -45,7 +44,7 @@ public class Being implements Cloneable {
     public int favor;
     
     /**
-     * 
+     * Believed to be currently unimplmented
      */
     public int hitLevel;
 
@@ -89,10 +88,7 @@ public class Being implements Cloneable {
 
     public Roll hitSkill;
 
-    /**
-     * States: 0 Awake/Alert 1 Sitting 2 Lying down 3 Sleeping Should inverse
-     * this list, and add fighting as a state so we can have "minpos"
-     */
+
 
     public String shortDescription, name, longDesc;
 
@@ -151,6 +147,11 @@ public class Being implements Cloneable {
         currentRoom = r.vnum;
     }
 
+    
+    /**
+     * States: 0 Awake/Alert 1 Sitting 2 Lying down 3 Sleeping Should inverse
+     * this list, and add fighting as a state so we can have "minpos"
+     */
     public int getState() {
         return state;
     }
@@ -552,17 +553,46 @@ public class Being implements Cloneable {
 
     }
 
-    public Item findItem(String name) {
-        Item currentItem;
-        Iterator<Item> i = beingItems.iterator();
-        while (i.hasNext()) {
-            currentItem = i.next();
-            if (Util.contains(currentItem.getName(), name)) {
-                return currentItem;
-            }
-        }
-        return null;
+    /**
+     * Finds an item matching the given string.
+     * @param name The name describing the object.
+     * @return
+     */
+    public Item findItem(String itemName) {
+       return findItem(itemName, null);
     }
+    /**
+     * Finds an item of the given class.
+     * @param command The string describing the object.
+     * @param objectClass The class of the object we are looking for (if known).
+     * @return The item if one is found matching the given class and command, null otherwise.
+     */
+	public Item findItem(String command, java.lang.Class objectClass) {
+    	
+		Item currentItem;
+		Iterator<Item> i = beingItems.iterator();
+		while (i.hasNext()) {
+			currentItem = i.next();
+			if (Util.contains(currentItem.getName(), command)) {
+				
+				if(objectClass != null) {
+					//TrollAttack.debug("Looking for only objects that are  " + objectClass.toString());
+					if(objectClass.isInstance(currentItem)) {
+						//TrollAttack.debug("Found " + currentItem.getShort() + " because it is of type " + objectClass.toString());
+						return currentItem;
+					} else {
+						//TrollAttack.debug("not considering " + currentItem.getShort() + " because it is not of type " + objectClass.toString());
+					}
+				} else {
+					//TrollAttack.debug("not checking for correct class.");
+					return currentItem;
+				}
+			} else {
+				//TrollAttack.debug("This " + currentItem.getName() + " doesn't look like a " + command + ".");
+			}
+		}
+		return null;
+	}
 
     public void eatItem(Item newEat) {
         Food newEaty = null;
@@ -576,6 +606,9 @@ public class Being implements Cloneable {
             tell( "You are too full to eat that.");
         } else {
             hunger -= newEaty.getQuality();
+            if(hunger < 1) {
+            	hunger = 1;
+            }
             beingItems.remove(newEaty);
             tell( "You eat " + newEat.getShort() + " and are now "
                     + getHungerString() + ".");
@@ -638,7 +671,7 @@ public class Being implements Cloneable {
         switch (thirst) {
         case 0:
         case 1:
-            return "bloated";
+            return "satisfied";
         case 2:
         case 3:
             return "not thirsty";
@@ -1199,6 +1232,12 @@ public class Being implements Cloneable {
 		return 0;
 	}
 
+	/**
+	 * Figures out the max weight a being can carry.  If the being is over level 50 
+	 * or a builder, they should be able to pick anything up (100000 for now, !TODO), 
+	 * otherwise they can carry 15*strength.
+	 * @return The max weight that the being can carry.
+	 */
 	public int getCarryingMax() {
 		if(level > 50 || isBuilder()) {
 			return 100000;
@@ -1213,6 +1252,8 @@ public class Being implements Cloneable {
 		}
 		return weight;
 	}
+
+
 	
 
 

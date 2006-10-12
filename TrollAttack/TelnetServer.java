@@ -50,20 +50,25 @@ public class TelnetServer extends Communication {
         
     }
     public void shutdown() {
-    	this.close();
+    	TrollAttack.debug("Attempting to shutdown thread " + getId());
+    	//this.close();
         if(serverSocket != null) {
         	try {
         		serverSocket.close();
+        		serverSocket = null;
+        		//serverSocket.
         	} catch(Exception e) {
         		e.printStackTrace();
         	}
+        } else {
+        	TrollAttack.debug("There wasn't a server socket to shut down for some reason.");
         }
+        TrollAttack.debug("Shutdown complete (I think) on thread " + getId());
     	
     }
     public void waitForUser() {
         try {
-        	//TrollAttack.debug("Waiting.");
-            adminSocket = serverSocket.accept();
+        	adminSocket = serverSocket.accept();
             TrollAttack.message("New connection attempt.");
             in = new BufferedReader(new InputStreamReader(adminSocket.getInputStream()));
             
@@ -89,9 +94,10 @@ public class TelnetServer extends Communication {
         }
         return ss;
     }
-    public String getLine() throws NullPointerException {
+    public String getLine() {
         String line = null;
     	try {
+    		// This will throwa Null Pointer Exception if the connection is interrupted.
     		line = in.readLine();
              
 //          remove backspaces from inputLine
@@ -107,8 +113,13 @@ public class TelnetServer extends Communication {
                      line = line.substring(0,location-1) + line.substring(location+1);
                  }
              }
-        } catch(Exception e) {
-            //throw new NullPointerException("Problem with getLine.");
+        } catch(NullPointerException e) {
+        	// This is okay because it means the connection was closed.
+        	return null;
+        	
+        } catch(IOException e) {
+        	TrollAttack.error("IO Exception in telnet getLine, we don't know why.");
+        	e.printStackTrace();
         }
 
         return line;
@@ -150,6 +161,7 @@ public class TelnetServer extends Communication {
         } catch(Exception e) {
             e.printStackTrace();
         }
+       
     }
     
     public static String GREY = ESCAPE + "[1;30m";
