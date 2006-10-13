@@ -312,7 +312,7 @@ public class CommandHandler {
             return false;
         }
 	    public boolean execute( String s ) {
-	        Being mob = player.getActualRoom().getBeing( s, null );
+	        Being mob = player.getActualRoom().getBeing( s, player );
 	        if( mob == null) {
 	            player.tell("You don't see that here.");
                 return false;
