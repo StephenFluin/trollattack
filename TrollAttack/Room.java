@@ -420,7 +420,12 @@ public class Room {
         }
         return null;
     }
-
+    /**
+     * Returns the being that matches the given name who isn't the actor.
+     * @param name The name of the being we are looking for.
+     * @param actor The name of the actor.
+     * @return
+     */
     public Being getBeing(String name, Being actor) {
         if (name.compareToIgnoreCase("self") == 0) {
             return actor;
