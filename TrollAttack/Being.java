@@ -309,7 +309,7 @@ public class Being implements Cloneable {
                 movePoints, 
                 maxMovePoints, 
                 experience, 
-                Util.experienceLevel(level + 1) - experience,
+                Util.experienceLevel(level) - experience,
                 currentRoom,
                 gold);
     }
@@ -445,8 +445,10 @@ public class Being implements Cloneable {
      */
     public void increaseExperience(int e) {
         experience += e;
-        if (experience > Util.experienceLevel(level) && isPlayer) {
-            tell("You have attained level " + ++level + " (" + experience + "/" + Util.experienceLevel(level) + ").");
+        if ((experience > Util.experienceLevel(level)) && isPlayer) {
+            interrupt(	Communication.WHITE + "Congratulations! You have attained level " + ++level + "." + Util.wrapChar + 
+            		"Levelling up is good thing.  When you level, you will gain more health, mana, and movement points.  You will also become more likely to hit other beings that you are fighting, and when you do hit them, you will do more damage.  If you want to maximize your gains, make sure you have a high constitution, wisdom, strength, and dexterity.");
+            
             int healthIncrease = (int) (Math.random() * 9) + constitution / 2
                     - 2;
             int manaIncrease = (int) (Math.random() * 9) + wisdom / 2 - 2;
@@ -483,7 +485,7 @@ public class Being implements Cloneable {
         }
     }
 
-    public Gold dropGold(int amount) {
+    public Gold createGoldItem(int amount) {
         gold -= amount;
         return new Gold(amount);
     }
@@ -619,30 +621,27 @@ public class Being implements Cloneable {
 
     public String drinkItem(Item newDrink) {
         DrinkContainer newDrinky;
+       
         try {
             newDrinky = (DrinkContainer) newDrink;
-        } catch (ClassCastException e) {
-            if(newDrink.getClass()== Fountain.class) {
-                thirst -= 2;
-                return "You drink from " + newDrink.getShort()
-                        + " and are now " + getThirstString() + ".";
-            } else {
-                return "You can't drink from that!";
-            }
-        }
-        if (thirst < 1) {
-            return "You are too full to take a drink.";
-        } else {
-            if (newDrinky.getVolume() > 0) {
-                thirst -= 2;
+            if (thirst < 1) {
+                tell("You are too full to take a drink.");
+            } else if(newDrink instanceof Fountain) {
+                thirst = 0;
+                tell("You drink from " + newDrink.getShort()
+                        + " and are now " + getThirstString() + ".");
+            } else if (newDrinky.getVolume() > 0) {
+            	thirst -= 2;
                 newDrinky.use();
-                return "You drink from " + newDrink.getShort()
-                        + " and are now " + getThirstString() + ".";
+                tell("You drink from " + newDrink.getShort()
+                        + " and are now " + getThirstString() + ".");
             } else {
-                return "There is nothing left in " + newDrink.getShort() + ".";
+                tell("There is nothing left in " + newDrink.getShort() + ".");
             }
-
+        } catch (ClassCastException e) {
+        	tell("You can't drink from that!");
         }
+        return null;
     }
 
     public String getHungerString() {
@@ -1245,6 +1244,10 @@ public class Being implements Cloneable {
 		return strength * 15;
 	}
 
+	/**
+	 * Gets the total weight of the items that they are currently carrying.
+	 * @return The weight that they are currently carrying.
+	 */
 	public int getCarryingWeight() {
 		int weight = 0;
 		for(Item i : beingItems) {

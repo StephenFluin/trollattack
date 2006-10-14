@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.OutputStreamWriter;
+import java.util.Iterator;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Set;
@@ -69,7 +70,7 @@ public class CommandHandler {
 		registerCommand(new Trance("trance"));
 		registerCommand(new Consider("consider"));
 		registerCommand(new Inventory("inventory"));
-		registerCommand(new Equipment("equipment"));
+		registerCommand(new ShowEquipment("equipment"));
 		registerCommand(new Wear("wear"));
 		registerCommand(new Level("level"));
 		registerCommand(new Eat("eat"));
@@ -478,8 +479,8 @@ public class CommandHandler {
 		    }
 	    	Item item = null;
 	    	while( ( count-- != 0 ) && (item == null ) ) {
-		        item = player.getActualRoom().removeItem(	command		);
-		    
+		        item = player.getActualRoom().getItem(	command		);
+
 				if(item == null) {
 					if(count == 0) {
 					    player.tell("You can't find that here!");
@@ -487,6 +488,13 @@ public class CommandHandler {
 					    return false;
 					}
 				} else {
+			        if(item.weight < (player.getCarryingMax() - player.getCarryingWeight())) {
+			        	player.getActualRoom().removeItem(command);
+			        } else {
+			        	player.tell(Util.uppercaseFirst(item.getShort()) + " is too heavy, you can only sacrafice items you can pick up.");
+			        	return false;
+			        }
+					
 					player.tell("You sacrifice " + item.getShort() + " to your deity and receive one gold coin.");
 					player.gold++;
 					player.roomSay(item.getShort() + " is sacrificed to " + player.getShort() + "'s deity.");
@@ -531,7 +539,7 @@ public class CommandHandler {
 	class Prompt extends Command {
 	    public Prompt(String s) { super(s, false); }
 	    public boolean execute() { 
-            player.tell("Current Prompt: " + Util.decolor(player.getPromptString())); 
+            player.tell("Current Prompt: " + Util.escapeColors(player.getPromptString())); 
             return false;
         }
 	    public boolean execute(String command) {
@@ -561,7 +569,7 @@ public class CommandHandler {
 		            player.gold = amount;
 		        }
 		        if(player.gold >= amount) {
-		            item = player.dropGold(amount);
+		            item = player.createGoldItem(amount);
 		        } else {
 		            player.tell("You don't have that much!");
 		            return false;
@@ -575,7 +583,7 @@ public class CommandHandler {
 				
 			} else {
 				player.tell("You drop " + item.getShort() + ".");
-				player.roomSay(player.getShort() + " drops " + item.getShort() + ".");
+				player.roomSay("%1 drops " + item.getShort() + ".");
 				player.getActualRoom().addItem( item );
 			}
             return true;
@@ -630,8 +638,8 @@ public class CommandHandler {
             return true;
         }
 	}
-	class Equipment extends Command {
-		public Equipment(String s) { super(s, false); }
+	class ShowEquipment extends Command {
+		public ShowEquipment(String s) { super(s, false); }
 		public boolean execute() { 
             player.tell("Your " + player.getEquipment(), false); 
             return true;
@@ -658,16 +666,29 @@ public class CommandHandler {
             return false;
         }
 		public boolean execute(String command) {
-			Item newWear = player.findItem(command);
-			if(newWear == null) {
-			    player.tell("You don't have that!");
-               return false;
+			if(command.equals("all")) {
+				Vector<Item> itemList = new Vector<Item>();
+				for(Item i : player.beingItems) {
+
+					if(i instanceof Equipment) {
+						itemList.add(i);
+					}
+				}
+				for(Item i : itemList) {
+					player.wearItem(i);
+				}
+				return true;
 			} else {
-			    player.wearItem( newWear );
-         
+				Item newWear = player.findItem(command);
+				if(newWear == null) {
+				    player.tell("You don't have that!");
+	               return false;
+				} else {
+				    player.wearItem( newWear );
+	         
+				}
+	            return true;
 			}
-            return true;
-			
 		}
 	}
 	class Eat extends Command {
@@ -703,7 +724,8 @@ public class CommandHandler {
 	            player.tell("You can't find a drink like that!");
 	            return false;
 	        } else {
-	            player.tell( player.drinkItem( newDrink ) );
+	           player.drinkItem( newDrink );
+
 	        }
             return true;
 	    }
@@ -834,7 +856,7 @@ public class CommandHandler {
 		public boolean execute() {
 			if(player.getActualRoom() instanceof Shop) {
 				Shop s = (Shop)player.getActualRoom();
-				player.tell(s.list());
+				player.tell(s.list() + Util.wrapChar + Communication.RED + "You currently have: " + player.gold + " gold.");
 				return true;
 			} else {
 				player.tell("This isn't a shop.");
@@ -859,7 +881,8 @@ public class CommandHandler {
 					if(player.gold > i.cost) {
 						player.gold -= i.cost;
 						player.addItem((Item)i.clone());
-						player.tell("You purchase " + i.getShort());
+						player.tell("You purchase " + i.getShort() + ".");
+						player.roomSay("%1 buys " + i.getShort() + ".");
 						return true;
 					} else {
 						player.tell("You don't have enough money to buy that!");
@@ -867,6 +890,7 @@ public class CommandHandler {
 					}
 				}
 			}
+			player.tell("That isn't for sale.");
 			return false;
 		}
 	}
@@ -958,7 +982,7 @@ public class CommandHandler {
             return false;
 	    }
 	    public boolean execute(String phrase) {
-            phrase = Util.decolor(phrase);
+            phrase = Util.escapeColors(phrase);
 	        player.tell(Communication.CYAN + "You say, \"" + phrase + "\".");
 	        player.roomSay(Communication.CYAN + player.getShort() + " says, \"" + phrase + "\".");
             return true;
@@ -971,7 +995,7 @@ public class CommandHandler {
             return false;
         }
         public boolean execute(String s) {
-        	s = Util.decolor(s);
+        	s = Util.escapeColors(s);
             for(Player p : TrollAttack.gamePlayers) {
                 
                 if(p == player) {
@@ -1413,28 +1437,32 @@ public class CommandHandler {
 	class aList extends Command {
 	    public aList(String s) { super(s, false); }
 	    public boolean execute() {
-		    player.tell(Communication.GREEN + "Game Areas:");
-		    player.tell(Communication.CYAN + "Filename\t\tLowVnum\tHighVnum\tFrozen\tName" + Communication.WHITE);
+		    
+		    String table = Communication.CYAN + "Filename\tLowVnum\tHighVnum\tFrozen\tName";
 		    for(Area area : TrollAttack.gameAreas) {
-		        player.tell(area.filename + (area.filename.length() < 14 ? "\t" : "") + "\t" + area.low+"\t"+area.high + "\t\t" + "(" + (area.frozen ? "X" : " ") + ")\t" + area.name);
+		        table += Util.wrapChar +  Communication.WHITE + area.filename + "\t" + area.low+"\t"+area.high + "\t" + "(" + (area.frozen ? "X" : " ") + ")\t" + area.name;
 		    }
+		    table = Util.table(table);
+		    player.tell(Communication.GREEN + "Game Areas:" + Util.wrapChar + table);
             return true;
 		}
 	}
 	class iList extends Command {
 	    public iList(String s) { super(s, false); }
 	    public boolean execute() {
-		    player.tell(Communication.GREEN +"Items in the VNUM range of this area:");
-		    player.tell(Communication.CYAN + "VNUM\tName\t\tShortDesc" + Communication.WHITE);
-		    int high, low;
-		    high = player.getActualArea().high;
-		    low = player.getActualArea().low;
-		   for(Item item : TrollAttack.gameItems) {
-		        if(item.vnum <= high && item.vnum >= low) {
-		            player.tell(item.vnum + "\t" + item.name + "\t" + item.getShort());
-		        }
-		    }
-            return true;
+   
+			String table = Communication.CYAN + "VNUM\tName\tShortDesc";
+			int high, low;
+			high = player.getActualArea().high;
+			low = player.getActualArea().low;
+			for(Item item : TrollAttack.gameItems) {
+				if(item.vnum <= high && item.vnum >= low) {
+					table += Util.wrapChar + Communication.WHITE + item.vnum + "\t" + item.name + "\t" + item.getShort();
+				}
+			}
+			table = Util.table(table);
+			player.tell(Communication.GREEN +"Items in the VNUM range of this area:" + Util.wrapChar + table);
+			return true;
 		}
 	}
 	class mList extends Command {
@@ -1714,7 +1742,7 @@ public class CommandHandler {
 	        player.tell("Possible attributes:");
 	        player.tell("hp, maxhp, mana, maxmana, move, maxmove,");
 	        player.tell("name, short, long, gold, damagedice, hitdice,");
-	        player.tell("hitlevel, level, trainer, wanderer");
+	        player.tell("hitlevel, level, trainer, wanderer, reroll");
 	        return false;
 	    }
 	    public boolean execute(String s) {

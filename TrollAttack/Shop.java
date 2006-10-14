@@ -23,10 +23,11 @@ public class Shop extends Room {
 	}
 	
 	public String list() {
-		String result = Communication.WHITE + "Item Name\tCost\t" + Util.wrapChar + Communication.GREEN;
+		String result = Communication.WHITE + "Item\t" + Communication.YELLOW + "Price";
 		for(Item i : shopItems) {
-			result += i.getShort() + "\t" + i.cost + "\t" + Util.wrapChar;
+			result +=  Util.wrapChar + Communication.WHITE + i.getShort() + "\t" + Communication.YELLOW + i.cost;
 		}
+		result = Util.table(result);
 		if(shopItems.size() < 1) {
 			result += "This shop currently has nothing for sale.";
 		}

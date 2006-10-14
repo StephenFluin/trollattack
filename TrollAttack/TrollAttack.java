@@ -27,7 +27,7 @@ import TrollAttack.Classes.Class;
 
 
 public class TrollAttack {
-	public static String version = "0.86";
+	public static String version = "0.88";
 	
 	static Document document;
 
@@ -190,7 +190,7 @@ public class TrollAttack {
             if(!area.frozen) {
                 for(Room room : area.areaRooms) {
                     for(Being being : room.roomBeings) {
-                        if(!being.isPlayer && ((Mobile)being).isWanderer() && chance.roll() > 3) {
+                        if(!being.isPlayer && ((Mobile)being).isWanderer() && chance.roll() > 7) {
                             wanderers.add( (Mobile)being );
                         }
                     }

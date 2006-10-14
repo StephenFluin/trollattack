@@ -40,11 +40,11 @@ public abstract class Reset {
                 execute();
                 clicksRemaining = clicksMax;
             } else {
-                //TrollAttack.message(this.toString() + " has " +
-                // clicksRemaining + "left.");
+                //TrollAttack.debug(this.toString() + " has " +
+                // clicksRemaining + " left.");
             }
         } else {
-            //TrollAttack.message(this.toString() + " is frozen...");
+            //TrollAttack.debug(this.toString() + " is frozen...");
         }
     }
 
@@ -70,13 +70,13 @@ public abstract class Reset {
         }
 
         public void execute() {
-            //TrollAttack.message("executing an item reset.");
+            //TrollAttack.debug("executing an item reset.");
             if (room.countExactItem(item) < limit) {
-                //TrollAttack.message("Adding " + item.getShort() + " to " +
+                //TrollAttack.debug("Adding " + item.getShort() + " to " +
                 // room.title);
                 room.addItem(item);
             } else {
-                //TrollAttack.message("Item can't be added because there are ("
+                //TrollAttack.debug(toString() + " can't be added because there are ("
                 // + room.countExactItem(item) + "/" + limit + ").");
             }
         }
@@ -196,7 +196,7 @@ public abstract class Reset {
         }
 
         public String toString() {
-            return "Make door " + (open ? "open" : "closed") + ".";
+            return "Make door to " + exit.getDestinationRoom().title + " " + (open ? "open" : "closed") + ".";
         }
     }
 }

@@ -199,12 +199,7 @@ public abstract class Communication extends Thread {
     public void start() {
         super.start();
     }
-    public int colorLessLength(String string) {
-        // Each occurence of \033 means that a color is in the string, and
-        // 7 non-content characters are added to the length, so remove them.
-        String[] colors = string.split("[^&]&");
-        return string.length() - ((colors.length - 1) * 3);
-    }
+
 
     public String wordwrap(String string) {
         // Pattern that only allows strings of up to the wrapLength
@@ -217,7 +212,7 @@ public abstract class Communication extends Thread {
 
         // For each line that we find, wrap it if it is too long.
         for (int i = 0; i < lines.length; i++) {
-            if (colorLessLength(lines[i]) > wrapLength) {
+            if (Util.colorLessLength(lines[i]) > wrapLength) {
                 String tmp = lines[i];
                 lines[i] = "";
                 Pattern p = Pattern.compile(pattern);

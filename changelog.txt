@@ -43,3 +43,11 @@ Upgrade to version .86
 10/12/06 - Made fountain a type of DrinkCon (useful for giants)
 10/12/06 - Added fastpaths. (arrow keys)
 Upgrdade to version .87
+10/13/06 - Fixed drinking
+10/13/06 - Changed consider so "consider PeEll" doesn't consider self.
+10/13/06 - Added "wear all"
+10/13/06 - Fixed sacrafice so you can't sacrafice large objects.
+10/13/06 - Added object specification for getItem in room.
+10/13/06 - Decreased urge to wander.
+10/13/06 - Wrote gridding code.
+Upgrade to version .88

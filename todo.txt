@@ -1,12 +1,10 @@
 Todo List / Ideas:
 
 switch doesn't work (Can't reproduce 10/12/06)
-academy shop should have cost
 shops should work
 having two people fight gives only one of them experience upon death
 follow caused an infinite loop saying "you aren't following anything"
 Fix Experience System
-script to grid tabbed data
 "scan nw"
 invisibility
 Help files

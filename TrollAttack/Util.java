@@ -399,7 +399,7 @@ public class Util {
         
     }
 
-    public static String decolor(String s) {
+    public static String escapeColors(String s) {
         //TrollAttack.debug("Escaped string to: " + s.replaceAll("&", "&&"));
     	return s.replaceAll("&", "&&");
     }
@@ -414,4 +414,79 @@ public class Util {
 		}
 		return command;
 	}
+
+	/**
+	 * Take in a string and interpret tabs to create a table.  It is currently assumed that the first row is the header row.
+	 * @param result Tab formatted string
+	 * @return Table formatted string.
+	 */
+	public static String table(String tableString) {
+		String[][] table;
+		String[] lines = tableString.split(Util.wrapChar);
+		table = new String[lines.length][];
+		for(int i = 0;i<lines.length;i++) {
+			table[i] = lines[i].split("\t");
+		}
+		//printTable(table);
+		char headerChar = '-';
+		int[] columnSizes = new int[table[0].length];
+		// Calculate max size for each column.
+		for(int i = 0;i<table.length;i++) {
+			for(int j = 0;j<table[i].length;j++) {
+				if(table[i][j] == null) {
+					TrollAttack.debug("Table cell was null, What the?!?");
+				}
+				int colorLessLength = Util.colorLessLength(table[i][j]);
+				if(columnSizes[j] < colorLessLength) {
+					columnSizes[j] = colorLessLength;
+				}
+			}
+		}
+		String result = "";
+		for(int i = 0;i<table.length;i++) {
+			
+			for(int j = 0;j<table[i].length;j++) {
+
+				result += table[i][j];
+				for(int n = columnSizes[j] - colorLessLength(table[i][j]);n>0;n--) {
+					result += " ";
+				}
+
+				result += " ";
+				
+			}
+			if(i == 0) {
+				result += wrapChar + Communication.GREEN;
+				for(int j = 0;j<table[i].length;j++) {
+					//result += columnSizes[j];
+					for(int n = 0;n<columnSizes[j];n++) {
+						result += headerChar;
+					}
+					result += " ";
+				}
+			}
+			result += wrapChar;
+			
+		}
+		return result;
+	}
+	public static void printTable(String[][] table) {
+		System.out.print("[");
+		System.out.print(table.length + "->");
+		for(int i = 0;i< table.length;i++) {
+			System.out.print(table[i].length + ":");
+			for(int j = 0;j< table[i].length;j++) {
+				System.out.print(table[i][j] + ", ");
+			}
+			System.out.println();
+		}
+		System.out.print("]");
+	}
+    public static int colorLessLength(String string) {
+        //TrollAttack.debug("Colorless Length: " +  decolor(string).length() + "\nNormal Length: " + string.length());
+        return decolor(string).length();
+    }
+    public static String decolor(String string) {
+    	return string.replaceAll("&[^&]", "");
+    }
 }

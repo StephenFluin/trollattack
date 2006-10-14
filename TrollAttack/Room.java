@@ -380,9 +380,17 @@ public class Room {
     
     public Item getItem(String name, boolean remove, java.lang.Class objectClass) {
     	//TrollAttack.debug("looking for a " + name);
+    	int skipItems = 0;
+    	if(name.matches("^\\d\\..*$")) {
+    		// We want to skip some items until we get to the desired item.
+    		skipItems = new Integer(name.substring(0,1)) - 1;
+    		name = name.substring(2);
+    	}
+    	//TrollAttack.debug("looking for a " + name);
         Item newItem = null;        
         for(Item currentItem : roomItems) {
-            if (Util.contains(currentItem.name, name)) {
+        	//TrollAttack.debug("Skipping " + skipItems);
+            if (Util.contains(currentItem.name, name) && (--skipItems < 0)) {
                 if(objectClass!= null) {
                 	if(objectClass.isInstance(currentItem)) {
                 		newItem = currentItem;
