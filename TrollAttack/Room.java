@@ -368,6 +368,11 @@ public class Room {
         return getItem(name, false);
     }
 
+    /**
+     * Removes given item from the room if found and returns it.
+     * @param name The name of the object desired.
+     * @return
+     */
     public Item removeItem(String name) {
         return getItem(name, true);
     }
@@ -488,7 +493,7 @@ public class Room {
             // currentBeing.getShort() + " by " + strength + ".");
             currentBeing.increaseHitPoints(strength);
             currentBeing.increaseManaPoints(strength);
-            currentBeing.increaseMovePoints(strength);
+            currentBeing.increaseMovePoints(2*strength);
         }
     }
 
