@@ -23,9 +23,16 @@ public abstract class Command {
 	public String toString() {
 		return name;
 	}
+	
+	/**
+	 * Creates a command that can only be used when the player is in a
+	 * peaceful state.
+	 * @param commandName The name of the command.
+	 */
 	public Command(String commandName) { this(commandName, true);}
+	
 	public Command(String commandName, boolean mustBePeaceful) {name = commandName; peaceful = mustBePeaceful;}
-	public Command(String commandName, int minimumState) {
+	public Command(String commandName, int minPosition) {
 	    name = commandName; 
 	}
 	public boolean isPeaceful() {
