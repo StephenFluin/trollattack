@@ -21,7 +21,12 @@ public class Equipment extends Item {
     public Equipment(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);
     }
-    
+    public static String getItemType() {
+    	return "equipment";
+    }
+    public String getType() {
+    	return getItemType();
+    }
     public String getWearLocation() {
         return wearLocation;
     }
