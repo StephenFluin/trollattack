@@ -536,27 +536,17 @@ public class Being implements Cloneable {
         return result;
     }
 
-    public Item dropItem(String name) {
-        Item newItem = null;
-        for (Item currentItem : beingItems) {
-
-            if (Util.contains(currentItem.name, name)) {
-                newItem = currentItem;
-                beingItems.remove(currentItem);
-                return newItem;
-                // TrollAttack.message("Someone drops " + newItem.getShort() +
-                // ".");
-            } else {
-                // TrollAttack.error("looking at object i in room " +
-                // .getCurrentRoom());
-            }
+    public Item removeItem(String name) {
+        Item newItem = findItem(name);
+        if(newItem != null) {
+        	beingItems.remove(newItem);
+        	return newItem;
         }
-        return newItem;
-
+        return null;
     }
 
     /**
-     * Finds an item matching the given string.
+     * Finds an item of any type matching the given string.
      * @param name The name describing the object.
      * @return
      */
@@ -570,12 +560,17 @@ public class Being implements Cloneable {
      * @return The item if one is found matching the given class and command, null otherwise.
      */
 	public Item findItem(String command, java.lang.Class objectClass) {
-    	
+    	int skipItems = 0;
+    	if(name.matches("^\\d\\..*$")) {
+    		// We want to skip some items until we get to the desired item.
+    		skipItems = new Integer(name.substring(0,1)) - 1;
+    		name = name.substring(2);
+    	}
 		Item currentItem;
 		Iterator<Item> i = beingItems.iterator();
 		while (i.hasNext()) {
 			currentItem = i.next();
-			if (Util.contains(currentItem.getName(), command)) {
+			if (Util.contains(currentItem.getName(), command) && (--skipItems < 0)) {
 				
 				if(objectClass != null) {
 					//TrollAttack.debug("Looking for only objects that are  " + objectClass.toString());
@@ -737,7 +732,7 @@ public class Being implements Cloneable {
 
     }
 
-    public void removeItem(String name) {
+    public void unwearItem(String name) {
         Equipment inHand = null;
         for(Equipment test : equipment) {
             if (Util.contains(test.getName(), name)) {
@@ -766,7 +761,7 @@ public class Being implements Cloneable {
         int count = 0;
         while (i.hasNext()) {
             count++;
-            getActualRoom().addItem(dropItem(""));
+            getActualRoom().addItem(removeItem(""));
             if (count > 100) {
                 TrollAttack
                         .error("Dropped more than 100 items, infinite loop somewhere.");
