@@ -171,4 +171,19 @@ public class Item implements Cloneable {
     public static String getItemType() {
         return "item";
     }
+    
+    public static String getItemTypeMessage(Item i) {
+    	if(i instanceof Fountain) {
+    		return "a fountain";
+    	} else if(i instanceof DrinkContainer) {
+    		return "a drink container";
+    	} else if(i instanceof Food) {
+    		return "food";    		
+    	} else if(i instanceof Gold) {
+    		return "gold";
+    	} else if(i instanceof Weapon) {
+    		return "a weapon";
+    	}
+    	return "";
+    }
 }
