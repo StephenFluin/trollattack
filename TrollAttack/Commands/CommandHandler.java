@@ -69,6 +69,7 @@ public class CommandHandler {
 		registerCommand(new Prompt("prompt"));
 		registerCommand(new Trance("trance"));
 		registerCommand(new Consider("consider"));
+		registerCommand(new Examine("examine"));
 		registerCommand(new Inventory("inventory"));
 		registerCommand(new ShowEquipment("equipment"));
 		registerCommand(new Wear("wear"));
@@ -396,7 +397,8 @@ public class CommandHandler {
         }
         
 		public boolean execute(String command) {
-		    String[] parts = command.split(" ");
+		    // Split the command so we can "get 3 gold"
+			String[] parts = command.split(" ");
 		    int count = 0;
 		    if(parts[0].compareToIgnoreCase("all") == 0) {
 		        count = -1;
@@ -575,7 +577,7 @@ public class CommandHandler {
 		            return false;
 		        }
 		    } else {
-		        item = player.dropItem( command );
+		        item = player.removeItem( command );
 		    }
 			if(item == null) {
 				player.tell("You don't have that!");
@@ -730,6 +732,27 @@ public class CommandHandler {
             return true;
 	    }
 	}
+	class Examine extends Command {
+		public Examine(String s) { super(s, false); }
+		public boolean execute() {
+			player.tell("Examine what?" + Util.wrapChar + "Usage: examine <item>");
+			return false;
+		}
+		public boolean execute(String command) {
+			Item newItem = player.findItem(command);
+			if(newItem == null) {
+				newItem = player.getActualRoom().getItem(command);
+			}
+			if(newItem == null) {
+				player.tell("You can't find an item like that!");
+				return false;
+			}
+			player.tell("You examine " + newItem.getShort() + ".");
+			player.tell(Util.uppercaseFirst(newItem.getShort()) + " is a " + newItem.getType() + ".");
+			return true;
+			
+		}
+	}
 	class Fill extends Command {
 	    public Fill(String s) { super(s, false); }
 	    public boolean execute() { 
@@ -786,7 +809,7 @@ public class CommandHandler {
         }
 	    public boolean execute(String command) {
 	        
-            player.removeItem( command );
+            player.unwearItem( command );
             return true;
 	    }
 	}
