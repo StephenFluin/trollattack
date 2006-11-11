@@ -6,6 +6,8 @@ import java.util.Vector;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import TrollAttack.Items.DrinkContainer;
+import TrollAttack.Items.Food;
 import TrollAttack.Items.Fountain;
 import TrollAttack.Items.Item;
 
@@ -219,8 +221,10 @@ public class Room {
         int n = 0;
         for(Item currentItem : roomItems) {
             String color;
-            if (currentItem.getType() == Fountain.getItemType()) {
+            if (currentItem instanceof DrinkContainer) {
                 color = Communication.BLUE;
+            } else if(currentItem instanceof Food) {
+            	color = Communication.DARKYELLOW;
             } else {
                 color = Communication.GREEN;
             }
@@ -493,7 +497,7 @@ public class Room {
             // currentBeing.getShort() + " by " + strength + ".");
             currentBeing.increaseHitPoints(strength);
             currentBeing.increaseManaPoints(strength);
-            currentBeing.increaseMovePoints(2*strength);
+            currentBeing.increaseMovePoints(4*strength);
         }
     }
 
