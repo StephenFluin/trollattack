@@ -358,8 +358,9 @@ public class CommandHandler {
 				player.tell("You don't see that here.");
                return false;
 			} else {
-				if(mob instanceof Player && !player.getName().equals(s)) {
+				if(mob instanceof Player && !mob.getName().equalsIgnoreCase(s)) {
 					player.tell("To attack a player, you must type their full name!");
+					TrollAttack.debug(mob.getName() + "!=" + s);
 					return false;
 				}
 				//TrollAttack.message("Starting a fight between " + player.getShort() + " and " + mob.getShort());
@@ -967,7 +968,9 @@ public class CommandHandler {
 	class Report extends Command {
 		public Report(String s) { super(s, false); }
 		public boolean execute() {
-			String report = "HP: " + player.hitPoints + "/" + player.maxHitPoints + " Mana: " + player.manaPoints + "/" + player.maxManaPoints;
+			String report = "HP: " + player.hitPoints + "/" + player.maxHitPoints + 
+						" Mana: " + player.manaPoints + "/" + player.maxManaPoints +
+						" Move: " + player.movePoints + "/" + player.maxMovePoints;
 			player.tell("You report: " + report);
 			player.roomSay("%1 reports: " + report);
 			return true;
