@@ -37,6 +37,12 @@ public class CommandMove extends Command {
 		        player.tell(Communication.GREEN + "The door is closed.");
 		        return false;
 		    }
+		    if(player.movePoints <= 0) {
+		    	player.tell(Communication.GREEN + "You are too tired to go there now.");
+		    	return false;
+		    } else {
+		    	player.movePoints--;
+		    }
 		    Room nextRoom = TrollAttack.getRoom(results.getDestination());
 		    try{
 		        nextRoom.say(Communication.GREEN + Util.uppercaseFirst(player.getShort()) + " arrives from the " + Exit.directionName(Exit.directionOpposite(direction)) + ".");
