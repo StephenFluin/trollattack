@@ -117,6 +117,8 @@ public class TelnetServer extends Communication {
         	// This is okay because it means the connection was closed.
         	return null;
         	
+        } catch(SocketException e) {
+        	return null;
         } catch(IOException e) {
         	TrollAttack.error("IO Exception in telnet getLine, we don't know why.");
         	e.printStackTrace();
