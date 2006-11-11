@@ -494,9 +494,17 @@ public class Being implements Cloneable {
         String[] itemList = new String[255];
         int n = 0;
         for (Item currentItem : beingItems) {
-            String itemName = ( (currentItem.getClass() == DrinkContainer.class) 
-                    ? (Communication.BLUE + currentItem.getShort())
-                    : (Communication.GREEN + currentItem.getShort()));
+            String itemName;
+            if(currentItem instanceof DrinkContainer) { 
+                   itemName = Communication.BLUE + currentItem.getShort();
+            } else if(currentItem instanceof Food) {
+            	itemName = Communication.DARKYELLOW + currentItem.getShort();
+            } else {
+            	itemName = Communication.GREEN + currentItem.getShort();
+            	if(currentItem instanceof Weapon) {
+            		itemName += "(" + ((Weapon)currentItem).damage + ")";
+            	}
+            }
             itemList[n] = itemName;
             n++;
         }
@@ -526,8 +534,11 @@ public class Being implements Cloneable {
         for(Equipment currentItem : equipment) {
             result += Communication.GREEN
                     + Util.uppercaseFirst(currentItem.getWearLocation())
-                    + Communication.WHITE + ": " + currentItem.getShort()
-                    + Util.wrapChar;
+                    + Communication.WHITE + ": " + currentItem.getShort();
+        	if(currentItem instanceof Weapon) {
+        		result += "(" + ((Weapon)currentItem).damage + ")";
+        	}
+            result += Util.wrapChar;
             count++;
         }
         if (count < 1) {
