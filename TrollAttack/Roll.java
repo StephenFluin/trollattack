@@ -79,6 +79,6 @@ public class Roll {
     }
 
     public String toString() {
-        return numberOfDice + "d" + sizeOfDice + "," + addition;
+        return numberOfDice + "d" + sizeOfDice + (addition != 0 ? ("," + addition) : "");
     }
 }
