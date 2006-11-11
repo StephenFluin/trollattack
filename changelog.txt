@@ -51,3 +51,7 @@ Upgrdade to version .87
 10/13/06 - Decreased urge to wander.
 10/13/06 - Wrote gridding code.
 Upgrade to version .88
+10/14/06 - Implemented move points
+10/14/06 - Fixed player attacking.
+10/14/06 - Fixed coloring of food/drink.
+Upgrade to version .89
