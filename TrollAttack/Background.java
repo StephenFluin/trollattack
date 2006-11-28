@@ -21,7 +21,7 @@ public class Background extends Thread {
             
             if (time % 10 == 0) {
                 TrollAttack.healBeings();
-                TrollAttack.wanderLust();
+                TrollAttack.wanderAndDecay();
                 
             }
             
@@ -32,7 +32,7 @@ public class Background extends Thread {
                 for (Reset reset : TrollAttack.gameResets) {
                     reset.run();
                 }
-                
+
                 TrollAttack.puntIdlePlayers(TrollAttack.maxIdleTime);
             }
             if (time % (60 * 6) == 0) {
