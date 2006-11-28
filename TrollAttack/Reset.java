@@ -6,6 +6,7 @@ package TrollAttack;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 
+import TrollAttack.Items.Container;
 import TrollAttack.Items.Equipment;
 import TrollAttack.Items.Item;
 
@@ -138,6 +139,26 @@ public abstract class Reset {
             return "Give (Item x " + limit + ") '" + item.getShort() + "' to ("
                     + mobile.vnum + ") '" + mobile.getShort() + "'.";
         }
+    }
+    
+    public static class ContainsReset extends Reset {
+    	Item item;
+    	Container con;
+    	public ContainsReset(Item ite, Container co, int clicks) {
+    		item = ite;
+    		con = co;
+    		setClicks(clicks);
+    		area = Area.testItem(con, TrollAttack.gameAreas);
+    	}
+    	public void execute() {
+    		if(con.countExactItem(item) < limit) {
+    			con.add(item);
+    		}
+    	}
+    	public String toString() {
+    		return "Contained (Item x " + limit + ") '" + item.getShort() + "' in (" +
+    			con.vnum + ") '" + con.getShort() + "'.";
+    	}
     }
 
     public static class WearReset extends Reset {

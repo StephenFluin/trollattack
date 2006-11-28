@@ -25,7 +25,7 @@ public class Shop extends Room {
 	public String list() {
 		String result = Communication.WHITE + "Item\t" + Communication.YELLOW + "Price";
 		for(Item i : shopItems) {
-			result +=  Util.wrapChar + Communication.WHITE + i.getShort() + "\t" + Communication.YELLOW + i.cost;
+			result +=  Util.wrapChar + Communication.WHITE + i.getShort() + "\t" + Communication.YELLOW + i.getCost();
 		}
 		result = Util.table(result);
 		if(shopItems.size() < 1) {

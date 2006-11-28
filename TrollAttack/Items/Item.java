@@ -12,25 +12,9 @@ import TrollAttack.Roll;
 import TrollAttack.Util;
 
 public class Item implements Cloneable {
-	public int vnum, weight, cost;
+	public int vnum;
 	public boolean takeable = true;
-	public String  shortDesc = "", longDesc = "", name = "";
-
-	
-	/*public String wearLocToString() {
-	    return WearLocation.wearLocToString( wearLocation );
-	}
-	
-	
-	public static int getWearLocation(String location) {
-	    for(int i = 0; i < wearLocations.length;i++) {
-	        if(location.compareToIgnoreCase(wearLocations[i]) == 0) {
-	            return i;
-	        }
-	    }
-	    return 0;
-	}*/
-	
+	public ItemData data;
 	/**
 	 * Effect Types
 	 * These are constants representing each of the possible affect types.  This
@@ -77,58 +61,53 @@ public class Item implements Cloneable {
 	public Item() {}
 	public Item(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdesc) {
 	 this.vnum = vnum;
-	 name = nom;
-	 weight = itemWeight;
-	 cost = itemCost;
-	 shortDesc = shortdes;
-	 longDesc = longdesc;
+	 data = new ItemData();
+	 setName(nom);
+	 setWeight(itemWeight);
+	 setCost(itemCost);
+	 setShort(shortdes);
+	 setLong(longdesc);
+	 setTypeMessage("an item");
+	 
+	}
+	public void setTypeMessage(String string) {
+		data.itemTypeMessage = string;
+		
+	}
+	public void setCost(int itemCost) {
+		data.cost = itemCost;
+		
+	}
+	public void setWeight(int itemWeight) {
+		data.weight = itemWeight;
+		
 	}
 	public Item(Item i) {
-	    this(i.vnum, i.weight, i.cost, i.name, i.shortDesc, i.longDesc);
+	    this(i.vnum, i.getWeight(), i.getCost(), i.getName(), i.getShort(), i.getLong());
 	}
 	
+	public int getCost() {
+		return data.cost;
+	}
+	public int getWeight() {
+		return data.weight;
+	}
 	public String toString() {
 		return vnum + ":" +
-		name + "," +
-		weight + "," +
-		shortDesc + "," +
-		longDesc;
+		getName() + "," +
+		getWeight() + "," +
+		getShort() + "," +
+		getLong();
 					
 	}
-	public Node[] getAttributeNodes(Document doc) {
-	    Node[] attributes = new Node[0];
-	    return attributes;
-	}
-	public void setAttributesFromHash(Hashtable hash) {
-	    return;
-	}
-	public Node toNode(Document doc) {
-		   
-		    Node m = doc.createElement("item");
-		    Vector attribs = new Vector();
-		    attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
-		    attribs.add(Util.nCreate(doc, "name", name + ""));
-		    attribs.add(Util.nCreate(doc, "short", getShort()));
-		    attribs.add(Util.nCreate(doc, "long", longDesc + ""));
-		    attribs.add(Util.nCreate(doc, "weight", weight + ""));
-		    attribs.add(Util.nCreate(doc, "type", getType() + ""));
-		    attribs.add(Util.nCreate(doc, "cost", cost + ""));
-		    attribs.add(getTypeNode(doc));
-		    for(int i = 0; i < attribs.size(); i++) {
-		        
-		        Node newAttrib = (Node)attribs.get(i);
-		        m.appendChild(newAttrib);
-		    }
-		    
-		    return m;
-		}
 
-		public String[] look() {
+
+	public String[] look() {
 		String[] items = new String[255];
 		return items;
 	}
 	public String getLong() {
-		return longDesc;
+		return data.longDesc;
 	}
 	public String getType() {
 	    return getItemType();
@@ -141,19 +120,19 @@ public class Item implements Cloneable {
 	    return "--------Item----------";
 	}
 	public void setLong(String longdesc) {
-	    longDesc = longdesc;
+	    data.longDesc = longdesc;
 	}
 	public void setShort(String shortdesc) {
-	    shortDesc = shortdesc;
+	    data.shortDesc = shortdesc;
 	}
 	public String getShort() {
-		return shortDesc;
+		return data.shortDesc;
 	}
 	public String getName() {
-		return name;
+		return data.name;
 	}
 	public void setName( String nom) {
-	    name = nom;
+	    data.name = nom;
 	}
     public Object clone() {
         try {
@@ -164,26 +143,101 @@ public class Item implements Cloneable {
             throw new InternalError(e.toString());
         }
     }
-    public Node getTypeNode(Document doc) {
-        Node data = doc.createElement("typeData");
-        return data;
-    }
+
     public static String getItemType() {
         return "item";
     }
     
-    public static String getItemTypeMessage(Item i) {
-    	if(i instanceof Fountain) {
-    		return "a fountain";
-    	} else if(i instanceof DrinkContainer) {
-    		return "a drink container";
-    	} else if(i instanceof Food) {
-    		return "food";    		
-    	} else if(i instanceof Gold) {
-    		return "gold";
-    	} else if(i instanceof Weapon) {
-    		return "a weapon";
-    	}
-    	return "";
+    /**
+     * Sets up the item by passing in all item-specific data.
+     */
+    public void setup() {
+    	
     }
+    
+    /**
+     * This method is used to specify the type of an object, suitable
+     * for use in a sentence such as "A gold watch is <armour|gold|a weapon>". 
+     * @param i
+     * @return
+     */
+    public String getItemTypeMessage(Item i) {
+    	return data.itemTypeMessage;
+    }
+    
+    /**
+     * Creates the node (for doc) that contains all of the ALWAYS-true data about this item.
+     * @param doc
+     * @return
+     */
+    public Node getTypeNode(Document doc) {
+        Node data = doc.createElement("typeData");
+        return data;
+    }
+    
+    /**
+     * Creates an array of nodes that contain INSTANCE-specific data for this item.
+     * @param doc
+     * @return
+     */
+	public Node[] getAttributeNodes(Document doc) {
+	    Node[] attributes = new Node[0];
+	    return attributes;
+	}
+	
+	/**
+	 * Sets the instance-specific data from a hash.  For containers and deep-objects, 
+	 * this should create clone items for child items as well.
+	 * @param hash
+	 */
+	public void setAttributesFromHash(Hashtable hash) {
+	    return;
+	}
+	
+	/**
+	 * Turns the item into a item-data node suitable for saving.
+	 * @param doc
+	 * @return
+	 */
+	public Node toItemNode(Document doc) {
+	   
+	    Node m = doc.createElement("item");
+	    Vector<Node> attribs = new Vector<Node>();
+	    attribs.add(Util.nCreate(doc, "vnum", vnum + ""));
+	    attribs.add(Util.nCreate(doc, "name", getName() + ""));
+	    attribs.add(Util.nCreate(doc, "short", getShort()));
+	    attribs.add(Util.nCreate(doc, "long", getLong() + ""));
+	    attribs.add(Util.nCreate(doc, "weight", getWeight() + ""));
+	    attribs.add(Util.nCreate(doc, "type", getType() + ""));
+	    attribs.add(Util.nCreate(doc, "cost", getCost() + ""));
+	    attribs.add(getTypeNode(doc));
+	    for(int i = 0; i < attribs.size(); i++) {
+	        
+	        Node newAttrib = (Node)attribs.get(i);
+	        m.appendChild(newAttrib);
+	    }
+	    
+	    return m;
+	}
+	
+	/**
+	 * Creates a item-instance node suitable for saving as an item 
+	 * in a room, or as something someone is carrying.
+	 * @param doc
+	 * @return
+	 */
+	public Node toInstanceNode(Document doc) {
+		Node m = doc.createElement("item");
+        Node[] attribs = getAttributeNodes(doc);
+        for (Node n : attribs) {
+            m.appendChild(n);
+        }
+        if (attribs.length < 1) {
+            m.appendChild(doc.createTextNode(vnum + ""));
+        } else {
+        	m.appendChild(Util.nCreate(doc,"vnum", vnum + ""));
+        }
+        return m;
+	}
+	
 }

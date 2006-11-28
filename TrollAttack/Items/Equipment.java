@@ -8,19 +8,18 @@
  */
 package TrollAttack.Items;
 
-import TrollAttack.TrollAttack;
-
 /**
  * @author PeEll
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Equipment represents all items that can be worn.
  */
 public class Equipment extends Item {
     public String wearLocation;
     public Equipment(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);
+        setTypeMessage("equipment");
     }
+    
     public static String getItemType() {
     	return "equipment";
     }

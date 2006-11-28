@@ -29,10 +29,11 @@ public class DrinkContainer extends Item {
     int volume = 0, capacity = 0;
     public DrinkContainer(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);
+        setTypeMessage("a drink container");
     }
     public DrinkContainer(Item i) {
-        this(i.vnum, i.weight, i.cost, i.name, i.shortDesc, i.longDesc);
-    }
+	    this(i.vnum, i.getWeight(), i.getCost(), i.getName(), i.getShort(), i.getLong());
+	}
     
     public Vector effects = new Vector();
     
@@ -68,7 +69,8 @@ public class DrinkContainer extends Item {
         return "drinkcontainer";
     }
     public String getTypeData() {
-        return "Drink Container-----------\nVolume:\t" + volume + "\tCapacity:\t" + capacity;
+        return "Drink Container-----------" + Util.wrapChar +
+        		"Volume:\t" + volume + "\tCapacity:\t" + capacity;
     }
     public Node getTypeNode(Document doc) {
         Node data = doc.createElement("typeData");
@@ -79,11 +81,10 @@ public class DrinkContainer extends Item {
 	public Node[] getAttributeNodes(Document doc) {
 	    // We should be using attributes, but I can't figure
 	    // out how to get dom to make them.  TODO
-	    // also, I am putting VNUM in here, but it doesn't really belong here..
-	    Node[] attributes = new Node[2];
+	    Node[] attributes = new Node[1];
 	    attributes[0] = doc.createElement("volume");
 	    attributes[0].setTextContent(volume + "");
-	    attributes[1] = Util.nCreate(doc, "vnum", vnum + "");
+	    //attributes[1] = Util.nCreate(doc, "vnum", vnum + "");
 	    return attributes;
 	}
 	public void setAttributesFromHash(Hashtable hash) {

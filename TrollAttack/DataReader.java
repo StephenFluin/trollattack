@@ -208,7 +208,7 @@ public class DataReader {
                 TrollAttack.error("Current object is a NULL!");
             } else {
                 Item newItem = getItemFromObject(current);
-                p.addItem((Item) newItem.clone());
+                p.addItem(newItem);
             }
 
         }
@@ -250,7 +250,10 @@ public class DataReader {
         return areas;
     }
 
-    //Reads in a list of hashtables with item data and creates a list of Items.
+    /**
+     * Reads in a list of hashtables with item data and creates a list of Items.
+     * This is called at mud startup a single time to load the original gamedata.
+     */
     public static Vector<Item> readItemData(Vector<Hashtable> itemList) {
         int vnum = 0, weight = 0, cost = 0;
         Item newItem;
@@ -317,6 +320,14 @@ public class DataReader {
                 Fountain fountain = new Fountain(vnum, weight, cost, itemName,
                         shortDesc, longDesc);
                 newItem = fountain;
+                
+                
+            } else if (type.equalsIgnoreCase(Container.getItemType())) {
+            	Container container = new Container(vnum, weight, cost, itemName, shortDesc, longDesc);
+            	Hashtable con = (Hashtable) item.get("typeData");
+            	container.setup(Util.intize(null, (String) con.get("capacity")));
+            	newItem = container;
+            	
             } else {
                 newItem = new Item(vnum, weight, cost, itemName, shortDesc,
                         longDesc);
@@ -456,24 +467,20 @@ public class DataReader {
             Object tmpItems = room.get("item");
             Vector roomItems = linkedListify(tmpItems);
 
-            for(Object current : roomItems) {
-                //TrollAttack.debug(current.toString());
-                Integer ivnum = new Integer((String) current);
-                Item resetItem = TrollAttack.getItem(ivnum);
-                if (resetItem == null) {
-                    TrollAttack
-                            .error("The item we are attempting to load is null.");
-                    TrollAttack.error(ivnum.toString());
+            for(Object currentMobileItem : roomItems) {
+                Item newItem = getItemFromObject(currentMobileItem);
+                if(Area.testItem(newItem, TrollAttack.gameAreas).frozen) {
+                	newRoom.addItem(newItem);
                 } else {
-                    //TrollAttack.error("loaded an item");
-                }
-                if (Area.testItem(resetItem, TrollAttack.gameAreas).frozen) {
-                    newRoom.addItem(resetItem);
-                } else {
-                    TrollAttack.gameResets.add(new Reset.ItemReset(
-                            (Item) resetItem.clone(), newRoom, 8));
+                	TrollAttack.gameResets.add(new Reset.ItemReset(((Item)newItem), newRoom, 8));
+                	if(newItem instanceof Container) {
+                		for(Item i : ((Container)newItem).contents) {
+                			TrollAttack.gameResets.add(new Reset.ContainsReset(i, (Container)newItem, 8));
+                		}
+                	}
                 }
             }
+            
 
             // Finished creating all resets and placements for items that belong
             // in the room.
@@ -498,7 +505,8 @@ public class DataReader {
                 resetMobile = TrollAttack.getMobile(new Integer((String) hash
                         .get("vnum")));
 
-                // The area of the mobile is frozen, so don't create resets.
+                // The area of the mobile is frozen, so don't create resets.  Just 
+                // give their items to them a single time.
                 if (Area.testMobile(resetMobile, TrollAttack.gameAreas).frozen) {
                     newRoom.addBeing(resetMobile);
                     resetMobile.setCurrentRoom(newRoom.vnum);
@@ -624,38 +632,54 @@ public class DataReader {
         return result;
     }
 
+    /**
+     * This is called to read instanced item data.
+     * @param newItem
+     * @return The item, if found (distinct from original in gameItems).
+     */
     public static Item getItemFromObject(Object newItem) {
         Item resultingItem = null;
         //TrollAttack.debug("Trying to get item from object: " +
         // newItem.toString());
         try {
             int vnum = Util.intize((String) newItem);
-            resultingItem = TrollAttack.getItem(new Integer(vnum));
+            resultingItem = (Item)TrollAttack.getItem(new Integer(vnum)).clone();
         } catch (ClassCastException e) {
+        	
             // Was not a string (not directly a vnum, so we need to use the
             // hashtable to grab the vnum, and then once we have loaded the
             // item,
             // check the rest of the hashtable for which attributes to set on
             // the item. We do this so that containers and wands and junk don't
             // get refilled when you save and quit.
-            Hashtable hash = (Hashtable) newItem;
-            Integer vnum = new Integer((String) hash.get("vnum"));
-            if (vnum == null) {
-                TrollAttack
-                        .error("An item in a players file did not have a vnum!");
-                throw (new NullPointerException());
+            try{
+            	Hashtable hash = (Hashtable) newItem;
+            	Integer vnum = new Integer((String) hash.get("vnum"));
+                if (vnum == null) {
+                    TrollAttack
+                            .error("An item in a players file did not have a vnum!");
+                    throw (new NullPointerException());
 
+                }
+                resultingItem = (Item)TrollAttack.getItem(vnum).clone();
+                resultingItem.setAttributesFromHash(hash);
+            } catch(ClassCastException e2) {
+            	// Last chance to try and figure out what the item's vnum is.
+            	Hashtable hash = (Hashtable) newItem;
+            	Vector vnums = linkedListify(hash.get("vnum"));
+            	resultingItem = (Item)TrollAttack.getItem(Util.intize((String)vnums.get(0))).clone();
+            	resultingItem.setAttributesFromHash(hash);
             }
-            resultingItem = TrollAttack.getItem(vnum);
-            resultingItem.setAttributesFromHash(hash);
+            
         }
         return resultingItem;
     }
 
-    // Takes data generated by my xmlizer (combination of linked lists
-    // and hashtables and data) and makes the data into a linked list
-    // of length 0 for null, 1 for direct data, and x for things
-    // that are already linked lists.
+    /** Takes data generated by my xmlizer (combination of linked lists
+    * and hashtables and data) and makes the data into a linked list
+    * of length 0 for null, 1 for direct data, and x for things
+    * that are already linked lists.
+    */
     public static Vector linkedListify(Object wannabeList) {
         if (wannabeList == null) {
             return new Vector();

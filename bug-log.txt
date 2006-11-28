@@ -1,3 +1,4 @@
 PeEll(1):Java is hard, thats a bug, fix it.
 PeEll(1):java is hard.
 PeEll(2):Filewriting is hard.
+PeEll(1200):Add item vnum to istat.

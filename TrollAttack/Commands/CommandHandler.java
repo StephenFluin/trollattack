@@ -14,13 +14,9 @@ package TrollAttack.Commands;
  */
 
 
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.OutputStreamWriter;
-import java.util.Iterator;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Set;
@@ -58,6 +54,7 @@ public class CommandHandler {
 		registerCommand(new CommandMove(player, "sw", Exit.SOUTHWEST));
 		registerCommand(new Kill("kill"));
 		registerCommand(new Get("get"));
+		registerCommand(new Put("put"));
 		registerCommand(new Give("give"));
 		registerCommand(new Drop("drop"));
 		registerCommand(new Sacrifice("sacrifice"));
@@ -68,6 +65,7 @@ public class CommandHandler {
 		registerCommand(new Password("password"));
 		registerCommand(new Prompt("prompt"));
 		registerCommand(new Trance("trance"));
+		registerCommand(new CountGold("gold"));
 		registerCommand(new Consider("consider"));
 		registerCommand(new Examine("examine"));
 		registerCommand(new Inventory("inventory"));
@@ -393,42 +391,119 @@ public class CommandHandler {
 	class Get extends Command {
 		public Get(String s) { super(s, false);}
 		public boolean execute() { 
-            player.tell("Get what?"); 
+            player.tell("Usage: get <amount>|all <item> [container]" + Util.wrapChar +
+            			"Examples:get all sack" + Util.wrapChar +
+            			"         get all" + Util.wrapChar +
+            			"         get 3 gold" + Util.wrapChar +
+            			"         get sword");
+            
             return false;
         }
         
 		public boolean execute(String command) {
 		    // Split the command so we can "get 3 gold"
-			String[] parts = command.split(" ");
-		    int count = 0;
-		    if(parts[0].compareToIgnoreCase("all") == 0) {
-		        count = -1;
-                if(parts.length == 1) {
-                    command = "";
-                } else {
-                    command = parts[1];
-                }
+			String[] parts = Util.split(command);
+		    int amount = 0;
+		    if(parts[0].equalsIgnoreCase("all")) {
+		        amount = -1;
 		    } else {
-		        count = 1;
+		    	try{
+		    		amount = Util.intize(parts[0]);
+		    		if(parts.length < 2) {
+		    			player.tell("Get " + amount + " what?");
+		    			return false;
+		    		}
+		    	} catch(NumberFormatException e) {
+		    		amount = 1;
+		    		// Already delt with, :).
+		    	}
 		    }
-	       
-		    Item item = null;
-		    while(count-- != 0 && item == null) {
-		        item = player.getActualRoom().removeItem(	command		);
+	       Container con = null;
+	       String location;
+		    if((parts.length == 2 && (amount == 1 || amount == -1)) || (parts.length == 3 && amount != 1)) {
+		    	
+	    		con = (Container)player.findItem(parts[parts.length-1], Container.class);
+	    		if(con == null) {
+	    			con = (Container)player.getActualRoom().getItem(parts[parts.length-1], Container.class);
+	    			if(con == null) {
+		    			player.tell("You can't find a container like that.");
+		    			return execute();
+	    			}
+	    		}
+	    		location = "in " + con.getShort();
+	    		command = parts[parts.length-2];
+	    	} else {
+	    		location = "here";
+	    		command = parts[parts.length-1];
+	    	}
 		    
+		    if(command.equalsIgnoreCase("gold")) {
+		    	Gold item = (Gold)player.getActualRoom().getItem(command, false, Gold.class);
+		    	if(item == null) {
+		    		player.tell("You don't see any gold here.");
+		    		return false;
+		    	}
+		    	/**
+		    	 * Note: THis means that "Get all gold", "get 0 gold", and "get gold" will make you pick up all the gold.
+		    	 */
+		    	if( amount < 0 || (amount < 2 && parts.length < 2)) {
+		    		amount = item.getCost();
+		    	}
+		    	if(item.getCost() >= amount) {
+		    		if(item.getCost()!= amount) {
+		    			player.getActualRoom().addItem(new Gold(item.getCost()-amount));
+		    		}
+		    		player.gold += amount;
+		    		player.tell("You pick up " + amount + " in gold.");
+		    		player.roomSay("%1 picks up " + amount + " in gold.");
+		    		player.getActualRoom().roomItems.remove(item);
+		    		return true;
+		    	} else {
+		    		player.tell("There isn't that much gold here, there is only " + item.getCost() + "!");
+		    		return false;
+		    	}
+		    	
+		    }
+		    if(command.equalsIgnoreCase("all")) {
+		    	command = "";
+		    }
+		    Item item = null;
+		    while(amount-- != 0) {
+		    	if(con == null) {
+		    		item = player.getActualRoom().removeItem(	command		);
+		    	} else {
+		    		item = con.get(command);
+		    		con.contents.remove(item);
+		    	}
 				if(item == null) {
-					if(count == 0) {
-					    player.tell("You can't find that here!");
+					if(amount >= -2) {
+					    player.tell("You can't find that " + location + "!");
 					} else {
 					    return false;
 					}
 				} else {
-					if((item.weight + player.getCarryingWeight()) > player.getCarryingMax()) {
-						player.tell("You aren't strong enough to carry that, it weighs " + item.weight + ".");
-						return false;
+					if((item.getWeight() + player.getCarryingWeight()) > player.getCarryingMax()) {
+						player.tell("You aren't strong enough to carry that, it weighs " + item.getWeight() + ".");
+						
+						if(con ==null) {
+							player.getActualRoom().addItem(item);
+						} else {
+							con.add(item);
+						}
+						item = null;
+						continue;
 					}
-					player.tell("You get " + item.getShort() + ".");
-					player.roomSay(player.getShort() + " gets " + item.getShort() + ".");
+					if(con == null) {
+						player.tell("You get " + item.getShort() + ".");
+					} else {
+						player.tell("You get " + item.getShort() + " from " + con.getShort() + ".");
+					}
+					if(con == null) {
+						player.roomSay(player.getShort() + " gets " + item.getShort() + ".");
+					} else {
+						player.roomSay(player.getShort() + " gets " + item.getShort() + " from " + con.getShort() + ".");
+					}
+					
 					player.addItem(item);
 					item = null;
 				}
@@ -436,7 +511,63 @@ public class CommandHandler {
             return true;
 		}
 	}
+	class Put extends Command{
+		public Put(String s) { super(s, false);}
+		public boolean execute() {
+			player.tell("Usage: put <item> <container>");
+			return false;
+		}
+		public boolean execute(String s) {
+			String[] parts = Util.split(s);
+			if(parts.length != 2) {
+				return execute();
+			}
+			int amount;
+			if(parts[0].equalsIgnoreCase("all")) {
+				amount = -1;
+			} else {
+				amount = 1;
+			}
+			Container con = (Container)player.findItem(parts[1],Container.class);
+			if(con == null) {
+				player.tell("You don't have a container like that.");
+				return execute();
+			}
+			
+			while(amount-- != 0) {
+				Item item = player.getItem(parts[0], false);
+				
+				if(item == null) {
+					if(amount < -2) {
+						return true;
+					} else if(amount == -2) {
+						player.tell("There is nothing to put in " + con.getShort());
+						return false;
+					}
+					player.tell("You don't have an item like that.");
+					return execute();
+				}
+				
+				if(con == item) {
+					player.tell("You can't put an item inside itself!");
+					return execute();
+				}
+				if(con.getRemainingCapacity() < 1) {
+					player.tell(Util.uppercaseFirst(con.getShort()) + " doesn't have enough room to fit that. You have " + con.contents.size() + " / " + con.capacity + " items already in it.");
+					return false;
+				}
+				
+				player.beingItems.remove(item);
+				
+				con.add(item);
+				player.tell("You put " + item.getShort() + " in " + con.getShort() + ".");
+				player.roomSay("%1 puts " + item.getShort() + " in " + con.getShort() + ".");
+			}
+			return true;
+		}
+	}	
 	class Give extends Command {
+	
 	    public Give(String s) { super(s, false);}
 	    public boolean execute() {
 	        player.tell("Usage: give <item> <being>");
@@ -491,7 +622,7 @@ public class CommandHandler {
 					    return false;
 					}
 				} else {
-			        if(item.weight < (player.getCarryingMax() - player.getCarryingWeight())) {
+			        if(item.getWeight() < (player.getCarryingMax() - player.getCarryingWeight())) {
 			        	player.getActualRoom().removeItem(command);
 			        } else {
 			        	player.tell(Util.uppercaseFirst(item.getShort()) + " is too heavy, you can only sacrafice items you can pick up.");
@@ -748,8 +879,21 @@ public class CommandHandler {
 				player.tell("You can't find an item like that!");
 				return false;
 			}
-			player.tell("You examine " + newItem.getShort() + ".");
-			player.tell(Util.uppercaseFirst(newItem.getShort()) + " is a " + newItem.getType() + ".");
+			String msg = "You examine " + newItem.getShort() + "." + Util.wrapChar +
+						Util.uppercaseFirst(newItem.getShort()) + " is a " + newItem.getType() + ".";
+			if(newItem instanceof Container) {
+				Container c = (Container)newItem;
+				msg += Util.wrapChar + "Contents:" + Util.wrapChar;
+				for(Item i : c.contents) {
+					msg += i.getShort() + Util.wrapChar;
+				}
+				if(c.contents.size() == 0) {
+					msg += Communication.CYAN + "Empty";
+				}
+			}
+			player.tell(msg);
+			
+			
 			return true;
 			
 		}
@@ -866,8 +1010,8 @@ public class CommandHandler {
             return true;
 	    }
 	}
-	class Gold extends Command {
-	    public Gold(String s) {
+	class CountGold extends Command {
+	    public CountGold(String s) {
 	        super( s, false );
 	    }
 	    public boolean execute() {
@@ -889,6 +1033,11 @@ public class CommandHandler {
 		}
 	}
 	class Buy extends Command {
+		/*
+		 * Note: shops don't support putting portals with different costs 
+		 * yet, but they should support portals with different items in 
+		 * them.
+		 */
 		public Buy(String s) { super( s, false); }
 		public boolean execute() {
 			player.tell("Usage: buy <item>");
@@ -902,8 +1051,8 @@ public class CommandHandler {
 			Shop shop = (Shop)player.getActualRoom();
 			for(Item i : shop.shopItems) {
 				if(Util.contains(i.getName(), s)) {
-					if(player.gold > i.cost) {
-						player.gold -= i.cost;
+					if(player.gold > i.getCost()) {
+						player.gold -= i.getCost();
 						player.addItem((Item)i.clone());
 						player.tell("You purchase " + i.getShort() + ".");
 						player.roomSay("%1 buys " + i.getShort() + ".");
@@ -1483,7 +1632,7 @@ public class CommandHandler {
 			low = player.getActualArea().low;
 			for(Item item : TrollAttack.gameItems) {
 				if(item.vnum <= high && item.vnum >= low) {
-					table += Util.wrapChar + Communication.WHITE + item.vnum + "\t" + item.name + "\t" + item.getShort();
+					table += Util.wrapChar + Communication.WHITE + item.vnum + "\t" + item.getName() + "\t" + item.getShort();
 				}
 			}
 			table = Util.table(table);

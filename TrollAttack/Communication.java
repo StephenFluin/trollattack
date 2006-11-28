@@ -32,6 +32,10 @@ public abstract class Communication extends Thread {
     public int getID() {
         return ID;
     }
+   
+    /** Closes an individual connection with a user.  After this is 
+    * run, other users will still be able to connect.
+    */
     public abstract void close();
     public abstract void waitForUser();
     public void run() {
@@ -123,7 +127,7 @@ public abstract class Communication extends Thread {
                     	throw new NullPointerException("getlined returned null.");
                     }
                     tmpPlayer = DataReader.readPlayerFile(name);
-                    //TrollAttack.debug("Login Problems - Read player file.");
+                    // Checking to see if the character is already logged in.
                     if (tmpPlayer != null) {
                         Player offendingPlayer = null;
                         for(Player p : TrollAttack.gamePlayers) {
@@ -142,6 +146,7 @@ public abstract class Communication extends Thread {
                             //TrollAttack.debug("Login Problems - saved.");
                             offendingPlayer.quit();
                             //TrollAttack.debug("Login Problems - fquited.");
+                            offendingPlayer.communication.close();
                         }
                         tmpPlayer.authenticated = true;
                         TrollAttack.message("Player "
@@ -259,6 +264,10 @@ public abstract class Communication extends Thread {
         return list;
     }
     
+    /**
+     * Shuts down the communication type (won't allow new connections).
+     *
+     */
     public void shutdown() {
     	
     }

@@ -125,7 +125,7 @@ public class Room {
         }
 
         for (Item roomItem : roomItems) {
-            attribs.add(Util.nCreate(doc, "item", roomItem.vnum + ""));
+            attribs.add(roomItem.toInstanceNode(doc));
         }
 
         for (Node newAttrib : attribs) {
@@ -389,28 +389,7 @@ public class Room {
     
     public Item getItem(String name, boolean remove, java.lang.Class objectClass) {
     	//TrollAttack.debug("looking for a " + name);
-    	int skipItems = 0;
-    	if(name.matches("^\\d\\..*$")) {
-    		// We want to skip some items until we get to the desired item.
-    		skipItems = new Integer(name.substring(0,1)) - 1;
-    		name = name.substring(2);
-    	}
-    	//TrollAttack.debug("looking for a " + name);
-        Item newItem = null;        
-        for(Item currentItem : roomItems) {
-        	//TrollAttack.debug("Skipping " + skipItems);
-            if (Util.contains(currentItem.name, name) && (--skipItems < 0)) {
-                if(objectClass!= null) {
-                	if(objectClass.isInstance(currentItem)) {
-                		newItem = currentItem;
-                	}
-                } else {
-                	newItem = currentItem;
-                	break;
-                }
-                
-            }
-        }
+    	Item newItem = Util.findMember(roomItems, name, objectClass);
         if(remove && newItem != null) {
             roomItems.remove(newItem);
         }
@@ -419,24 +398,11 @@ public class Room {
 
     public Being getBeing(String name, boolean remove, Being actor) {
 
-        Being newMobile;
-        //TrollAttack.debug("About to search through " + roomBeings.length() +
-        // " items in room " + vnum);
-        for(Being currentBeing : roomBeings) {
+        Being newMobile = Util.findMember(roomBeings, name);
 
-            if (currentBeing != actor
-                    && Util.contains(currentBeing.getName(), name)) {
-                newMobile = (Being) currentBeing;
-
-                if (remove == true) {
-                    roomBeings.remove(newMobile);
-                }
-                return newMobile;
-            } else {
-            }
-        }
-        return null;
+        return newMobile;
     }
+    
     /**
      * Returns the being that matches the given name who isn't the actor.
      * @param name The name of the being we are looking for.

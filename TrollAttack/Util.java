@@ -381,6 +381,7 @@ public class Util {
         return result;
     }
 
+    /* Thought unused (November 27th, 2006):
     public static <T> T findIn (String name, Collection<T> list) {
         for(T element : list) {
             if(element.toString().toLowerCase().startsWith(name.toLowerCase())) {
@@ -398,7 +399,9 @@ public class Util {
         return null;
         
     }
-
+*/
+    
+    
     public static String escapeColors(String s) {
         //TrollAttack.debug("Escaped string to: " + s.replaceAll("&", "&&"));
     	return s.replaceAll("&", "&&");
@@ -489,4 +492,63 @@ public class Util {
     public static String decolor(String string) {
     	return string.replaceAll("&[^&]", "");
     }
+
+    /**
+     * Given a string and a collection, will find the first member of the 
+     * collection of the correct class that contains the string.  This method
+     * supports item-access by using "3.<string>" to get the 3rd item 
+     * matching <string>.
+     * @param <T> The type of object the collection contains.
+     * @param contents The collection to search in.
+     * @param name The string that we are looking for.
+     * @param objectClass The class of the object we are looking 
+     * 	for, null if not required.
+     * @return The first object matching the given class and name.
+     */
+	public static <T> T findMember(Collection<T> contents, String name, Class objectClass) {
+		int skipItems = 0;
+    	if(name.matches("^\\d\\..*$")) {
+    		// We want to skip some items until we get to the desired item.
+    		skipItems = new Integer(name.substring(0,1)) - 1;
+    		name = name.substring(2);
+    	}
+    	
+        T newItem = null;        
+        for(T currentItem : contents) {
+        	if (Util.contains(getName(currentItem), name) && (--skipItems < 0)) {
+                if(objectClass!= null) {
+                	if(objectClass.isInstance(currentItem)) {
+                		newItem = currentItem;
+                	}
+                } else {
+                	newItem = currentItem;
+                	break;
+                }
+                
+            }
+        }
+        return newItem;
+		
+	}
+	
+	public static <T> T findMember(Collection<T> contents, String name) {
+		return findMember(contents, name, null);
+	}
+	
+	/**
+	 * Generic method to look at any object and figure out what it's name is.
+	 * @param o
+	 * @return
+	 */
+	public static String getName(Object o) {
+		if(o instanceof Item) {
+			return ((Item)o).getName();
+		} else if (o instanceof Being) {
+			return ((Being)o).getName();
+		} else {
+		
+			TrollAttack.error("Couldn't figure out the name of an object.");
+			return null;
+		}
+	}
 }

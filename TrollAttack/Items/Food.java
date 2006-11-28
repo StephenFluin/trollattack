@@ -25,10 +25,11 @@ public class Food extends Item {
     int quality = 0;
     public Food(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);
+        setTypeMessage("food");
     }
     public Food(Item i) {
-        this(i.vnum, i.weight, i.cost, i.name, i.shortDesc, i.longDesc);
-    }
+	    this(i.vnum, i.getWeight(), i.getCost(), i.getName(), i.getShort(), i.getLong());
+	}
         
     public void setQuality(int dmg) {
         quality = dmg;

@@ -5,6 +5,7 @@ import java.util.*;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 import TrollAttack.Classes.*;
@@ -479,7 +480,7 @@ public class Being implements Cloneable {
 
     public void addItem(Item i) {
         if (i.getClass() == Gold.class) {
-            gold += i.cost;
+            gold += i.getCost();
         } else {
             beingItems.add(i);
         }
@@ -571,35 +572,9 @@ public class Being implements Cloneable {
      * @return The item if one is found matching the given class and command, null otherwise.
      */
 	public Item findItem(String command, java.lang.Class objectClass) {
-    	int skipItems = 0;
-    	if(name.matches("^\\d\\..*$")) {
-    		// We want to skip some items until we get to the desired item.
-    		skipItems = new Integer(name.substring(0,1)) - 1;
-    		name = name.substring(2);
-    	}
-		Item currentItem;
-		Iterator<Item> i = beingItems.iterator();
-		while (i.hasNext()) {
-			currentItem = i.next();
-			if (Util.contains(currentItem.getName(), command) && (--skipItems < 0)) {
-				
-				if(objectClass != null) {
-					//TrollAttack.debug("Looking for only objects that are  " + objectClass.toString());
-					if(objectClass.isInstance(currentItem)) {
-						//TrollAttack.debug("Found " + currentItem.getShort() + " because it is of type " + objectClass.toString());
-						return currentItem;
-					} else {
-						//TrollAttack.debug("not considering " + currentItem.getShort() + " because it is not of type " + objectClass.toString());
-					}
-				} else {
-					//TrollAttack.debug("not checking for correct class.");
-					return currentItem;
-				}
-			} else {
-				//TrollAttack.debug("This " + currentItem.getName() + " doesn't look like a " + command + ".");
-			}
-		}
-		return null;
+    	Item newItem = Util.findMember(beingItems, command, objectClass);
+    	
+		return newItem;
 	}
 
     public void eatItem(Item newEat) {
@@ -756,7 +731,7 @@ public class Being implements Cloneable {
         if (inHand == null) {
             tell( "You aren't wearing that!");
         } else {
-           tell( "You remove " + inHand.shortDesc + ".");
+           tell( "You remove " + inHand.getShort() + ".");
             equipment.remove(inHand);
             roomSay("%1 removes " + inHand.getShort() + ".");
         }
@@ -778,31 +753,25 @@ public class Being implements Cloneable {
                         .error("Dropped more than 100 items, infinite loop somewhere.");
                 return;
             }
-            // tell("Something hits the ground, hard.");
-            // TrollAttack.message("Attempting to drop all.. " +
-            // items.getLength() + " left.");
         }
-        if (gold > 0) {
-            getActualRoom().addItem(new Gold(gold));
-            gold = 0;
-        }
+
 
     }
     
-    public void dropAllEquipment() {
+    public void removeAllEquipment() {
 
 
         Iterator<Equipment> i = equipment.iterator();
-        Vector<Equipment> forFloor = new Vector<Equipment>();
+        Vector<Equipment> forInv = new Vector<Equipment>();
         int count = 0;
         while (i.hasNext()) {
             count++;
             Equipment droppable = i.next();
-            forFloor.add(droppable);
+            forInv.add(droppable);
         }
-        for(Equipment e : forFloor) {
+        for(Equipment e : forInv) {
         	equipment.remove(e);
-        	getActualRoom().addItem(e);
+        	beingItems.add(e);
         }
 
     }
@@ -816,8 +785,16 @@ public class Being implements Cloneable {
 
     public void kill() {
     	busyDoing = "dead";
-    	dropAllEquipment();
-        dropAll();
+    	removeAllEquipment();
+        
+        Corpse c = new Corpse(this);
+        for(Item i : beingItems) {
+        	c.add(i);
+        }
+        while(beingItems.size() > 0) {
+        	beingItems.remove(0);
+        }
+        getActualRoom().addItem(c);
         save();
         getActualRoom().removeBeing(this);
     }
@@ -907,16 +884,8 @@ public class Being implements Cloneable {
 
     public Item getItem(String name, boolean remove) {
 
-        Item newItem = null;
-        for (Item currentItem : beingItems) {
-
-            if (Util.contains(currentItem.getName(), name)) {
-                newItem = currentItem;
-                break;
-            } else {
-            }
-            
-        }
+        Item newItem = Util.findMember(beingItems, name);
+       
         if (remove == true) {
             beingItems.remove(newItem);
         }
@@ -961,30 +930,23 @@ public class Being implements Cloneable {
         
     }
 
-    public static void addEquipmentNodes(Document doc, Being being,
-            Node beingNode) {
+    public static void addEquipmentNodes(Document doc, Being being, Node beingNode) {
         for (Item item : being.beingItems) {
-            Node itemNode = doc.createElement("item");
-            Node[] attributes = item.getAttributeNodes(doc);
-            for (int i = 0; i < attributes.length; i++) {
-                try {
-                    itemNode.appendChild(attributes[i]);
-                } catch (DOMException e) {
-                    TrollAttack.error("Could not print the attributes of item "
-                            + item.toString());
-                }
-                // itemNode.getAttributes(attributes[i]);
-                // Need to figure out how to create attributes using DOM
-                // @TODO!!!
-                // @TODO!!! @@TODO@@@!!TODO!!!
-            }
-            if (attributes.length < 1) {
-                itemNode.appendChild(doc.createTextNode(item.vnum + ""));
-            }
+            Node itemNode = item.toInstanceNode(doc);
+            
             beingNode.appendChild(itemNode);
         }
+        Node tmp;
         for(Equipment eq : being.equipment) {
-            beingNode.appendChild(Util.nCreate(doc, "equipment", eq.vnum + ""));
+            tmp = eq.toInstanceNode(doc);
+            
+            Node itemNode = doc.createElement("equipment");
+            NodeList list = tmp.getChildNodes();
+            for(int i = 0;i < list.getLength();i++) {
+            	itemNode.appendChild(list.item(i));
+            	
+            }
+            beingNode.appendChild(itemNode);
         }
 
     }
@@ -1257,7 +1219,7 @@ public class Being implements Cloneable {
 	public int getCarryingWeight() {
 		int weight = 0;
 		for(Item i : beingItems) {
-			weight += i.weight;
+			weight += i.getWeight();
 		}
 		return weight;
 	}

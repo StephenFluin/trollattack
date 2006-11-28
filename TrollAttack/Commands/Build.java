@@ -298,7 +298,7 @@ public class Build {
         player.tell("Short Desc.:\t" + item.getShort());
         player.tell("Long Desc.:\t" + item.getLong());
         player.tell("Item Type:\t" + item.getType());
-        player.tell("Cost:\t" + item.cost + "\t" + "Weight:\t" + item.weight);
+        player.tell("Cost:\t" + item.getCost() + "\t" + "Weight:\t" + item.getWeight());
         player.tell(item.getTypeData());
     }
     public void aStat(Area area) {
@@ -407,9 +407,17 @@ public class Build {
         
     }
     public void iSet(String[] parts) {
-        Item item = null;
+       /* This method is going to get sticky because of ambiguity when 
+    	* you edit an item. Are you editing the original, or are you editing 
+    	* just your instance, or all instances of this item?
+    	* 
+    	* It should edit all items with this vnum because attributes you can 
+    	* change with iset are universal for that item.
+    	*/
+    	Item item = null;
         try {
            item = (Item)player.getActualRoom().getItem(parts[0]);
+           item = TrollAttack.getItem(item.vnum);
         } catch(Exception e) {
             //TrollAttack.error("Possilbe attempt to change player with mset.");
             e.printStackTrace();
@@ -427,15 +435,15 @@ public class Build {
                 
             }
            if(attr.compareToIgnoreCase("name") == 0) {
-                item.name = value;
+                item.setName(value);
             } else if(attr.compareToIgnoreCase("short") == 0) {
-                item.shortDesc = value;
+                item.setShort(value);
             } else if(attr.compareToIgnoreCase("long") == 0) {
-                item.longDesc = value;
+                item.setLong(value);
             } else if(attr.compareToIgnoreCase("weight") == 0 ) {
-                item.weight = intValue;
+                item.setWeight(intValue);
             } else if(attr.compareToIgnoreCase("cost") == 0 ) {
-                item.cost = intValue;
+                item.setCost(intValue);
             } else if(attr.compareToIgnoreCase("type") == 0 ) {
                 Item newItem;
                 if( value.compareToIgnoreCase(Weapon.getItemType()) == 0 && item.getType() != Weapon.getItemType() ) {
@@ -450,14 +458,18 @@ public class Build {
                     newItem = new Fountain(item);
                 } else if(value.compareToIgnoreCase(Item.getItemType()) == 0 && (item.getType() != Item.getItemType())) {
                     newItem = new Item(item);
+                } else if(value.equalsIgnoreCase(Container.getItemType()) && (item.getType() != Container.getItemType())) {
+                	newItem = new Container(item);
                 } else {
-					player.tell("'" + value + "' is not a known type, or the item is already of that type.\nChoose from: Weapon, Armor, Food, DrinkContainer, Fountain, Item");
+					player.tell("'" + value + "' is not a known type, or the item is already of that type.\nChoose from: Weapon, Armor, Food, DrinkContainer, Fountain, Item, Container");
 					return;
                 }
                 player.tell("You set " + item.getShort() + "'s type.");
                 player.getActualRoom().replaceItem(item, newItem);
                 TrollAttack.replaceItem(item, newItem);
             } else {
+            	// This section provides additional options for each item type.
+            	
                 if(item.getType().compareToIgnoreCase(Weapon.getItemType())== 0) {
                     Weapon weapon = (Weapon)item;
                     if(attr.compareToIgnoreCase("damage") == 0) {
@@ -488,6 +500,12 @@ public class Build {
                         drinkcon.setCapacity(Util.intize(player, value));
                     }
                     return;
+                } else if(item.getType().equalsIgnoreCase(Container.getItemType())) {
+                	Container con = (Container)item;
+                	if(attr.compareToIgnoreCase("capacity") == 0) {
+                		con.setCapacity(Util.intize(player, value));
+                	}
+                	return;
                 }
                 player.tell(attr + " is not a valid attribute for this item!");
                 return;

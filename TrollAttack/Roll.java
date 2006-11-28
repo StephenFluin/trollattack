@@ -66,6 +66,9 @@ public class Roll {
 
     public int roll() {
         int results = 0;
+        if(sizeOfDice <= 1) {
+        	return numberOfDice + addition;
+        }
         for (int i = 0; i < numberOfDice; i++) {
             results += (Math.random() * sizeOfDice) + 1 + addition;
         }

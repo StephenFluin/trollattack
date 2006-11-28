@@ -25,10 +25,11 @@ public class Weapon extends Equipment {
     public Weapon(int vnum, int itemWeight, int itemCost, String nom, String shortdes, String longdes) {
         super(vnum, itemWeight, itemCost, nom, shortdes, longdes);
         setWearLocation("wielded");
+        setTypeMessage("a weapon");
     }
     public Weapon(Item i) {
-        this(i.vnum, i.weight, i.cost, i.name, i.shortDesc, i.longDesc);
-    }
+	    this(i.vnum, i.getWeight(), i.getCost(), i.getName(), i.getShort(), i.getLong());
+	}
     
     public Roll damage = new Roll("0d0");
     
