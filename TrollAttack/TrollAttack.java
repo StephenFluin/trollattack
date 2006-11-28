@@ -22,6 +22,7 @@ import org.w3c.dom.Document;
 
 import TrollAttack.Commands.AbilityHandler;
 import TrollAttack.Commands.CommandHandler;
+import TrollAttack.Items.Disposable;
 import TrollAttack.Items.Item;
 import TrollAttack.Classes.Class;
 
@@ -183,7 +184,7 @@ public class TrollAttack {
         }
     }
 
-    static public void wanderLust() {
+    static public void wanderAndDecay() {
         Roll chance = new Roll("1d10");
         Vector<Mobile> wanderers = new Vector<Mobile>();
         for(Area area : gameAreas) {
@@ -193,6 +194,18 @@ public class TrollAttack {
                         if(!being.isPlayer && ((Mobile)being).isWanderer() && chance.roll() > 7) {
                             wanderers.add( (Mobile)being );
                         }
+                    }
+                    for(Item i : room.roomItems) {
+                    	if(i instanceof Disposable) {
+                    		((Disposable)i).decay();
+                    		TrollAttack.debug("Decaying " + i.getShort());
+                    		if(((Disposable)i).isDone()) {
+                    			room.roomItems.remove(i);
+                    			TrollAttack.debug(i.getShort() + " has decayed beyond repair.");
+                    			room.say(Util.uppercaseFirst(i.getShort()) + " decays away.");
+                    			break;
+                    		}
+                    	}
                     }
                 }
             }
