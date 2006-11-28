@@ -37,7 +37,6 @@ public class Area {
     public int defaultClicks;
 
     public Vector<Room> areaRooms;
-
     public Area() {
         this(0, 0, "uncategorized.xml", "Uncategorized", 15, true);
     }
@@ -311,7 +310,7 @@ public class Area {
                     + filename + "!"));
         } else {
         }
-        n.appendChild(room.toNode(((Document) rooms)));
+        n.appendChild(room.toItemNode(((Document) rooms)));
         //n.appendChild(room.toNode(doc));
     }
     
