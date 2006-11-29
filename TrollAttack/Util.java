@@ -503,9 +503,10 @@ public class Util {
      * @param name The string that we are looking for.
      * @param objectClass The class of the object we are looking 
      * 	for, null if not required.
+     * @param notThis The item found cannot be equal to this.
      * @return The first object matching the given class and name.
      */
-	public static <T> T findMember(Collection<T> contents, String name, Class objectClass) {
+	public static <T> T findMember(Collection<T> contents, String name, Class objectClass, T notThis) {
 		int skipItems = 0;
     	if(name.matches("^\\d\\..*$")) {
     		// We want to skip some items until we get to the desired item.
@@ -515,7 +516,7 @@ public class Util {
     	
         T newItem = null;        
         for(T currentItem : contents) {
-        	if (Util.contains(getName(currentItem), name) && (--skipItems < 0)) {
+        	if (Util.contains(getName(currentItem), name) && currentItem != notThis && (--skipItems < 0)) {
                 if(objectClass!= null) {
                 	if(objectClass.isInstance(currentItem)) {
                 		newItem = currentItem;
@@ -530,7 +531,9 @@ public class Util {
         return newItem;
 		
 	}
-	
+	public static <T> T findMember(Collection<T> contents, String name, Class objectClass) {
+		return findMember(contents, name, objectClass, null);
+	}
 	public static <T> T findMember(Collection<T> contents, String name) {
 		return findMember(contents, name, null);
 	}

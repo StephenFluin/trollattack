@@ -398,7 +398,7 @@ public class Room {
 
     public Being getBeing(String name, boolean remove, Being actor) {
 
-        Being newMobile = Util.findMember(roomBeings, name);
+        Being newMobile = Util.findMember(roomBeings, name, null, actor);
 
         return newMobile;
     }
