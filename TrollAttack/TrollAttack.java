@@ -198,10 +198,10 @@ public class TrollAttack {
                     for(Item i : room.roomItems) {
                     	if(i instanceof Disposable) {
                     		((Disposable)i).decay();
-                    		TrollAttack.debug("Decaying " + i.getShort());
+                    		//TrollAttack.debug("Decaying " + i.getShort());
                     		if(((Disposable)i).isDone()) {
                     			room.roomItems.remove(i);
-                    			TrollAttack.debug(i.getShort() + " has decayed beyond repair.");
+                    			//TrollAttack.debug(i.getShort() + " has decayed beyond repair.");
                     			room.say(Util.uppercaseFirst(i.getShort()) + " decays away.");
                     			break;
                     		}
