@@ -568,7 +568,13 @@ public class Build {
             } else if(attr.compareToIgnoreCase("hitlevel") == 0) {
                 mobile.hitLevel = intValue;
             } else if(attr.compareToIgnoreCase("level") == 0) {
-                mobile.level = intValue;
+                if(intValue > 50 && mobile instanceof Player && !(player.level >64)) {
+                	player.tell("You can't advance players to beyond level 50.");
+                } else {
+                	mobile.level = intValue;
+                }
+                
+            	
             } else if(attr.startsWith("str")) {
                 mobile.strength = intValue;
             } else if(attr.startsWith("con")) {
