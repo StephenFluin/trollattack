@@ -107,7 +107,7 @@ public abstract class Communication extends Thread {
         while (tmpPlayer == null) {
         	
             try {
-                print(Util.getMOTD(), false);
+            	print(Util.getMOTD(), false);
                 player.tell(WHITE +"What is your name (or type "
                         + Communication.CYAN + "new" + Communication.WHITE
                         + " for a new character)?");
@@ -146,8 +146,7 @@ public abstract class Communication extends Thread {
                             //TrollAttack.debug("Login Problems - saved.");
                             offendingPlayer.quit();
                             //TrollAttack.debug("Login Problems - fquited.");
-                            offendingPlayer.communication.close();
-                        }
+                		}
                         tmpPlayer.authenticated = true;
                         TrollAttack.message("Player "
                                 + tmpPlayer.getShort() + " joined the game.");
