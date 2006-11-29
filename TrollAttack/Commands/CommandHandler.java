@@ -622,7 +622,7 @@ public class CommandHandler {
 					    return false;
 					}
 				} else {
-			        if(item.getWeight() < (player.getCarryingMax() - player.getCarryingWeight())) {
+			        if((item.getWeight() < (player.getCarryingMax() - player.getCarryingWeight())) || item instanceof Corpse) {
 			        	player.getActualRoom().removeItem(command);
 			        } else {
 			        	player.tell(Util.uppercaseFirst(item.getShort()) + " is too heavy, you can only sacrafice items you can pick up.");
