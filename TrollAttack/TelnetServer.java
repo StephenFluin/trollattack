@@ -15,7 +15,9 @@ import java.net.Socket;
 import java.net.SocketException;
 
 public class TelnetServer extends Communication {
+	InputStream is;
     BufferedReader in;
+    InputStreamReader ins;
     DataOutputStream out;
     ServerSocket serverSocket;
     Socket adminSocket;
@@ -70,7 +72,9 @@ public class TelnetServer extends Communication {
         try {
         	adminSocket = serverSocket.accept();
             TrollAttack.message("New connection attempt.");
-            in = new BufferedReader(new InputStreamReader(adminSocket.getInputStream()));
+            is = adminSocket.getInputStream();
+            ins = new InputStreamReader(is);
+            in = new BufferedReader(ins);
             
             out = new DataOutputStream(adminSocket.getOutputStream());
             
@@ -114,13 +118,18 @@ public class TelnetServer extends Communication {
                  }
              }
         } catch(NullPointerException e) {
+        	TrollAttack.debug("Null pointer exception on readline. Connection closed.");
         	// This is okay because it means the connection was closed.
         	return null;
         	
         } catch(SocketException e) {
+        	TrollAttack.debug("Socket exception on readline. Connection closed.");
         	return null;
         } catch(IOException e) {
         	TrollAttack.error("IO Exception in telnet getLine, we don't know why.");
+        	e.printStackTrace();
+        } catch(Exception e) {
+        	TrollAttack.error("Unknown other exception (probably with readline.");
         	e.printStackTrace();
         }
 
@@ -144,26 +153,51 @@ public class TelnetServer extends Communication {
         }
 
     }
+    /**
+     * Is order important in this function? Unknown.
+     */
     public void close() {
-        try {
+    	TrollAttack.debug("Running close on TelnetServer.");       
+    	try {
+    		
             if(adminSocket != null) {
+            	TrollAttack.debug("Admin socket existed.");
                 adminSocket.close();
+                TrollAttack.debug("Admin socket closed.");
             }
+            /*if(is != null) {
+            	TrollAttack.debug("is existed");
+            	is.close();
+            	TrollAttack.debug("is closed.");
+            }
+            if(ins != null) {
+            	TrollAttack.debug("ins existed");
+            	ins.close();
+            	TrollAttack.debug("ins closed.");
+            }
+            
             if(in != null) {
+            	TrollAttack.debug("in existed.");
                 in.close();
+                TrollAttack.debug("in closed.");
                 in = null;
+                
             }
             
             if(out != null) {
+            	TrollAttack.debug("out existed.");
                 out.close();
+                TrollAttack.debug("out closed.");
                 out = null;
             }
+            */
+            //Evidently these are not necessary????
 
 
         } catch(Exception e) {
             e.printStackTrace();
         }
-       
+        TrollAttack.debug("Done telnetserver close function.");
     }
     
     public static String GREY = ESCAPE + "[1;30m";
