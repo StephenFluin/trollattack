@@ -66,12 +66,12 @@ public class CommandMove extends Command {
             
             // Deal with specially typed rooms that we enter.
             // If the room has a push, set up a thread to wait and do it without blocking anyone.
-            if(player.getActualRoom().push != null) {
+            if(player.getActualRoom().push != null && player.getActualArea().frozen == false) {
             	player.getActualRoom().push.execute(player);
             }
             
-            // If the room has no floor, DROP them!
-            if(player.getActualRoom().noFloor != 0) {
+            // If the room has no floor, DROP them (if not frozen)
+            if(player.getActualRoom().noFloor != 0 && player.getActualArea().frozen == false) {
             	Room destination = player.getActualRoom().getLink(Exit.DOWN);
             	if(destination == null) {
             		

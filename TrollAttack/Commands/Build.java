@@ -275,7 +275,10 @@ public class Build {
     public void rStat(Room room) {
     	String message = "Name:\t\t" + room.title + Util.wrapChar +
     				"No Wander:\t(" + (room.getNoWander() ? "X" : " ") + ")"+ Util.wrapChar + 
-    				"Shop (" + ( room instanceof Shop ? "X" : " " ) + ")"+ Util.wrapChar;
+    				"Shop  (" + ( room instanceof Shop ? "X" : " " ) + ")"+ Util.wrapChar +
+    				"NoFoor(" + ( room.noFloor != 0 ? ("X) Damage:" + room.noFloor) : " )" ) + Util.wrapChar +
+    				"Push: " + ( (room.push == null ? "none" : Exit.directionName(room.push.direction) ) ) + Util.wrapChar;
+    	
     	for(Exit e : room.roomExits) {
     		message += "Exit " + e.getDirectionName() + " to " + e.getDestination()+ Util.wrapChar;
     		if(e.isDoor()) {
