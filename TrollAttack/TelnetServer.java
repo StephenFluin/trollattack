@@ -118,12 +118,13 @@ public class TelnetServer extends Communication {
                  }
              }
         } catch(NullPointerException e) {
-        	TrollAttack.debug("Null pointer exception on readline. Connection closed.");
-        	// This is okay because it means the connection was closed.
+        	//TrollAttack.debug("Null pointer exception on readline. Connection closed.");
+        	// This is okay because it means the connection was closed (Closing a telnet connection)
         	return null;
         	
         } catch(SocketException e) {
-        	TrollAttack.debug("Socket exception on readline. Connection closed.");
+        	// This is okay because it means that the connection was closed (stopping a java client from running).
+        	//TrollAttack.debug("Socket exception on readline. Connection closed.");
         	return null;
         } catch(IOException e) {
         	TrollAttack.error("IO Exception in telnet getLine, we don't know why.");
@@ -139,11 +140,8 @@ public class TelnetServer extends Communication {
         try {
             out.writeBytes(string);
         } catch (IOException e) {
-            player.quit(true);
-            // TrollAttack.error("Player quit unexpectedly (" + e.getMessage() +
-            // ").");
-            //e.printStackTrace();
-
+          // This will happen whenever we are done with a player. (Link-dead, closed telnet, quits)
+            
         } catch(NullPointerException e) {
         	//TrollAttack.debug("Socket is shutdown, no longer exists.");
         	throw(e);
@@ -157,13 +155,13 @@ public class TelnetServer extends Communication {
      * Is order important in this function? Unknown.
      */
     public void close() {
-    	TrollAttack.debug("Running close on TelnetServer.");       
+    	//TrollAttack.debug("Running close on TelnetServer.");       
     	try {
     		
             if(adminSocket != null) {
-            	TrollAttack.debug("Admin socket existed.");
+            	//TrollAttack.debug("Admin socket existed.");
                 adminSocket.close();
-                TrollAttack.debug("Admin socket closed.");
+                //TrollAttack.debug("Admin socket closed.");
             }
             /*if(is != null) {
             	TrollAttack.debug("is existed");
@@ -197,7 +195,7 @@ public class TelnetServer extends Communication {
         } catch(Exception e) {
             e.printStackTrace();
         }
-        TrollAttack.debug("Done telnetserver close function.");
+        //TrollAttack.debug("Done telnetserver close function.");
     }
     
     public static String GREY = ESCAPE + "[1;30m";

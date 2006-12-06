@@ -1,7 +1,6 @@
 Todo List / Ideas:
 
 switch doesn't work (Can't reproduce 10/12/06)
-shops should work
 having two people fight gives only one of them experience upon death
 follow caused an infinite loop saying "you aren't following anything"
 Fix Experience System
@@ -13,9 +12,7 @@ Make each area aware of all of its own rooms, mobiles, items, and players (for s
 	so we don't always have to scan all of the junk in the game)
 Make int minPosition work, instead of boolean mustBePeaceful
 Work on channels and player preferences.
-
-5. Pets and Mountable Mobiles
-6. Swimming and Water
-Movement points
+Pets and Mountable Mobiles
+Swimming and Water
 Guilds and Orders
 Speech

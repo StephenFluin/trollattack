@@ -204,7 +204,11 @@ public class Player extends Being {
         TrollAttack.gamePlayers.remove(this);
         
         TrollAttack.broadcast(Communication.PURPLE + getShort() + " logged out.");
-        TrollAttack.message(getShort() + " logged out.");
+        if(!forceful) {
+        	TrollAttack.message("Player " + getShort() + " logged out.");
+        	//Thread.dumpStack();
+        }
+        
         authenticated = false;
         //TrollAttack.debug("Removed the player from the game, now just need to close the connection.");
         closeConnection();
