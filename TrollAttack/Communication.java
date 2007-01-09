@@ -77,7 +77,7 @@ public abstract class Communication extends Thread {
                     // This will be null if the connection has been severed.
                     if(inputLine == null) {
                     	player.quit(true);
-                    	TrollAttack.message(player.getShort() + " lost his/her connection.");
+                    	TrollAttack.message(Util.uppercaseFirst(player.getShort()) + " lost his/her connection.");
                     }
                     player.handleCommand(inputLine);
                 } catch(NullPointerException e) {
@@ -85,7 +85,7 @@ public abstract class Communication extends Thread {
                     e.printStackTrace();
                     break;
                 } catch (Exception e) {
-                	TrollAttack.error(player.getShort() + " logged out FOR AN UNKNOWN REASON.");
+                	TrollAttack.error(Util.uppercaseFirst(player.getShort()) + " logged out FOR AN UNKNOWN REASON.");
                     e.printStackTrace();
                     break;
                 }
@@ -149,7 +149,7 @@ public abstract class Communication extends Thread {
                 		}
                         tmpPlayer.authenticated = true;
                         TrollAttack.message("Player "
-                                + tmpPlayer.getShort() + " joined the game.");
+                                + Util.uppercaseFirst(tmpPlayer.getShort()) + " joined the game.");
                     } else {
                         TrollAttack.message("Could not create player (" + name
                                 + ":" + "***" + ").");

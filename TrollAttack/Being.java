@@ -292,8 +292,35 @@ public class Being implements Cloneable {
      * Calculates the average hit damage this being will do based on their hit damage and their weapons.
      * @return The average hit damage this being will do.
      */
-    public int getAverageHitDamage() {
-        return hitDamage.getAverage();
+    public double getAverageHitDamage() {
+        double result = hitDamage.getAverage();
+    	for(Equipment tmpEq : equipment) {
+    		if(tmpEq instanceof Weapon) {
+    			Weapon w = (Weapon)tmpEq;
+    			result += w.damage.getAverage();
+    		}
+    	}
+    	return result;
+    }
+    
+    
+    /**
+	 * This calculation takes the hitlevel, minus the addition for each 
+	 * die.  Then it divides this number by the amount of dice to get 
+	 * the minimum roll necessary for a hit on a single die, then divides 
+	 * this by the size of the dice to see the probability of a not-hit.
+	 * 
+	 * The not-hit probability is taken to the power of the amount of dice, 
+	 * and then subtracted from 1 to get the hit-probability for all of the 
+	 * dice.  
+	 */   
+    public double getHitProbability() {
+    	double comparison = (double)hitLevel-hitSkill.addition/(double)hitSkill.numberOfDice;
+    	comparison = comparison/(double)hitSkill.numberOfDice;
+    	comparison = comparison/(double)hitSkill.sizeOfDice;
+    	comparison = Math.pow(comparison, (double)hitSkill.numberOfDice);
+    	comparison = 1-comparison;
+    	return comparison;
     }
    
     /**
@@ -478,6 +505,11 @@ public class Being implements Cloneable {
         return level;
     }
 
+    /**
+     * Adds an item to a being, converts gold into gold count (if the item is 
+     * gold)
+     * @param i The item being added to the being's inventory.
+     */
     public void addItem(Item i) {
         if (i.getClass() == Gold.class) {
             gold += i.getCost();
@@ -486,6 +518,12 @@ public class Being implements Cloneable {
         }
     }
 
+    /**
+     * Creates a new gold item and deducts it from the being's gold count.
+     * @param amount The amount of gold to be used for the construction of
+     * this item.
+     * @return The gold item worth the specified amount of gold.
+     */
     public Gold createGoldItem(int amount) {
         gold -= amount;
         return new Gold(amount);
@@ -600,13 +638,14 @@ public class Being implements Cloneable {
         }
     }
 
-    public String drinkItem(Item newDrink) {
+    public void drinkItem(Item newDrink) {
         DrinkContainer newDrinky;
        
         try {
             newDrinky = (DrinkContainer) newDrink;
             if (thirst < 1) {
                 tell("You are too full to take a drink.");
+                return;
             } else if(newDrink instanceof Fountain) {
                 thirst = 0;
                 tell("You drink from " + newDrink.getShort()
@@ -618,11 +657,13 @@ public class Being implements Cloneable {
                         + " and are now " + getThirstString() + ".");
             } else {
                 tell("There is nothing left in " + newDrink.getShort() + ".");
+                return;
             }
         } catch (ClassCastException e) {
         	tell("You can't drink from that!");
+        	return;
         }
-        return null;
+        roomSay("%1 drinks from " + newDrink.getShort() + ".");
     }
 
     public String getHungerString() {

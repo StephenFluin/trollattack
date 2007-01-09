@@ -1,11 +1,11 @@
 Todo List / Ideas:
 
 switch doesn't work (Can't reproduce 10/12/06)
-having two people fight gives only one of them experience upon death
-follow caused an infinite loop saying "you aren't following anything"
-Fix Experience System
+having two people fight a single mobile gives only one of them experience upon death
+follow can cause an infinite loop saying "you aren't following anything"
 "scan nw"
 invisibility
+build/commandhandler command division
 Help files
 Convert .are files to my xml format.
 Make each area aware of all of its own rooms, mobiles, items, and players (for saving
@@ -16,3 +16,4 @@ Pets and Mountable Mobiles
 Swimming and Water
 Guilds and Orders
 Speech
+Perhaps negative gold only for builders and immortals. Kind of "gold trap".

@@ -232,6 +232,8 @@ public class Util {
         } catch (Exception e) {
             if (p != null) {
                 p.tell("'" + s + "' isn't a valid number.");
+            } else {
+            	throw new NumberFormatException("Invalid number not handled from intize.");
             }
             result = 0;
         }

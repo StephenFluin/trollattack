@@ -66,3 +66,10 @@ Upgrade to version .90
 11/29/06 - Stopped people from upping players past 50.
 11/29/06 - Added ability to sac corpses.
 Upgrade to version .91
+12/??/06 - Implemented smarter hit calculation and consider.
+12/??/06 - Increased default move points.
+12/??/06 - Prevented premature rounding in getAverage for rolls.
+01/09/07 - Prevented gving items to self.
+01/09/07 - Prevented negative gold.
+01/09/07 - Revisions to get and put commands.
+Upgrade to version .92

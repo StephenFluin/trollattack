@@ -10,6 +10,9 @@ package TrollAttack.Items;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.ranges.RangeException;
+
+import TrollAttack.TrollAttack;
 
 
 /**
@@ -29,10 +32,16 @@ public class Gold extends Item {
             data.name = "gold coins";
             data.shortDesc = amount + " gold coins";
             data.longDesc = amount + " gold coins are piled here.";
-        } else {
+        } else if (amount == 1) {
             data.name = "gold coin";
             data.shortDesc = "a gold coin";
             data.longDesc = "A single gold coin lies here.";
+        } else if (amount == 0) {
+        	data.name = "gold shavings";
+        	data.shortDesc = "some gold shavings";
+        	data.longDesc = "Some gold shavings lie here.";
+        } else {
+        	TrollAttack.error("Attempt to create negative gold detected.");
         }
     }
 

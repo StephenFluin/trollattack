@@ -60,8 +60,8 @@ public class Player extends Being {
         maxHitPoints = 50;
         manaPoints = 40;
         maxManaPoints = 40;
-        movePoints = 30;
-        maxMovePoints = 30;
+        movePoints = 100;
+        maxMovePoints = 100;
         hitSkill = new Roll("2d3,2");
         hitLevel = 5;
         hitDamage = new Roll("2d3");

@@ -12,11 +12,11 @@ package TrollAttack;
  * Preferences - Java - Code Style - Code Templates
  */
 public class Roll {
-    int numberOfDice = 0;
+    public int numberOfDice = 0;
 
-    int sizeOfDice = 0;
+    public int sizeOfDice = 0;
 
-    int addition = 0;
+    public int addition = 0;
 
     public Roll(String value) {
         //TrollAttack.message("Trying to do math for roll of '" + value +
@@ -77,7 +77,7 @@ public class Roll {
 
     public int getAverage() {
         double results = 0;
-        results = numberOfDice * (sizeOfDice / 2 + addition + .5);
+        results = numberOfDice * ((double)sizeOfDice / 2 + (double)addition + .5);
         return (int) results;
     }
 

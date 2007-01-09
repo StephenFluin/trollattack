@@ -17,6 +17,7 @@ package TrollAttack.Commands;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.OutputStreamWriter;
+import java.util.Iterator;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Set;
@@ -317,7 +318,7 @@ public class CommandHandler {
 	            player.tell("You don't see that here.");
                 return false;
 	        } else {
-	        	float comparison = (((float)mob.hitPoints) - ((float)player.hitPoints)) / ((float)player.hitPoints);
+	        	double comparison = (((float)mob.hitPoints) - ((float)player.hitPoints)) / ((float)player.hitPoints);
 	        	String result;
 	        	if(comparison > .2) {
 	        		result = mob.getShort() + " looks much tougher than you." + Util.wrapChar;
@@ -326,10 +327,47 @@ public class CommandHandler {
 	        	} else {
 	        		result = mob.getShort() + " looks about as tough as you." + Util.wrapChar;
 	        	}
-	        	comparison = (((float)mob.getAverageHitDamage()) - ((float)player.getAverageHitDamage())) / ((float)player.getAverageHitDamage());
-	        	if(comparison > .2) {
+	        	
+	        	/*
+	        	 * Data for comparison:
+	        	   Level 2 Player: 
+	        	   	Hit Points:     67/67
+					Damage Dice:    2d7,2   Hit Dice:       2d7,2
+					Hit Level (Minimum roll to hit):        5
+				   Tim:
+					Hit Points:     420/420
+					Damage Dice:    2d7     Hit Dice:       1d50
+					Hit Level (Minimum roll to hit):        0
+				   Manson Guard:
+				    Hit Points:     600/600
+					Damage Dice:    3d6     Hit Dice:       4d20
+					Hit Level (Minimum roll to hit):        30
+					
+					3d6 = 3-18
+					10/3 = 3.33333
+					1-(3.3333/6) < .50
+					.50 * getAverageHitDamage() * 5 rounds / your HP
+					
+					1d6,6
+					hitlevel 7
+					
+					
+					
+	        	 */
+	        	  
+	        	double pHitProbability = player.getHitProbability();
+	        	double mHitProbability = mob.getHitProbability();
+	        	
+	        	double pRounds = (double)player.hitPoints/(mHitProbability * mob.getAverageHitDamage());
+	        	TrollAttack.debug(player.getShort() + " will last about " + pRounds + " rounds. (" + player.hitPoints + ", " + mHitProbability + ", " + mob.getAverageHitDamage() + ")");
+	        	double mRounds = (double)mob.hitPoints	/ (pHitProbability + player.getAverageHitDamage());
+	        	TrollAttack.debug(mob.getShort() + " will last about " + mRounds + " rounds. (" + mob.hitPoints + ", " + pHitProbability + ", " + player.getAverageHitDamage() + ")");
+	        	
+	        	comparison = pRounds / mRounds;
+	        	
+	        	if(comparison < 1.2) {
 	        		result += mob.getShort() + " looks like he could hurt you a lot.";
-	        	} else if(comparison < -.2) {
+	        	} else if(comparison > 2) {
 	        		result += mob.getShort() + " probably couldn't hurt you very much.";
 	        	} else {
 	        		result += mob.getShort() + " could hurt you a fair amount.";
@@ -400,43 +438,54 @@ public class CommandHandler {
             return false;
         }
         
+		/**
+		 * Here be dragons.
+		 */
 		public boolean execute(String command) {
 		    // Split the command so we can "get 3 gold"
 			String[] parts = Util.split(command);
-		    int amount = 0;
-		    if(parts[0].equalsIgnoreCase("all")) {
-		        amount = -1;
-		    } else {
-		    	try{
-		    		amount = Util.intize(parts[0]);
-		    		if(parts.length < 2) {
-		    			player.tell("Get " + amount + " what?");
-		    			return false;
-		    		}
-		    	} catch(NumberFormatException e) {
-		    		amount = 1;
-		    		// Already delt with, :).
-		    	}
-		    }
-	       Container con = null;
-	       String location;
-		    if((parts.length == 2 && (amount == 1 || amount == -1)) || (parts.length == 3 && amount != 1)) {
-		    	
-	    		con = (Container)player.findItem(parts[parts.length-1], Container.class);
-	    		if(con == null) {
-	    			con = (Container)player.getActualRoom().getItem(parts[parts.length-1], Container.class);
-	    			if(con == null) {
-		    			player.tell("You can't find a container like that.");
-		    			return execute();
-	    			}
-	    		}
-	    		location = "in " + con.getShort();
-	    		command = parts[parts.length-2];
-	    	} else {
-	    		location = "here";
-	    		command = parts[parts.length-1];
-	    	}
+			int amount = 0;
+			if(parts[0].equalsIgnoreCase("all")) {
+			    amount = -1;
+			} else {
+				try{
+					amount = Util.intize(parts[0]);
+					if(parts.length < 2) {
+						player.tell("Get " + amount + " what?");
+						return false;
+					}
+				} catch(NumberFormatException e) {
+					amount = 1;
+					// This means that the command was a simple "get sword" or something like that.
+				}
+			}
+			
+			/**
+			 * If a container was given, set up location and command correctly.
+			 */
+			Container con = null;
+			String location;
+			if((parts.length == 2 && (amount == 1 || amount == -1)) || (parts.length == 3 && amount != 1)) {
+				
+				con = (Container)player.findItem(parts[parts.length-1], Container.class);
+				if(con == null) {
+					con = (Container)player.getActualRoom().getItem(parts[parts.length-1], Container.class);
+					if(con == null) {
+						player.tell("You can't find a container like that.");
+					return execute();
+				}
+			}
+			location = "in " + con.getShort();
+				command = parts[parts.length-2];
+			} else {
+				location = "here";
+				command = parts[parts.length-1];
+			}
 		    
+		    
+		    /**
+		     * Handle commands involving gold.
+		     */
 		    if(command.equalsIgnoreCase("gold")) {
 		    	Gold item = (Gold)player.getActualRoom().getItem(command, false, Gold.class);
 		    	if(item == null) {
@@ -444,7 +493,7 @@ public class CommandHandler {
 		    		return false;
 		    	}
 		    	/**
-		    	 * Note: THis means that "Get all gold", "get 0 gold", and "get gold" will make you pick up all the gold.
+		    	 * Note: THis means that "Get all gold" and "get gold" will make you pick up all the gold.
 		    	 */
 		    	if( amount < 0 || (amount < 2 && parts.length < 2)) {
 		    		amount = item.getCost();
@@ -464,50 +513,69 @@ public class CommandHandler {
 		    	}
 		    	
 		    }
+		    
+		    /**
+		     * Setup main loop for commands involving "all";
+		     */
 		    if(command.equalsIgnoreCase("all")) {
 		    	command = "";
 		    }
-		    Item item = null;
-		    while(amount-- != 0) {
-		    	if(con == null) {
-		    		item = player.getActualRoom().removeItem(	command		);
-		    	} else {
-		    		item = con.get(command);
-		    		con.contents.remove(item);
+		    
+		    
+		    /**
+		     * Main loop, this happens for each item (ie. 3 times for "get 3 
+		     * sword", n times for "get all" or "get all s") 
+		     */
+		    Vector<Item> itemsToGet = new Vector<Item>();
+		    Iterator<Item> it;
+		    if(con == null) {
+	    		it = player.getActualRoom().roomItems.iterator();
+	    	} else {
+	    		it = con.contents.iterator();
+	    	}
+		    while(it.hasNext() && amount != 0) {
+		    	Item item= it.next();
+		    	if(!Util.contains(item.getName(), command)) {
+		    		continue;
 		    	}
-				if(item == null) {
-					if(amount >= -2) {
-					    player.tell("You can't find that " + location + "!");
-					} else {
-					    return false;
+				if((item.getWeight() + player.getCarryingWeight()) > player.getCarryingMax()) {
+					if(amount < 1) {
+						continue;
+					} else if(amount == 1) {
+						player.tell("You aren't strong enough to carry " + item.getShort() + ", it weighs " + item.getWeight() + ".");
+						return false;
 					}
 				} else {
-					if((item.getWeight() + player.getCarryingWeight()) > player.getCarryingMax()) {
-						player.tell("You aren't strong enough to carry that, it weighs " + item.getWeight() + ".");
-						
-						if(con ==null) {
-							player.getActualRoom().addItem(item);
-						} else {
-							con.add(item);
-						}
-						item = null;
-						continue;
-					}
 					if(con == null) {
 						player.tell("You get " + item.getShort() + ".");
-					} else {
-						player.tell("You get " + item.getShort() + " from " + con.getShort() + ".");
-					}
-					if(con == null) {
 						player.roomSay(player.getShort() + " gets " + item.getShort() + ".");
 					} else {
+						player.tell("You get " + item.getShort() + " from " + con.getShort() + ".");
 						player.roomSay(player.getShort() + " gets " + item.getShort() + " from " + con.getShort() + ".");
 					}
-					
-					player.addItem(item);
-					item = null;
+					itemsToGet.add(item);
+					amount--;
 				}
-		    }
+			}
+			if(itemsToGet.size() == 0) {
+				if(con != null) {
+					player.tell("There is nothing here you can get!");
+				} else {
+					player.tell("You can't find that here.");
+				}
+				return false;
+			} else if(amount > 0) {
+				player.tell("You couldn't find " + amount + " of that.");
+			}
+			for(Item i : itemsToGet) {
+				if(con == null) {
+					player.getActualRoom().roomItems.remove(i);
+					player.addItem(i);
+				} else {
+					con.contents.remove(i);
+					player.addItem(i);
+				}
+			}
             return true;
 		}
 	}
@@ -525,6 +593,7 @@ public class CommandHandler {
 			int amount;
 			if(parts[0].equalsIgnoreCase("all")) {
 				amount = -1;
+				parts[0] = "";
 			} else {
 				amount = 1;
 			}
@@ -535,7 +604,7 @@ public class CommandHandler {
 			}
 			
 			while(amount-- != 0) {
-				Item item = player.getItem(parts[0], false);
+				Item item = Util.findMember(player.beingItems, parts[0], null, con);
 				
 				if(item == null) {
 					if(amount < -2) {
@@ -581,7 +650,7 @@ public class CommandHandler {
                 return false;
 	        } else {
 	            Being victim = player.getActualRoom().getBeing(parts[1], player);
-	            if(victim == null) {
+	            if(victim == null || victim == player) {
 	                player.tell("They aren't here!");
 	                player.addItem(gift);
                     return false;
@@ -702,7 +771,7 @@ public class CommandHandler {
 		        if(player.level > 60 && player.gold < amount) {
 		            player.gold = amount;
 		        }
-		        if(player.gold >= amount) {
+		        if(player.gold >= amount && amount >= 0) {
 		            item = player.createGoldItem(amount);
 		        } else {
 		            player.tell("You don't have that much!");
@@ -1382,7 +1451,7 @@ public class CommandHandler {
 	            player.thirst++;
 	            player.hunger++;
 	        }
-	        
+	        player.roomSay("%1 pukes all over the floor.");
             return true;
 	    }
 	}
@@ -1754,12 +1823,18 @@ public class CommandHandler {
 		            }
 	            }
 	        } else {
-		        newArea = new Area(
-		                new Integer(parts[1]).intValue(),
-		                new Integer(parts[2]).intValue(),
+		        try{
+		        	newArea = new Area(
+		        
+		                Util.intize(parts[1]),
+		                Util.intize(parts[2]),
 		                p.getShort() + ".xml",
 		                p.getShort() + "'s Area In Progress", 15, true);
-		        TrollAttack.gameAreas.add(newArea);
+		        	TrollAttack.gameAreas.add(newArea);
+		        } catch(NumberFormatException e) {
+		        	player.tell("Not a valid vnum range.");
+		        	return false;
+		        }
 	        }
 	        try{
 	            p.setArea(newArea);
@@ -1774,9 +1849,16 @@ public class CommandHandler {
 	        } catch(Exception e) {
 	            e.printStackTrace();
 	        }
-            player.tell("You assign " + p.getShort() + " " + newArea.filename +"(" + newArea.low + "-" + newArea.high + ").");
-            p.tell(player.getShort() + " assigns you the area " + newArea.filename + "("  + newArea.low + "-" + newArea.high + ").");
-	        return true;
+	        if(newArea == null) {
+	        	player.tell("You remove " + p.getShort() + "'s area.");
+	        	p.interrupt(player.getShort() + " removes you of your building abilities.");
+	        	return true;
+	        }
+	        
+        	player.tell("You assign " + p.getShort() + " " + newArea.filename +"(" + newArea.low + "-" + newArea.high + ").");
+        	p.interrupt(player.getShort() + " assigns you the area " + newArea.filename + "("  + newArea.low + "-" + newArea.high + ").");
+        	return true;
+	        
 	    }
 	}
 	class reloadWorld extends Command {

@@ -28,7 +28,7 @@ import TrollAttack.Classes.Class;
 
 
 public class TrollAttack {
-	public static String version = "0.91.1";
+	public static String version = "0.92";
 	
 	static Document document;
 

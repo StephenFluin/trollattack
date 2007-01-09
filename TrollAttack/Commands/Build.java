@@ -17,8 +17,8 @@ import TrollAttack.Items.*;
 /**
  * @author PeEll
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * This class attempts to encapsulate all of the builder functions into one file to decrease the size of CommandHandler.
+ * Sadly it currently does not decrease the size of CommandHandler because right now each command requires an entry in both.
  */
 public class Build {
 	Being player;
@@ -573,6 +573,7 @@ public class Build {
             } else if(attr.compareToIgnoreCase("level") == 0) {
                 if(intValue > 50 && mobile instanceof Player && !(player.level >64)) {
                 	player.tell("You can't advance players to beyond level 50.");
+                	return;
                 } else {
                 	mobile.level = intValue;
                 }
@@ -605,6 +606,7 @@ public class Build {
                     }
                 } else {
                     player.tell("You can only change the 'wanderer' attribute of mobiles.");
+                    return;
                 }
             } else if(attr.compareToIgnoreCase("class") == 0) {
                 player.tell( mobile.setBeingClass(value));
