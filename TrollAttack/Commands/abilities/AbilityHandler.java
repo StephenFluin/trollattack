@@ -6,14 +6,11 @@
  * and all of the files that make it up are (c) 2005
  * to Stephen Fluin.
  */
-package TrollAttack.Commands;
+package TrollAttack.Commands.abilities;
 
+import TrollAttack.Roll;
 import TrollAttack.TrollAttack;
-import TrollAttack.Commands.abilities.BurningHand;
-import TrollAttack.Commands.abilities.Heal;
-import TrollAttack.Commands.abilities.MagicMissile;
-import TrollAttack.Commands.abilities.Scan;
-import TrollAttack.Commands.abilities.Track;
+import TrollAttack.Commands.Ability;
 
 import java.util.Vector;
 
@@ -23,8 +20,13 @@ public class AbilityHandler {
         register(new Scan());
         register(new Track());
         register(new Heal());
-        register(new MagicMissile());
-        register(new BurningHand());
+        register(new OffensiveSpell("magic missile", 7, 5, "You manifest a ball of violent light, rocketing towards %1.", "%1 manifests a ball of violent light, rocketing towards %2.") { });
+        register(new OffensiveSpell("burning hand", 8, 15, "You lay a burning hand upon %1.", "%1 lays a burning hand upon %2.") {});
+        register(new OffensiveSpell("fire burst",10, 20, "You launch a burst of flames against %1.", "A burst of flames flies from %1 at %2."));
+        register(new OffensiveAttack("smack", "You smack %1.", "%1 smacks %2.", new Roll("1d4"), new Roll("3d2")));
+        register(new OffensiveAttack("pound", "You slam into %1.", "%1 pounds on %2.",new Roll("2d6"), new Roll("2d3")));
+        register(new OffensiveAttack("punch", "You punch at %1.", "%1 punches %2.",new Roll("4d2"), new Roll("3d3")));
+        
         
     }
     

@@ -53,4 +53,16 @@ public class Weapon extends Equipment {
         data.appendChild(Util.nCreate(doc, "damage", damage.toString() + ""));
         return data;
     }
+
+    public boolean setAttribute(String attr, String val) {
+    	if(attr.compareToIgnoreCase("damage") == 0) {
+           setDamage(val);
+        } else {
+        	return super.setAttribute(attr, val);
+        }
+    	return true;
+    }
+    public String getAttributeList() {
+    	return super.getAttributeList() + " damage";
+    }
 }

@@ -94,11 +94,20 @@ public class CommandMove extends Command {
             	}
             }
             
+            for(Being b : player.getActualRoom().roomBeings) {
+            	if(b instanceof Mobile && ((Mobile)b).isAggressive()) {
+            		
+            	}
+            }
+            
 		} else {
 			player.tell(Communication.GREEN + "Alas, you cannot go that way.");
             return false;
 		}
-        return true;
+        
+		
+		
+		return true;
  
 	}
 }

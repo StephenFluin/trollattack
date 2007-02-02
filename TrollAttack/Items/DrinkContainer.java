@@ -90,4 +90,19 @@ public class DrinkContainer extends Item {
 	public void setAttributesFromHash(Hashtable hash) {
 	    setVolume(new Integer((String)hash.get("volume")).intValue());
 	}
+	
+    public boolean setAttribute(String attr, String value) {
+        if(attr.compareToIgnoreCase("volume") == 0) {
+           setVolume(Util.intize( value));
+        } else if(attr.compareToIgnoreCase("capacity") == 0) {
+            setCapacity(Util.intize( value));
+        } else {
+        	return super.setAttribute(attr, value);
+        }
+        return true;
+    }
+    public String getAttributeList() {
+    	return super.getAttributeList() + " volume capacity";
+    }
+	
 }

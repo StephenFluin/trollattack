@@ -22,9 +22,10 @@ import java.util.Vector;
 public class Mobile extends Being implements Cloneable {
     public int vnum, clicks;
     private boolean isWanderer;
+    private boolean isAggressive;
 
     public Mobile(int v, int leve, String n, int h, int mh, int m, int mm, int mo, int mmo, int hLevel,
-            String hSkill, String hDamage, int mClicks, String s, String l, boolean wander) {
+            String hSkill, String hDamage, int mClicks, String s, String l) {
         vnum = v;
         level = leve;
         isPlayer = false;
@@ -41,7 +42,6 @@ public class Mobile extends Being implements Cloneable {
         shortDescription = s;
         longDesc = l;
         clicks = mClicks;
-        this.isWanderer = wander;
         ch = new CommandHandler(this);
         //TrollAttack.error("Creating mobile #" + v);
         this.setPrompt("<%h>");
@@ -76,6 +76,9 @@ public class Mobile extends Being implements Cloneable {
     public boolean isWanderer() {
         return isWanderer;
     }
+    public boolean isAggressive() {
+    	return isAggressive;
+    }
     public Node toNode(Document doc) {
 
         Node m = doc.createElement("mobile");
@@ -98,6 +101,7 @@ public class Mobile extends Being implements Cloneable {
         attribs.add(Util.nCreate(doc, "canTeach", canTeach ? "true"
                 : "false"));
         attribs.add(Util.nCreate(doc, "wander", isWanderer() ? "true" : "false"));
+        attribs.add(Util.nCreate(doc, "aggressive", isAggressive() ? "true" : "false"));
         attribs.add(Util.nCreate(doc, "class", getClassName() + ""));
         attribs.add(Util.nCreate(doc, "gold", gold + ""));
         attribs.add(Util.nCreate(doc, "strength", strength + ""));
@@ -119,6 +123,8 @@ public class Mobile extends Being implements Cloneable {
 
     public void setWanderer(boolean isWanderer) {
         this.isWanderer = isWanderer;
-        
+    }
+    public void setAggressive(boolean aggressive) {
+    	isAggressive = aggressive;
     }
 }

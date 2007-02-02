@@ -1,6 +1,5 @@
 Todo List / Ideas:
 
-switch doesn't work (Can't reproduce 10/12/06)
 having two people fight a single mobile gives only one of them experience upon death
 follow can cause an infinite loop saying "you aren't following anything"
 "scan nw"

@@ -20,15 +20,15 @@ import java.util.Vector;
 //import org.jivesoftware.smack.PacketCollector;
 import org.w3c.dom.Document;
 
-import TrollAttack.Commands.AbilityHandler;
 import TrollAttack.Commands.CommandHandler;
+import TrollAttack.Commands.abilities.AbilityHandler;
 import TrollAttack.Items.Disposable;
 import TrollAttack.Items.Item;
 import TrollAttack.Classes.Class;
 
 
 public class TrollAttack {
-	public static String version = "0.92";
+	public static String version = "0.93";
 	
 	static Document document;
 

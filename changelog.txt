@@ -73,3 +73,11 @@ Upgrade to version .91
 01/09/07 - Prevented negative gold.
 01/09/07 - Revisions to get and put commands.
 Upgrade to version .92
+01/23/07 - Rewrote Item attributes and iset code.
+01/23/07 - Rewrote fight code to allow multiple person fights
+01/23/07 - Wrote Fight factory to centralize fight code.
+01/23/07 - Updated ability code
+01/23/07 - Added aggressive mobiles.
+01/23/07 - Rewrote fight code to handle red v. blue style fighting
+01/25/07 - Fixed non-authenticated logins booting real players.
+Upgrade to version .93

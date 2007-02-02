@@ -17,6 +17,16 @@ import TrollAttack.Being;
  */
 public abstract class Command {
 	public String name;
+	
+	/**
+	 * Allows a command to have a commandHandler, dealing with subcommands.
+	 * Perhaps this is not a good idea, lets try it and see!
+	 */
+	public CommandHandler commandHandler = null;
+	
+	
+	
+	
 	boolean peaceful = false;
     public boolean needsPlayer = false;
 	public Command() {}

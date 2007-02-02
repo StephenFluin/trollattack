@@ -130,5 +130,18 @@ public class Container extends Item {
 		}
 		return count;
 	}
+    public boolean setAttribute(String attr, String value) {
+       	if(attr.compareToIgnoreCase("capacity") == 0) {
+    		setCapacity(Util.intize( value));
+    	} else {
+    		return super.setAttribute(attr, value);
+        }
+       	return true;
+    }
+	
+    public String getAttributeList() {
+    	return super.getAttributeList() + " capacity";
+    }
+	
 }
 

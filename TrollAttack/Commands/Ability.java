@@ -3,7 +3,7 @@
  *
  * This file is a source file of TrollAttack.  TrollAttack 
  * is a java game imitating smaug muds. TrollAttack
- * and all of the files that make it up are (c) 2005
+ * and all of the files that make it up are (c) 2007
  * to Stephen Fluin.
  */
 package TrollAttack.Commands;
@@ -36,23 +36,39 @@ public class Ability extends Command {
         return false;
     }
     
+    /**
+     * Executes the ability.  Returns true if they randomly succeed, and the
+     *  ability succeeded, or if it is a spell and they randomly failed.
+     */
     public boolean execute(Being player) {
         boolean success = player.isSuccess(this);
         if(success) {
-            run(player);
+            success = run(player);
         } else {
             player.tell(failureMessage);
+            if(isSpell()) {
+            	success = true;
+            }
         }
+        
         player.learnFromPractice(success, this);
         return success;
     }
+    
+    /**
+     * Executes the ability.  Returns true if they randomly succeed, and the
+     *  ability succeeded, or if it is a spell and they randomly failed.
+     */
     public boolean execute(Being player, String command) {
         //TrollAttack.debug("Got to execute 2.");
         boolean success = player.isSuccess(this);
         if(success) {
-            run(player, command);
+            success = run(player, command);
         } else {
             player.tell(failureMessage);
+            if(isSpell()) {
+            	success = true;
+            }
         }
         player.learnFromPractice(success, this);
         return success;

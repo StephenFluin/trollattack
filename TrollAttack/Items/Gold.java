@@ -58,4 +58,6 @@ public class Gold extends Item {
         Node data = doc.createElement("typeData");
         return data;
     }
+
+
 }

@@ -148,6 +148,13 @@ public class Item implements Cloneable {
         return "item";
     }
     
+    public boolean setAttribute(String attr, String val) {
+    	return false;
+    }
+    public String getAttributeList() {
+    	return "name short long weight cost type";
+    }
+    
     /**
      * Sets up the item by passing in all item-specific data.
      */

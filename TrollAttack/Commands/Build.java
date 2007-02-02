@@ -219,8 +219,8 @@ public class Build {
     		} else {
     			player.tell("You turn this room into a SHOP!");
     			Room r = player.getActualRoom();
-    			Shop s = new Shop(player.getActualRoom());
-    			TrollAttack.replaceRoom(player.getActualRoom(), s);
+    			Shop s = new Shop(r);
+    			TrollAttack.replaceRoom(r, s);
 
     			return;
     		}
@@ -409,7 +409,8 @@ public class Build {
         "Vnum range:\t" + player.getArea().low + "-" + player.getArea().high;
         
     }
-    public void iSet(String[] parts) {
+   
+    public boolean iSet(String[] parts) {
        /* This method is going to get sticky because of ambiguity when 
     	* you edit an item. Are you editing the original, or are you editing 
     	* just your instance, or all instances of this item?
@@ -417,15 +418,27 @@ public class Build {
     	* It should edit all items with this vnum because attributes you can 
     	* change with iset are universal for that item.
     	*/
+    	if(parts.length < 3) {
+	    	player.tell("Usage: iset <item name> <attribute> <value>");
+    	}
+    	if(parts.length < 1) {
+    		return false;
+    	}
+    	
     	Item item = null;
         try {
            item = (Item)player.getActualRoom().getItem(parts[0]);
            item = TrollAttack.getItem(item.vnum);
         } catch(Exception e) {
-            //TrollAttack.error("Possilbe attempt to change player with mset.");
             e.printStackTrace();
         }
         if(item != null) {
+        	if(parts.length < 3) {
+        		player.tell("Possible attributes:");
+    	        player.tell(item.getAttributeList());
+    	        return false;
+        	}
+        	
             String attr = parts[1];
             String value = parts[2];
             for(int i = 3;i < parts.length;i++) {
@@ -465,58 +478,28 @@ public class Build {
                 	newItem = new Container(item);
                 } else {
 					player.tell("'" + value + "' is not a known type, or the item is already of that type.\nChoose from: Weapon, Armor, Food, DrinkContainer, Fountain, Item, Container");
-					return;
+					return false;
                 }
                 player.tell("You set " + item.getShort() + "'s type.");
                 player.getActualRoom().replaceItem(item, newItem);
                 TrollAttack.replaceItem(item, newItem);
             } else {
             	// This section provides additional options for each item type.
-            	
-                if(item.getType().compareToIgnoreCase(Weapon.getItemType())== 0) {
-                    Weapon weapon = (Weapon)item;
-                    if(attr.compareToIgnoreCase("damage") == 0) {
-		                weapon.setDamage(value);
-		            }
-                    return;
-                } else if(item.getType().compareToIgnoreCase(Armor.getItemType()) == 0) {
-                    Armor armor = (Armor)item;
-                    if(attr.compareToIgnoreCase("ac") == 0 || attr.compareToIgnoreCase("armorclass") == 0) {
-                        armor.setArmorClass(Util.intize(player, value));
-                        player.tell("You set " + armor.getShort() + "'s armor class to " + value + ".");
-                    } else if(attr.startsWith("wear")) {
-                        armor.setWearLocation(value);
-                        player.tell("You set " + armor.getShort() + "'s wear location to " + value + ".");
-                    }
-                    return;
-                } else if(item.getType().compareToIgnoreCase(Food.getItemType()) == 0) {
-                    Food food = (Food)item;
-                    if(attr.compareToIgnoreCase("quality") == 0) {
-                        food.setQuality(Util.intize(player, value));
-                    }
-                    return;
-                } else if(item.getType().compareToIgnoreCase(DrinkContainer.getItemType()) == 0) {
-                    DrinkContainer drinkcon = (DrinkContainer)item;
-                    if(attr.compareToIgnoreCase("volume") == 0) {
-                        drinkcon.setVolume(Util.intize(player, value));
-                    } else if(attr.compareToIgnoreCase("capacity") == 0) {
-                        drinkcon.setCapacity(Util.intize(player, value));
-                    }
-                    return;
-                } else if(item.getType().equalsIgnoreCase(Container.getItemType())) {
-                	Container con = (Container)item;
-                	if(attr.compareToIgnoreCase("capacity") == 0) {
-                		con.setCapacity(Util.intize(player, value));
-                	}
-                	return;
-                }
-                player.tell(attr + " is not a valid attribute for this item!");
-                return;
+            	if(!item.setAttribute(attr, value)) {
+            		player.tell("Valid attributes for this item:" + Util.wrapChar +
+            				item.getAttributeList());
+            		return false;
+            		
+            	}
+
+                
             }
+           player.tell("You set " + item.getShort() + "'s " + parts[1] + " to " + parts[2] + ".");
         } else {
             player.tell("You don't see that here!");
-            return;
+            return false;
         }
+        return false;
     }
     public void mSet(String[] parts) {
 
@@ -524,7 +507,6 @@ public class Build {
         try {
            mobile = (Being)player.getActualRoom().getBeing(parts[0], player);
         } catch(Exception e) {
-            TrollAttack.error("Possilbe attempt to change player with mset.");
             e.printStackTrace();
         }
         if(mobile != null) {
@@ -602,12 +584,24 @@ public class Build {
                     if(value.length() < 4) {
                         ((Mobile)mobile).setWanderer(!((Mobile)mobile).isWanderer());
                     } else {
-                        ((Mobile)mobile).setWanderer(new Boolean(value).booleanValue());
+                        ((Mobile)mobile).setWanderer(new Boolean(value));
                     }
                 } else {
                     player.tell("You can only change the 'wanderer' attribute of mobiles.");
                     return;
                 }
+            } else if(attr.equalsIgnoreCase("aggressive")) {
+            	if(mobile instanceof Mobile) {
+            		if(value.length() < 2) {
+            			((Mobile)mobile).setAggressive(!((Mobile)mobile).isWanderer());
+            		} else {
+            			((Mobile)mobile).setAggressive(new Boolean(value));
+            		}
+            	} else {
+            		player.tell("You can only change the 'aggressive' attribute of mobiles.");
+            		return;
+            	}
+            	
             } else if(attr.compareToIgnoreCase("class") == 0) {
                 player.tell( mobile.setBeingClass(value));
                 

@@ -17,7 +17,9 @@ import org.w3c.dom.Document;
 import TrollAttack.Classes.Class;
 import TrollAttack.Classes.AbilityData;
 import TrollAttack.Commands.Ability;
-import TrollAttack.Commands.AbilityHandler;
+import TrollAttack.Commands.abilities.AbilityHandler;
+import TrollAttack.Commands.abilities.OffensiveAttack;
+import TrollAttack.Commands.abilities.OffensiveSpell;
 import TrollAttack.Items.*;
 
 /**
@@ -32,6 +34,7 @@ public class DataReader {
     public DataReader() {
         areaData = readFolder("Areas");
         classData = readFolder("Classes");
+        
     }
 
     private Hashtable readFolder(String folderName) {
@@ -80,6 +83,19 @@ public class DataReader {
         }
         return classes;
         
+    }
+    
+    /**
+     * Unimplemented!!
+     * @return
+     */
+    public Vector<Ability> getAbilities() {
+    	Vector<Hashtable> aData = linkedListify(classData.get("ability"));
+    	Vector<Ability> abilities = new Vector<Ability>();
+    	for(Hashtable hash : aData) {
+    		abilities.add(readAbilityData(hash));
+    	}
+    	return abilities;
     }
 
     public Vector<Area> getAreas() {
@@ -561,7 +577,7 @@ public class DataReader {
     static public Vector readMobileData(Vector<Hashtable<String,String>> mobileList) {
         Mobile newMobile;
         Vector mobiles = new Vector();
-        boolean canTeach = false, wander = false;
+        boolean canTeach = false, wander = false, aggressive = false;
         int vnum, hp, maxhp, clicks, level, hitLevel;
         int mana, maxMana, move, maxMove;
         String shortDesc, longDesc, mobileName, hitDamage, hitSkill;
@@ -590,13 +606,17 @@ public class DataReader {
                         .get("canTeach")).booleanValue();
             if (mobile.get("wander") != null)
                 wander = new Boolean(mobile.get("wander")).booleanValue();
+            if (mobile.get("aggressive") != null)
+            	aggressive = new Boolean(mobile.get("aggressive")).booleanValue();
             hitSkill = mobile.get("hitskill");
             hitDamage = mobile.get("hitdamage");
             shortDesc = mobile.get("short");
             longDesc = mobile.get("long");
             mobileName = mobile.get("name");
             newMobile = new Mobile(vnum, level, mobileName, hp, maxhp, mana, maxMana, move, maxMove,
-                    hitLevel, hitSkill, hitDamage, clicks, shortDesc, longDesc, wander);
+                    hitLevel, hitSkill, hitDamage, clicks, shortDesc, longDesc);
+            newMobile.setWanderer(wander);
+            newMobile.setAggressive(aggressive);
             newMobile.canTeach = canTeach;
             newMobile.setBeingClass( ( mobile.get("class") != null ? mobile.get("class") : "" ) );
             newMobile.gold = (mobile.get("gold") != null ? new Integer(mobile.get("gold")).intValue() : 0);
@@ -630,6 +650,43 @@ public class DataReader {
         result = new Class(name);
         result.setAbilityData(abilitiesData);
         return result;
+    }
+    
+    
+    /**
+     * Reading Ability Data
+     * The plan is to add abilities.xml to the classes folder.  This file will allow the runtime creation of Abilities using reflection.
+     * UNIMPLEMENTED
+     * @param hash
+     * @return
+     */
+    public static Ability readAbilityData(Hashtable hash) {
+    	// Ability Data looks like:
+    	// name, actionDescription, roomDescription, strength, timeCost, failProbability
+    	Ability result = null;
+    	String name = (String)hash.get("name");
+    	String type = (String)hash.get("type");
+    	String aDesc = (String)hash.get("actionDescription");
+    	String rDesc = (String)hash.get("roomDescription");
+    	Roll str = new Roll((String)hash.get("strength"));
+    	Roll timeCost = new Roll((String)hash.get("timeCost"));
+    	java.lang.Class abilityType = null;
+    	try{
+    		abilityType = java.lang.Class.forName(type);
+    		result = (Ability)abilityType.newInstance();
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    		TrollAttack.error("Ability Type referenced that doesn't exist.");
+    	}
+    	result.name = name;
+    	if(abilityType.equals(OffensiveAttack.class)) {
+    		//OffensiveAttack nResult = result;
+    	} else if (result instanceof OffensiveSpell) {
+    		
+    	}
+    	
+    	return result;
+    	
     }
 
     /**

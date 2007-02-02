@@ -55,4 +55,11 @@ public class Fountain extends DrinkContainer {
 	}
 	public void setAttributesFromHash(Hashtable hash) {
 	}
+
+    public boolean setAttribute(String attr, String value) {
+		return false;
+    }
+    public String getAttributeList() {
+    	return "cost weight name long short type";
+    }
 }

@@ -127,6 +127,14 @@ public abstract class Communication extends Thread {
                     	throw new NullPointerException("getlined returned null.");
                     }
                     tmpPlayer = DataReader.readPlayerFile(name);
+                    
+                    
+                    // Authenticate password
+                    if (tmpPlayer == null || !tmpPlayer.checkPassword(pass)) {
+                        tmpPlayer = null;
+                        player.tell("Incorrect password or player not found.");
+                    }
+                    
                     // Checking to see if the character is already logged in.
                     if (tmpPlayer != null) {
                         Player offendingPlayer = null;
@@ -151,16 +159,15 @@ public abstract class Communication extends Thread {
                         TrollAttack.message("Player "
                                 + Util.uppercaseFirst(tmpPlayer.getShort()) + " joined the game.");
                     } else {
-                        TrollAttack.message("Could not create player (" + name
-                                + ":" + "***" + ").");
+                        //TrollAttack.message("Could not create player (" + name
+                        //        + ":" + "***" + ").");
                     }
+                    
+ 
 
                 }
 
-                if (tmpPlayer == null || !tmpPlayer.checkPassword(pass)) {
-                    tmpPlayer = null;
-                    player.tell("Incorrect password or player not found.");
-                }
+                
             } catch (NullPointerException e) {
             	// Connection was probably lost while user attempted to log in.
             	// This is normal so don't throw anything weird.

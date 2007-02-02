@@ -33,4 +33,16 @@ public class Equipment extends Item {
         wearLocation = newLocation;
         //TrollAttack.message("Using new wearloc: " + newLocation);
     }
+
+    public boolean setAttribute(String attr, String value) {
+    	 if(attr.equalsIgnoreCase("wear")) {
+    		 setWearLocation(value);
+    	 } else {
+    		 return false;
+    	 }
+    	 return true;
+    }
+    public String getAttributeList() {
+    	return super.getAttributeList() + " wear";
+    }
 }

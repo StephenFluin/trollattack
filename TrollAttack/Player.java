@@ -254,9 +254,7 @@ public class Player extends Being {
 
     public String toString() {
         String r = "";
-        r += "HP: " + hitPoints + "\n\r" + "MHP: " + maxHitPoints + "\n\r"
-                + "MP: " + manaPoints + "\n\r" + "MP: " + maxManaPoints
-                + "\n\r";
+        r += getShort() + ": (" + hitPoints + "/" + maxHitPoints + "hp)";
         return r;
     }
 
@@ -359,9 +357,8 @@ public class Player extends Being {
         return !(isFighting() || state > 0);
     }
 
-    public void kill(Being killer) {
-        kill();
-        tell(Communication.RED + (killer.getShort() + " KILLS you!").toUpperCase() );
+    public void kill() {
+        super.kill();
 
         setCurrentRoom(1);
         hitPoints = manaPoints = movePoints = 1;

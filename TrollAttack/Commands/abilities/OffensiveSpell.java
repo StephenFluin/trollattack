@@ -10,6 +10,7 @@ package TrollAttack.Commands.abilities;
 
 import TrollAttack.Being;
 import TrollAttack.Fight;
+import TrollAttack.Player;
 import TrollAttack.Commands.Spell;
 
 public class OffensiveSpell extends Spell {
@@ -22,29 +23,34 @@ public class OffensiveSpell extends Spell {
     	this.victim = victim;
     }
     public boolean run(Being player) {
-        if(player.getFighting() == null) {
+        if(!player.isFighting()) {
             player.tell("You can't do this to yourself!");
+        } else {
+        	return run(player,player.getFight().getOtherSide(player).get(0));
         }
         return false;
     }
     public boolean run(Being player, String s) {
         Being mob = player.getActualRoom().getBeing( s, player );
-        if( mob == null) {
-            player.tell("You don't see that here.");
-            return false;
-        } else {
-            player.tell(success.replaceAll("%1",mob.getShort()) + " [" + strength + " damage]");
-            Being[] ignore = {player,mob};
-            player.getActualRoom().say(victim, ignore);
-            mob.increaseHitPoints(-strength);
-            if(player.isFighting()) {
-                
-            } else {
-                Fight myFight = new Fight(player, mob );
-                myFight.start();
-            }
-            return true;
-           
-        }
+        if(mob instanceof Player && !mob.getName().equalsIgnoreCase(s)) {
+			player.tell("You can only attack players by using their full names");
+			return false;
+		}
+        return run(player,mob);
+    }
+    public boolean run(Being player, Being mob) {
+    	 if( mob == null) {
+             player.tell("You don't see that here.");
+             return false;
+         } else {
+             player.tell(success.replaceAll("%1",mob.getShort()) + " [" + strength + " damage]");
+             Being[] ignore = {player,mob};
+             player.getActualRoom().say(victim, ignore);
+             mob.increaseHitPoints(-strength);
+             Fight.ensureFight(player,mob);
+            
+             return true;
+            
+         }
     }
 }

@@ -52,4 +52,16 @@ public class Food extends Item {
         data.appendChild(Util.nCreate(doc, "quality", quality + ""));
         return data;
     }
+    public boolean setAttribute(String attr, String value) {
+    	if(attr.compareToIgnoreCase("quality") == 0) {
+            setQuality(Util.intize( value));
+        } else {
+        	return super.setAttribute(attr, value);
+        }
+    	return true;
+    }
+    public String getAttributeList() {
+    	return super.getAttributeList() + " quality";
+    }
+
 }

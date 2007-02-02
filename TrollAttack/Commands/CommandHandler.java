@@ -109,6 +109,26 @@ public class CommandHandler {
 		registerCommand(new Help("?"));
 		registerCommand(new CRoll("roll"));
 		
+		
+		registerCommand(new Command("kiss", false) { 
+			public boolean execute() {
+				player.tell("usage: kiss [being]");
+				return false;
+			}
+			public boolean execute(String command) {
+				Being b = player.getActualRoom().getBeing(command, player);
+				if(b != null) {
+					player.tell("You kiss " + b.getShort() + ".");
+					Being[] bList = {player, b};
+					player.getActualRoom().say("%1 kisses %2.", bList);
+				} else {
+					player.tell("You don't see them here!");
+					return false;
+				}
+				return true;
+			}
+		});
+		
 		//registerCommand(new Debug1("debug1"));
 		//registerCommand(new Debug2("debug2"));
 		
@@ -359,9 +379,9 @@ public class CommandHandler {
 	        	double mHitProbability = mob.getHitProbability();
 	        	
 	        	double pRounds = (double)player.hitPoints/(mHitProbability * mob.getAverageHitDamage());
-	        	TrollAttack.debug(player.getShort() + " will last about " + pRounds + " rounds. (" + player.hitPoints + ", " + mHitProbability + ", " + mob.getAverageHitDamage() + ")");
+	        	//TrollAttack.debug(player.getShort() + " will last about " + pRounds + " rounds. (" + player.hitPoints + ", " + mHitProbability + ", " + mob.getAverageHitDamage() + ")");
 	        	double mRounds = (double)mob.hitPoints	/ (pHitProbability + player.getAverageHitDamage());
-	        	TrollAttack.debug(mob.getShort() + " will last about " + mRounds + " rounds. (" + mob.hitPoints + ", " + pHitProbability + ", " + player.getAverageHitDamage() + ")");
+	        	//TrollAttack.debug(mob.getShort() + " will last about " + mRounds + " rounds. (" + mob.hitPoints + ", " + pHitProbability + ", " + player.getAverageHitDamage() + ")");
 	        	
 	        	comparison = pRounds / mRounds;
 	        	
@@ -396,12 +416,11 @@ public class CommandHandler {
 			} else {
 				if(mob instanceof Player && !mob.getName().equalsIgnoreCase(s)) {
 					player.tell("To attack a player, you must type their full name!");
-					TrollAttack.debug(mob.getName() + "!=" + s);
+					//TrollAttack.debug(mob.getName() + "!=" + s);
 					return false;
 				}
 				//TrollAttack.message("Starting a fight between " + player.getShort() + " and " + mob.getShort());
-			    Fight myFight = new Fight(player, mob );
-				myFight.start();
+			    Fight.ensureFight(player,mob);
 			}
             return true;
 		}
@@ -657,10 +676,7 @@ public class CommandHandler {
 	            } else {
 	                victim.addItem(gift);
 	                player.tell("You give " + gift.getShort() + " to " + victim.getShort(player) + ".");
-	                Being[] pBroadcast = new Being[3];
-	                pBroadcast[0] = pBroadcast[1] = player;
-	        		pBroadcast[2] = victim;
-	        		player.getActualRoom().say("%1 gives %2 " + gift.getShort() + ".", pBroadcast);
+	        		player.getActualRoom().say("%1 gives %2 " + gift.getShort() + ".", new Being[] {player, victim});
 	            }
 	        }
             return true;
@@ -772,7 +788,7 @@ public class CommandHandler {
 		            player.gold = amount;
 		        }
 		        if(player.gold >= amount && amount >= 0) {
-		            item = player.createGoldItem(amount);
+		            item = player.detachGoldItem(amount);
 		        } else {
 		            player.tell("You don't have that much!");
 		            return false;
@@ -1326,7 +1342,7 @@ public class CommandHandler {
             return false;
         }
         public boolean execute(String command) {
-            String[] parts = command.split(" ");
+            String[] parts = Util.split(command);
             if(parts.length != 2) {
                 return execute();
             }
@@ -1929,7 +1945,9 @@ public class CommandHandler {
 		               1,"new mobile",
 		               1,1,1,1,1,1,1, "1d1", "1d1",1,
 		               "the new mobile",
-		               "A mobile takes its first breaths here.", false);
+		               "A mobile takes its first breaths here.");
+		        newRoom.setWanderer(false);
+		        newRoom.setAggressive(false);
 		        player.tell("You have create mobile " + s + ".");
 		        TrollAttack.gameMobiles.add(newRoom);
 		        handleCommand("minvoke " + s);
@@ -2015,19 +2033,10 @@ public class CommandHandler {
 	class iSet extends Command {
 	    public iSet(String s) { super(s, false); }
 	    public boolean execute() {
-	        player.tell("Usage: iset <item name> <attribute> <value>");
-	        player.tell("Possible attributes:");
-	        player.tell("name short long weight cost type");
-            return false;
+	        return execute("");
 	    }
 	    public boolean execute(String s) {
-	        String[] parts = s.split(" ");
-	        if(parts.length < 3) {
-	            this.execute();
-	        }  else {
-	            builder.iSet(parts);
-	        }
-            return true;
+	    	return builder.iSet(s.split(" "));
 	        
 	    }
 	}

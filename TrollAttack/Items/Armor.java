@@ -54,4 +54,17 @@ public class Armor extends Equipment {
         data.appendChild(Util.nCreate(doc, "wearLocation", wearLocation + ""));
         return data;
     }
+
+    public boolean setAttribute(String attr, String value) {
+	    if(attr.compareToIgnoreCase("ac") == 0 || attr.compareToIgnoreCase("armorclass") == 0) {
+	        setArmorClass(Util.intize(value));
+	       
+	    } else {
+	    	return super.setAttribute(attr, value);
+	    }
+	    return true;
+    }
+    public String getAttributeList() {
+    	return super.getAttributeList() + " armorclass";
+    }
 }

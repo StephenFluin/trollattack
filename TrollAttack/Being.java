@@ -61,7 +61,9 @@ public class Being implements Cloneable {
     
     public Being switched = null;
     private Being following;
-
+    private Fight myFight;
+    
+    
     public boolean canTeach = false;
     
     private Class beingClass = null;
@@ -94,8 +96,6 @@ public class Being implements Cloneable {
     public String shortDescription, name, longDesc;
 
     boolean isPlayer = false;
-
-    Being beingFighting = null;
 
     private Prompt myPrompt = new Prompt();
 
@@ -363,19 +363,15 @@ public class Being implements Cloneable {
     }
 
     public boolean isFighting() {
-        if (beingFighting == null) {
+        if (myFight == null) {
             return false;
         } else {
             return true;
         }
     }
 
-    public void setBeingFighting(Being b) {
-        beingFighting = b;
-    }
-
-    public Being getFighting() {
-        return beingFighting;
+    public Fight getFight() {
+        return myFight;
     }
 
     public int getExperience() {
@@ -524,7 +520,7 @@ public class Being implements Cloneable {
      * this item.
      * @return The gold item worth the specified amount of gold.
      */
-    public Gold createGoldItem(int amount) {
+    public Gold detachGoldItem(int amount) {
         gold -= amount;
         return new Gold(amount);
     }
@@ -837,6 +833,7 @@ public class Being implements Cloneable {
         }
         getActualRoom().addItem(c);
         save();
+        myFight = null;
         getActualRoom().removeBeing(this);
     }
 
@@ -1082,7 +1079,9 @@ public class Being implements Cloneable {
     }
     public void practice(Ability ability, float proficiency, boolean safety) {
         if(ability == null) {
-            TrollAttack.error("You can't practice a null ability!");
+            //TrollAttack.error("You can't practice a null ability!");
+            tell("That isn't an ability!");
+            return;
         }
         if(abilitiesData.containsKey(ability)) {
             // already know this skill
@@ -1115,6 +1114,12 @@ public class Being implements Cloneable {
         }
     }
 
+    /**
+     * Uses the being's proficiency to determine randomly if the ability was
+     * successfully used.
+     * @param ability
+     * @return
+     */
     public boolean isSuccess(Ability ability) {
         float probability = 100 * new Random().nextFloat();
         AbilityData data = abilitiesData.get(ability);
@@ -1263,6 +1268,15 @@ public class Being implements Cloneable {
 			weight += i.getWeight();
 		}
 		return weight;
+	}
+
+	public void setFight(Fight master) {
+		myFight = master;
+	}
+
+	public void hurt(int i) {
+		hitPoints -= i;
+		
 	}
 
 

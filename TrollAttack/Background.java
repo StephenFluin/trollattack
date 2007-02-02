@@ -38,7 +38,7 @@ public class Background extends Thread {
             if (time % (60 * 6) == 0) {
                 TrollAttack.agePlayers(.1);
             }
-            if (time % (60 * 30) == 0) {
+            if (time % (60 * 45) == 0) {
                 TrollAttack.hungerStrike(6);
                
             }
