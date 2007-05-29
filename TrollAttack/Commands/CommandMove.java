@@ -22,7 +22,7 @@ public class CommandMove extends Command {
 		direction = d;
 		name = n;
 		player = play;
-		peaceful = true;
+		maxPosition = 0;
 	}
 	
 	public boolean execute() {
@@ -37,11 +37,13 @@ public class CommandMove extends Command {
 		        player.tell(Communication.GREEN + "The door is closed.");
 		        return false;
 		    }
-		    if(player.movePoints <= 0) {
-		    	player.tell(Communication.GREEN + "You are too tired to go there now.");
-		    	return false;
-		    } else {
-		    	player.movePoints--;
+		    if(!(player instanceof Mobile)) {
+			    if(player.movePoints <= 0) {
+			    	player.tell(Communication.GREEN + "You are too tired to go there now.");
+			    	return false;
+			    } else {
+			    	player.movePoints--;
+			    }
 		    }
 		    Room nextRoom = TrollAttack.getRoom(results.getDestination());
 		    try{

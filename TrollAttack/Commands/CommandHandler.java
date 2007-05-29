@@ -92,9 +92,9 @@ public class CommandHandler {
         registerCommand(new Practice("practice"));
 		registerCommand(new ChangeState("wake", 0));
 		registerCommand(new ChangeState("stand", 0));
-		registerCommand(new ChangeState("sit", 1));
-		registerCommand(new ChangeState("rest", 2));
-		registerCommand(new ChangeState("sleep", 3));
+		registerCommand(new ChangeState("sit", 2));
+		registerCommand(new ChangeState("rest", 3));
+		registerCommand(new ChangeState("sleep", 4));
 		registerCommand(new Puke("puke"));
 		registerCommand(new Open("open"));
 		registerCommand(new Close("close"));
@@ -110,7 +110,7 @@ public class CommandHandler {
 		registerCommand(new CRoll("roll"));
 		
 		
-		registerCommand(new Command("kiss", false) { 
+		registerCommand(new Command("kiss", 3) { 
 			public boolean execute() {
 				player.tell("usage: kiss [being]");
 				return false;
@@ -214,12 +214,9 @@ public class CommandHandler {
 	public String handleCommand( String commandString) {
 	    player.setLastActive(TrollAttack.getTime());
 	    
-	    if(player.busyDoing.length() > 0) {
-	    	player.tell("You can't do that, you are " + player.busyDoing.toUpperCase() + ".");
-	    	return null;
-	    }
-	    String[] commandParts = commandString.split(" ");
+	    String[] commandParts = Util.split(commandString);
 		String commandParameter = "";
+		
 		if(commandParts.length > 0 ) {
 		    commandString = commandParts[0];
 		    if(commandParts.length > 1 ) {
@@ -236,10 +233,12 @@ public class CommandHandler {
 		
 		
 		Command command = (Command)commandList.getClosest(commandString);
-		
+		/*if(player instanceof Mobile) {
+			TrollAttack.debug(player.getShort() + " is trying to " + command.name);
+		}*/
 		if(commandString.length() > 0 && command != null) {
 		    //player.tell("command peace was " + command.isPeaceful() + " and player peace was " + player.isFighting());
-		    if(command.isPeaceful() && !player.isReady()) {
+		    if(command.maxPosition < player.getPosition()) {
 		        player.tell("You can't do that while " + player.getDoing() + "!");
 		    } else {
 			    if(commandParts.length > 1) {
@@ -327,7 +326,7 @@ public class CommandHandler {
 	
     // Commands
 	class Consider extends Command {
-	    public Consider( String s ) { super(s, false); }
+	    public Consider( String s ) { super(s, 3); }
 	    public boolean execute() { 
             player.tell("Consider whom?"); 
             return false;
@@ -401,7 +400,7 @@ public class CommandHandler {
 	    }
 	}
 	class Kill extends Command {
-		public Kill(String s) { super(s, true); }
+		public Kill(String s) { super(s, 0); }
 		public boolean execute() { 
             player.tell("Kill what?"); 
             return false;
@@ -427,7 +426,7 @@ public class CommandHandler {
 		
 	}
 	class Slay extends Command {
-	    public Slay(String s) { super(s); }
+	    public Slay(String s) { super(s, 3); }
 	    public boolean execute() {
 	        player.tell("Usage: slay <being>");
             return false;
@@ -446,7 +445,7 @@ public class CommandHandler {
 	    }
 	}
 	class Get extends Command {
-		public Get(String s) { super(s, false);}
+		public Get(String s) { super(s, 3);}
 		public boolean execute() { 
             player.tell("Usage: get <amount>|all <item> [container]" + Util.wrapChar +
             			"Examples:get all sack" + Util.wrapChar +
@@ -599,7 +598,7 @@ public class CommandHandler {
 		}
 	}
 	class Put extends Command{
-		public Put(String s) { super(s, false);}
+		public Put(String s) { super(s, 3);}
 		public boolean execute() {
 			player.tell("Usage: put <item> <container>");
 			return false;
@@ -656,7 +655,7 @@ public class CommandHandler {
 	}	
 	class Give extends Command {
 	
-	    public Give(String s) { super(s, false);}
+	    public Give(String s) { super(s, 3);}
 	    public boolean execute() {
 	        player.tell("Usage: give <item> <being>");
             return false;
@@ -683,7 +682,7 @@ public class CommandHandler {
 	    }
 	}
 	class Sacrifice extends Command {
-	    public Sacrifice(String s) { super(s, false);}
+	    public Sacrifice(String s) { super(s, 1);}
 	    public boolean execute() { 
             player.tell("Sacrifice what?"); 
             return false;
@@ -707,17 +706,7 @@ public class CommandHandler {
 					    return false;
 					}
 				} else {
-			        if((item.getWeight() < (player.getCarryingMax() - player.getCarryingWeight())) || item instanceof Corpse) {
-			        	player.getActualRoom().removeItem(command);
-			        } else {
-			        	player.tell(Util.uppercaseFirst(item.getShort()) + " is too heavy, you can only sacrafice items you can pick up.");
-			        	return false;
-			        }
-					
-					player.tell("You sacrifice " + item.getShort() + " to your deity and receive one gold coin.");
-					player.gold++;
-					player.roomSay(item.getShort() + " is sacrificed to " + player.getShort() + "'s deity.");
-					player.increaseFavor((int)(Math.random() * 3 + 2));
+			        player.tell(player.sacrifice(item));
 					item = null;
 				}
 	    	}
@@ -727,7 +716,7 @@ public class CommandHandler {
 	class ChangeState extends Command {
 	    int newState;
 	    public ChangeState(String s, int state){
-	        super(s, false);
+	        super(s, 4);
 	        newState = state;
 	    }
 	    public boolean execute() {
@@ -735,12 +724,12 @@ public class CommandHandler {
 	            player.tell("You can't do that while fighting!");
                return false;
 	        } else {
-		        if(player.getState() == newState) {
+		        if(player.getPosition() == newState) {
 		            player.tell("You are already " + player.getDoing() + "!");
                    return false;
 		        } else {
 		            
-		            player.setState( newState );
+		            player.setPosition( newState );
 		            player.tell("You are now " + player.getDoing() + ".");
 		            player.roomSay(player.getShort() + " is now " + player.getDoing() + ".");		        
 		        }
@@ -749,14 +738,14 @@ public class CommandHandler {
 	    }
 	}
 	class Favor extends Command {
-	    public Favor(String s) { super(s, false); }
+	    public Favor(String s) { super(s); }
 	    public boolean execute() {
 	        player.tell("Your current favor: " + player.getFavor());
             return true;
 	    }
 	}
 	class Prompt extends Command {
-	    public Prompt(String s) { super(s, false); }
+	    public Prompt(String s) { super(s); }
 	    public boolean execute() { 
             player.tell("Current Prompt: " + Util.escapeColors(player.getPromptString())); 
             return false;
@@ -767,7 +756,7 @@ public class CommandHandler {
 	    }
 	}
 	class Drop extends Command {
-		public Drop(String s) {super(s, false);}
+		public Drop(String s) {super(s, 3);}
 		public boolean execute() {
 		    player.tell("Usage: drop <item>");
             return false;
@@ -809,7 +798,7 @@ public class CommandHandler {
 		}
 	}
 	class Cast extends Command {
-	    public Cast(String s) {super(s, false);}
+	    public Cast(String s) {super(s, 3);}
 	    public boolean execute() { 
             player.tell("Cast what?"); 
             return false;
@@ -825,14 +814,9 @@ public class CommandHandler {
 	    }
 	}
 	class Look extends Command {
-		public Look(String s) {super(s, false);}
+		public Look(String s) {super(s, 3);}
 		public boolean execute() {
-		    if(player.state > 2) {
-			    player.tell("You can't do that while sleeping!");
-               return false;
-			} else {
-			    player.look();
-			}
+		    player.look();
             return true;
 			
 		}
@@ -841,9 +825,6 @@ public class CommandHandler {
 			if(being == null) {
 			    player.tell("You don't see that here.");
                return false;
-			} else if(player.state > 2) {
-			    player.tell("You can't do that while sleeping!");
-               return false;
 			} else {
 				player.tell(being.showBeing());
 			}
@@ -851,21 +832,21 @@ public class CommandHandler {
 		}
 	}
 	class Inventory extends Command {
-		public Inventory(String s) { super(s, false); }
+		public Inventory(String s) { super(s, 3); }
 		public boolean execute() { 
             player.tell("Your " + player.getInventory(), false);
             return true;
         }
 	}
 	class ShowEquipment extends Command {
-		public ShowEquipment(String s) { super(s, false); }
+		public ShowEquipment(String s) { super(s, 3); }
 		public boolean execute() { 
             player.tell("Your " + player.getEquipment(), false); 
             return true;
         }
 	}
 	class Trance extends Command {
-	    public Trance(String s) { super(s, true); }
+	    public Trance(String s) { super(s, 3); }
 	    public boolean execute() {
 	        player.tell("You enter a trance.");
 	        player.roomSay("%1 enters a trance.");
@@ -879,7 +860,7 @@ public class CommandHandler {
 	    }
 	}
 	class Wear extends Command {
-		public Wear(String s) { super(s, false); }
+		public Wear(String s) { super(s, 2); }
 		public boolean execute() {
             player.tell("Wear what?");
             return false;
@@ -911,7 +892,7 @@ public class CommandHandler {
 		}
 	}
 	class Eat extends Command {
-	    public Eat(String s) { super(s, false); }
+	    public Eat(String s) { super(s, 2); }
 	    public boolean execute() {
             player.tell("Eat what?");
             return false;
@@ -928,7 +909,7 @@ public class CommandHandler {
 	    }
 	}
 	class Drink extends Command {
-	    public Drink(String s) { super(s, false); }
+	    public Drink(String s) { super(s, 2); }
 	    public boolean execute() { 
             player.tell("Drink what?");
             return false;
@@ -950,7 +931,7 @@ public class CommandHandler {
 	    }
 	}
 	class Examine extends Command {
-		public Examine(String s) { super(s, false); }
+		public Examine(String s) { super(s, 3); }
 		public boolean execute() {
 			player.tell("Examine what?" + Util.wrapChar + "Usage: examine <item>");
 			return false;
@@ -984,7 +965,7 @@ public class CommandHandler {
 		}
 	}
 	class Fill extends Command {
-	    public Fill(String s) { super(s, false); }
+	    public Fill(String s) { super(s, 2); }
 	    public boolean execute() { 
             player.tell("Usage: fill <container> <source>");
             return false;
@@ -1031,7 +1012,7 @@ public class CommandHandler {
 	}
 	class Remove extends Command {
 	    public Remove(String s) {
-	        super( s, false ); 
+	        super( s, 2); 
 	    }
 	    public boolean execute() {
             player.tell("Remove what?");
@@ -1044,7 +1025,7 @@ public class CommandHandler {
 	    }
 	}
     class Follow extends Command {
-        public Follow(String s) { super(s, false); }
+        public Follow(String s) { super(s, 0); }
         public boolean execute() {
             player.tell("usage: follow <being>");
             player.tell("To stop following someone, type 'follow self'");
@@ -1077,7 +1058,7 @@ public class CommandHandler {
         }
     }
 	class CRoll extends Command {
-	    public CRoll(String s) { super( s, false); }
+	    public CRoll(String s) { super( s); }
 	    public boolean execute() {
 	        player.tell("Roll what?");
             return false;
@@ -1097,7 +1078,7 @@ public class CommandHandler {
 	}
 	class CountGold extends Command {
 	    public CountGold(String s) {
-	        super( s, false );
+	        super( s);
 	    }
 	    public boolean execute() {
 	        player.tell("You have " + player.gold + " gold coins.");
@@ -1105,7 +1086,7 @@ public class CommandHandler {
 	    }
 	}
 	class List extends Command {
-		public List(String s) { super( s , false); }
+		public List(String s) { super( s , 1); }
 		public boolean execute() {
 			if(player.getActualRoom() instanceof Shop) {
 				Shop s = (Shop)player.getActualRoom();
@@ -1123,7 +1104,7 @@ public class CommandHandler {
 		 * yet, but they should support portals with different items in 
 		 * them.
 		 */
-		public Buy(String s) { super( s, false); }
+		public Buy(String s) { super( s, 1); }
 		public boolean execute() {
 			player.tell("Usage: buy <item>");
 			return false;
@@ -1153,20 +1134,21 @@ public class CommandHandler {
 		}
 	}
 	class Configure extends Command {
-		public Configure(String s) { super(s, false); }
+		public Configure(String s) { super(s); }
 		public boolean execute() {
 			if(!(player instanceof Player)) {
 				player.tell("Not a player!");
 				return false;
 			}
-			String string = "Usage: configure <property> True|False" + Util.wrapChar +
-						"Valid Properties: shouldcolor, extraformatting" + Util.wrapChar + Util.wrapChar +
-						"Current Settings:" + Util.wrapChar +
-						"Show Colors: (" + (((Player)player).shouldColor ? "X" : " ") + ")" + Util.wrapChar +
-						"Extra Formatting: (" + (((Player)player).extraFormatting ? "X" : " ") + ")";
-			if(player instanceof Player && player.isBuilder()) {
-				string += Util.wrapChar + "Show Vnums: (" + (((Player)player).showVnum ? "X" : " ") + ")";
+			Player p = (Player) player;
+			String string = "Usage: configure <command> True|False" + Util.wrapChar +
+						"Current Settings:" + Util.wrapChar;
+			String table = "( )\tCommand\tOption" + Util.wrapChar;
+			for(String[] cfgName : Player.configList) {
+				table += "(" + (p.getConfig(cfgName[0]) ? "X" : " ") + ")\t" + cfgName[0] + "\t" + cfgName[1] + Util.wrapChar;
 			}
+			table = Util.table(table);
+			string += table;
 			player.tell(string);
 			return false;
 		}
@@ -1174,17 +1156,20 @@ public class CommandHandler {
 			if(!(player instanceof Player)) {
 				return false;
 			}
+			Player p = (Player)player;
+
 			String[] parts = Util.split(command);
 			if(parts.length != 2) {
 				return execute();
 			}
-			if(parts[0].startsWith("shou")) {
-				((Player)player).shouldColor = new Boolean(parts[1]).booleanValue();
-			} else if(parts[0].startsWith("show") && player.isBuilder()) {
-				((Player)player).showVnum = new Boolean(parts[1]).booleanValue();
-			} else if(parts[0].startsWith("ext")) {
-				((Player)player).extraFormatting = new Boolean(parts[1]).booleanValue();
-			} else {
+			boolean result = false;
+			for(String[] conf : Player.configList) {
+				if(Util.contains(conf[0],parts[0])) {
+					p.setConfig(conf[0], new Boolean(parts[1]).booleanValue());
+					result = true;
+				}
+			}
+			if(!result) {
 				player.tell("Not a valid setting.");
 				return execute();
 			}
@@ -1193,14 +1178,14 @@ public class CommandHandler {
 		}
 	}
 	class Score extends Command {
-	    public Score(String s) { super( s , false); }
+	    public Score(String s) { super( s); }
 	    public boolean execute() {
 	        player.score();
             return true;
 	    }
 	}
 	class Report extends Command {
-		public Report(String s) { super(s, false); }
+		public Report(String s) { super(s, 3); }
 		public boolean execute() {
 			String report = "HP: " + player.hitPoints + "/" + player.maxHitPoints + 
 						" Mana: " + player.manaPoints + "/" + player.maxManaPoints +
@@ -1212,7 +1197,7 @@ public class CommandHandler {
 	}
 	class Level extends Command {
 	    public Level(String s) {
-	        super( s, false );
+	        super( s );
 	    }
 	    public boolean execute() {
 	        player.tell("Current Level: " + player.getLevel());
@@ -1224,7 +1209,7 @@ public class CommandHandler {
 	}
 	class CommandList extends Command {
 	    public CommandList(String s) {
-	        super( s, false );
+	        super( s );
 	    }
 	    public boolean execute() {
 	        String list = "";
@@ -1236,7 +1221,7 @@ public class CommandHandler {
 	    }
 	}
 	class Say extends Command {
-	    public Say(String s) { super(s, false); }
+	    public Say(String s) { super(s, 3); }
 	    public boolean execute() {
 	        player.tell("Say what?");
             return false;
@@ -1249,7 +1234,7 @@ public class CommandHandler {
 	    }
 	}
     class Chat extends Command {
-        public Chat(String s) { super(s, false); }
+        public Chat(String s) { super(s); }
         public boolean execute() {
             player.tell("Chat what?");
             return false;
@@ -1269,7 +1254,7 @@ public class CommandHandler {
         }
     }
     class Tell extends Command {
-        public Tell(String s) { super(s, false); }
+        public Tell(String s) { super(s); }
         public boolean execute() {
             player.tell("Usage: tell <player> <message>");
             return false;
@@ -1302,7 +1287,7 @@ public class CommandHandler {
         }
     }
 	class Open extends Command {
-	    public Open(String s) { super(s, false); }
+	    public Open(String s) { super(s, 1); }
 	    public boolean execute() {
 	        player.tell("Open what?");
             return false;
@@ -1312,7 +1297,7 @@ public class CommandHandler {
 	    }
 	}
 	class Close extends Command {
-	    public Close(String s) { super(s, false); }
+	    public Close(String s) { super(s, 1); }
 	    public boolean execute() {
 	        player.tell("Close what?");
             return false;
@@ -1322,7 +1307,7 @@ public class CommandHandler {
 	    }
 	}
 	class Title extends Command {
-	    public Title(String s) { super(s, false); }
+	    public Title(String s) { super(s); }
 	    public boolean execute() {
 	        player.tell("Usage: title <new title>");
             return false;
@@ -1334,7 +1319,7 @@ public class CommandHandler {
 	    }
 	}
     class sSet extends Command {
-        public sSet(String s) { super(s,false); }
+        public sSet(String s) { super(s); }
         public boolean execute() {
             player.tell("Usage: sset <ability> <proficiency>");
             player.tell("       sset all 100");
@@ -1359,7 +1344,7 @@ public class CommandHandler {
         }
     }
     class Practice extends Command {
-        public Practice(String s) { super(s,false); }
+        public Practice(String s) { super(s,2); }
         public boolean execute() {
             if(player.getBeingClass() == null) {
                 player.tell("Unclassed players can't learn skills.");
@@ -1451,7 +1436,7 @@ public class CommandHandler {
         }
     }
 	class Puke extends Command {
-	    public Puke(String s) { super(s, false); }
+	    public Puke(String s) { super(s, 3); }
 	    public boolean execute() {
 	        if(player.thirst > 8 && player.hunger > 8) {
 	            player.tell("You have nothing left in your stomach to puke up!");
@@ -1472,7 +1457,7 @@ public class CommandHandler {
 	    }
 	}
 	class Who extends Command {
-	    public Who(String s) { super(s, false); }
+	    public Who(String s) { super(s); }
 	    public boolean execute() {
 	        player.tell(Communication.CYAN + "Current Players:");
 	        for(Player p  : TrollAttack.gamePlayers) {
@@ -1485,14 +1470,14 @@ public class CommandHandler {
 	    
 	}
     class Version extends Command {
-        public Version(String s) { super(s, false); }
+        public Version(String s) { super(s); }
         public boolean execute() {
             player.tell("Version: " + TrollAttack.version + ".");
             return true;
         }
     }
 	class Where extends Command {
-	    public Where(String s) { super(s, false); }
+	    public Where(String s) { super(s); }
 	    public boolean execute() {
 	        Area myArea = player.getActualArea();
 	        player.tell(Communication.CYAN + "Current Players in " + player.getActualArea().name + ":");
@@ -1505,7 +1490,7 @@ public class CommandHandler {
 	    }
 	}
 	class Emote extends Command {
-	    public Emote(String s) { super(s, true); }
+	    public Emote(String s) { super(s, 4); }
 	    public boolean execute() { 
             player.tell("Emote what?"); 
             return false;
@@ -1521,20 +1506,8 @@ public class CommandHandler {
             return true;
 	    }
 	}
-	class Name extends Command {
-	    public Name(String s) { super(s, true); }
-	    public boolean execute() {
-	        player.tell("Your name is " + player.getName() + ".");
-            return false;
-	    }
-	    public boolean execute(String phrase) {
-	        player.tell("You name yourself " + phrase + ".");
-	        player.name(phrase);
-            return true;
-	    }
-	}
 	class Password extends Command {
-	    public Password(String s) { super(s, true); }
+	    public Password(String s) { super(s,0); }
 	    public boolean execute() {
 	        player.tell("Usage: password <old password> <new password>");
             return false;
@@ -1552,7 +1525,7 @@ public class CommandHandler {
 	    }
 	}
 	class Save extends Command {
-	    public Save(String s) { super(s, false); }
+	    public Save(String s) { super(s, 4); }
 	    public boolean execute() {
 	        player.save();
 	        player.tell("You save your progress.");
@@ -1561,7 +1534,7 @@ public class CommandHandler {
 	}
 	
 	class Bug extends Command {
-		public Bug(String s) { super(s, false); }
+		public Bug(String s) { super(s); }
 		public boolean execute() {
 			player.tell("Usage: bug <message>");
 			return false;
@@ -1579,33 +1552,9 @@ public class CommandHandler {
 			return true;
 		}
 	}
-	/*class Debug1 extends Command {
-	    public Debug1(String s) { super(s, false); }
-	    public boolean execute() {
-	        player.tell("Testing\rwith\rr's.");
-	    }
-	}
-	class Debug2 extends Command {
-	    public Debug2(String s) { super(s, false); }
-	    public boolean execute() {
-	        player.tell("Testing\nwith\nn's.");
-	    }
-	}
-	class Load extends Command {
-	    public Load(String s) { super(s, false); }
-	    public boolean execute() {
-	        //player = Util.readPlayerData();
-	        player.tell("Load which player?");
-	    }
-	    public boolean execute(String s) {
-	        //Communication tmp = player.getCommunication();
-	        player.tell("You can't switch players!");
-	        
-	        
-	    }
-	}*/
+	
 	class Help extends Command {
-		public Help(String s) { super(s, false); }
+		public Help(String s) { super(s); }
 		public boolean execute() {
 			player.tell("Direction Commands:");
 			player.tell("east, west, north, south, up, down");
@@ -1621,7 +1570,7 @@ public class CommandHandler {
 	
 	/* Builder Commands */
 	class Goto extends Command {
-	    public Goto(String s) { super(s, false); }
+	    public Goto(String s) { super(s, 4); }
 	    public boolean execute() {
 	        player.tell("You are currently in room " + player.getCurrentRoom() + ".");
             return true;
@@ -1695,7 +1644,7 @@ public class CommandHandler {
 	    }
 	}
 	class aList extends Command {
-	    public aList(String s) { super(s, false); }
+	    public aList(String s) { super(s); }
 	    public boolean execute() {
 		    
 		    String table = Communication.CYAN + "Filename\tLowVnum\tHighVnum\tFrozen\tName";
@@ -1708,7 +1657,7 @@ public class CommandHandler {
 		}
 	}
 	class iList extends Command {
-	    public iList(String s) { super(s, false); }
+	    public iList(String s) { super(s); }
 	    public boolean execute() {
    
 			String table = Communication.CYAN + "VNUM\tName\tShortDesc";
@@ -1726,7 +1675,7 @@ public class CommandHandler {
 		}
 	}
 	class mList extends Command {
-	    public mList(String s) { super(s, false); }
+	    public mList(String s) { super(s); }
 	    public boolean execute() {
 		    player.tell(Communication.GREEN +"Mobiles in the VNUM range of this area:");
 		    player.tell(Communication.CYAN + "VNUM\tName\t\t\tShortDesc" + Communication.WHITE);
@@ -1764,7 +1713,7 @@ public class CommandHandler {
         }
 	}
 	class rList extends Command {
-	    public rList(String s) { super(s, false); }
+	    public rList(String s) { super(s); }
 	    public boolean execute() {
 		    String result = Communication.GREEN +"Rooms in the VNUM range of this area:" + Util.wrapChar;
 		    result += Communication.CYAN + "VNUM\tTitle" + Util.wrapChar + Communication.WHITE;
@@ -1780,7 +1729,7 @@ public class CommandHandler {
 		}
 	}
 	class resetList extends Command {
-	    public resetList(String s) { super(s, false); }
+	    public resetList(String s) { super(s); }
 		public boolean execute() {
 		    int i = 0;
 		    for(Reset reset : TrollAttack.gameResets) {
@@ -1790,7 +1739,7 @@ public class CommandHandler {
 		}
 	}
 	class Click extends Command {
-	    public Click( String s) { super(s, false); }
+	    public Click( String s) { super(s); }
 	    public boolean execute() {
             for(Reset reset : TrollAttack.gameResets) {
 		        reset.run();
@@ -1801,7 +1750,7 @@ public class CommandHandler {
 	    }
 	}
 	class vAssign extends Command {
-	    public vAssign(String s) { super(s, false); }
+	    public vAssign(String s) { super(s); }
 	    public boolean execute() {
 	        player.tell("Usage: vassign <player> <Low Vnum> <High Vnum>");
 	        player.tell("Or:    vassign <player> <filename>");
@@ -1878,7 +1827,7 @@ public class CommandHandler {
 	    }
 	}
 	class reloadWorld extends Command {
-	    public reloadWorld(String s) { super(s, false); }
+	    public reloadWorld(String s) { super(s); }
 	    public boolean execute() {
 	        TrollAttack.broadcast("The world is swept into a void, but it quickly reappears as if from a whirl of electricity.");
 	        TrollAttack.reloadWorld();
@@ -1927,7 +1876,7 @@ public class CommandHandler {
 	    }
 	}
 	class mCreate extends Command {
-	    public mCreate(String s) { super(s, false); }
+	    public mCreate(String s) { super(s); }
 	    public boolean execute() {
 	        player.tell("Usage: mcreate <mobile vnum>");
             return false;
@@ -1978,7 +1927,7 @@ public class CommandHandler {
 		}
 	}
 	class mStat extends Command {
-	    public mStat(String s) { super(s, false); }
+	    public mStat(String s) { super(s); }
 	    public boolean execute() {
 	        player.tell("Usage: mstat <mobile name>");
             return false;
@@ -1994,7 +1943,7 @@ public class CommandHandler {
 	    }
 	}
 	class iStat extends Command {
-	    public iStat(String s) { super(s, false); }
+	    public iStat(String s) { super(s); }
 	    public boolean execute() {
 	        player.tell("Usage: istat <mobile name>");
             return false;
@@ -2011,7 +1960,7 @@ public class CommandHandler {
 	    }
 	}
 	class mSet extends Command {
-	    public mSet(String s) { super(s, false); }
+	    public mSet(String s) { super(s); }
 	    public boolean execute() {
 	        player.tell("Usage: mset <mobile name> <attribute> <value>");
 	        player.tell("Possible attributes:");
@@ -2031,7 +1980,7 @@ public class CommandHandler {
 	    }
 	}
 	class iSet extends Command {
-	    public iSet(String s) { super(s, false); }
+	    public iSet(String s) { super(s); }
 	    public boolean execute() {
 	        return execute("");
 	    }
@@ -2071,7 +2020,7 @@ public class CommandHandler {
 	}
 	class Savearea extends Command {
 	    public Savearea(String s) {
-	        super(s, false);
+	        super(s);
 	    }
 	    public boolean execute() {
 	        try {
@@ -2205,7 +2154,7 @@ public class CommandHandler {
 	    }
 	}
 	class Switch extends Command {
-	    public Switch(String s) { super(s, true); }
+	    public Switch(String s) { super(s, 0); }
 	    public boolean execute() {
 	        player.tell("Usage: switch <mobile name>");
             return false;
@@ -2237,7 +2186,7 @@ public class CommandHandler {
 	    }
 	}
 	class UnQuit extends Command {
-	    public UnQuit(String s) { super(s, false); }
+	    public UnQuit(String s) { super(s); }
 	    public boolean execute() {
 	        
             player.quit();
@@ -2245,7 +2194,7 @@ public class CommandHandler {
 	    }
 	}
     class Shutdown extends Command {
-        public Shutdown(String s) { super(s, true); }
+        public Shutdown(String s) { super(s); }
         public boolean execute() {
             player.tell("Usage: shutdown yes");
             return false;
@@ -2260,7 +2209,7 @@ public class CommandHandler {
         }
     }
     class cCreate extends Command {
-        public cCreate(String s) { super(s, false); }
+        public cCreate(String s) { super(s); }
         public boolean execute() {
             player.tell("Usage: ccreate <classname>");
             return false;
@@ -2273,7 +2222,7 @@ public class CommandHandler {
         }
     }
     class cStat extends Command {
-        public cStat(String s) { super(s, false); }
+        public cStat(String s) { super(s); }
         public boolean execute() {
             player.tell("Use: cstat <classname> for specific details about a class.");
             player.tell(Communication.CYAN + "Current classes in the game:");
@@ -2301,7 +2250,7 @@ public class CommandHandler {
         }
     }
     class cSet extends Command {
-        public cSet(String s) { super(s, false); }
+        public cSet(String s) { super(s); }
         public boolean execute() {
             player.tell("Usage: cset <classname> <command> <value>");
             player.tell("Usage: cset <classname> add <ability> <minimum level> <maximum proficiency>");
@@ -2361,7 +2310,7 @@ public class CommandHandler {
         }
     }
     class Transport extends Command {
-        public Transport(String s) { super(s, false); }
+        public Transport(String s) { super(s); }
         public boolean execute() {
             player.tell("Usage: transport <player> <vnum>");
             return false;
@@ -2431,8 +2380,8 @@ public class CommandHandler {
         }
         boolean results = false;
         if(spellString.length() > 0 && spell != null) {
-            if(spell.isPeaceful() && player.isFighting()) {
-                player.tell("You can't cast that while fighting!");
+            if(spell.maxPosition > player.getPosition()) {
+                player.tell("You can't cast that while " + player.getDoing() + "!");
             } else {
                 if(spell.getCost() > player.getManaPoints()) {
                     player.tell("You don't have enough mana for that!");

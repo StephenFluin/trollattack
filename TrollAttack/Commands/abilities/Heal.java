@@ -14,7 +14,7 @@ import TrollAttack.Commands.Spell;
 public class Heal extends Spell {
     private int strength = 10;
     
-    public Heal() { super("heal", 6, false); }
+    public Heal() { super("heal", 6, 3); }
     public boolean run(Being player) {
         player.tell("You pass a healing hand over yourself.");
         player.increaseHitPoints( strength );

@@ -189,9 +189,19 @@ public class DataReader {
 						hash.get("dexterity") != null ? new Integer(hash.get("dexterity")).intValue() : 0,
 						hash.get("intelligence") != null ? new Integer(hash.get("intelligence")).intValue() : 0,
 						hash.get("wisdom") != null ? new Integer(hash.get("wisdom")).intValue() : 0);
+        
+        /* Old Config stuff, can be deleted at will
         p.shouldColor = new Boolean(hash.get("shouldcolor")).booleanValue();
         p.extraFormatting = new Boolean(hash.get("extraformatting")).booleanValue();
-        p.showVnum = new Boolean(hash.get("showvnums")).booleanValue();
+        p.showVnum = new Boolean(hash.get("showvnums")).booleanValue(); */
+        
+        Hashtable<String,String> conf = (Hashtable<String,String>)(hash.get("configuration") != null ? hash.get("configuration") : new Hashtable<String,String>());
+        for(String key : conf.keySet()) {
+        	p.setConfig(key, new Boolean(conf.get(key)));
+        }
+        
+        
+        
         
         //TrollAttack.debug("Player's class is turning out to be..." + ( hash.get("class") != null ? hash.get("class") : "" ) );
         

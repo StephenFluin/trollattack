@@ -228,7 +228,7 @@ public class Room {
             } else {
                 color = Communication.GREEN;
             }
-            if(player instanceof Player && ((Player)player).extraFormatting) {
+            if(player instanceof Player && ((Player)player).getConfig("extraformatting")) {
             	color += "I:";
             }
             objects += color + currentItem.getLong();
@@ -249,7 +249,7 @@ public class Room {
             Being currentBeing = eachBeing.next();
             //TrollAttack.debug("Found mobile " + currentBeing.toString());
             if (currentBeing != player) {
-            	if(player instanceof Player && ((Player)player).extraFormatting) {
+            	if(player instanceof Player && ((Player)player).getConfig("extraformatting")) {
                 	mobiles += "M:";
                 }
                 mobiles += Communication.PURPLE + currentBeing.getLong();
@@ -260,10 +260,7 @@ public class Room {
         }
         String vnumString = "", extraFormatting = "";
         if(player instanceof Player) {
-        	if(((Player)player).showVnum) {
-        		vnumString = " <" + vnum + ">";
-        	}
-        	if(((Player)player).extraFormatting) {
+        	if(((Player)player).getConfig("extraformatting")) {
         		extraFormatting = "<>";
         	}
         }
@@ -452,7 +449,7 @@ public class Room {
     public void healBeings() {
         int strength;
         for(Being currentBeing : roomBeings) {
-            strength = 1 + currentBeing.getState();
+            strength = 1 + currentBeing.getPosition();
             if (currentBeing.thirst > 8) {
                 strength = strength / 2;
             }

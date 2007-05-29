@@ -17,18 +17,23 @@ public class Spell extends Ability {
 	private int manaCost;
     private String successMessage;
     
+    /**
+     * Spells by default can only be cast when not fighting.
+     * @param spellName
+     * @param cost
+     */
 	public Spell( String spellName, int cost) { 
-	    this( spellName, cost, true);
+	    this( spellName, cost, 0);
     }
 	/**
 	 * Creates a new spell with the name spellName
 	 * 
 	 * @param spellName The name of the spell.
-	 * @param c The cost in manaPoints of casting this spell
-	 * @param b Is the command restricted to peaceful casting.
+	 * @param cost The cost in manaPoints of casting this spell
+	 * @param maxPos The max position this spell is restricted to.
 	 */
-	public Spell( String spellName, int cost, boolean peacefulOnly) {
-        super( spellName , "You fail to cast " + spellName + ".", peacefulOnly);
+	public Spell( String spellName, int cost, int maxPos) {
+        super( spellName , "You fail to cast " + spellName + ".", maxPos);
         this.successMessage = "You successfully cast " + spellName + ".";
 	    this.manaCost = cost; 
     }

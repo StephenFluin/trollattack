@@ -1,6 +1,7 @@
 package TrollAttack;
 
 import java.io.IOException;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -12,6 +13,7 @@ import org.w3c.dom.Node;
 
 import TrollAttack.Commands.CommandHandler;
 import TrollAttack.Classes.Class;
+import TrollAttack.Items.Corpse;
 import TrollAttack.Items.Equipment;
 import TrollAttack.Items.Item;
 import TrollAttack.Items.Weapon;
@@ -46,10 +48,37 @@ public class Player extends Being {
     private Area area;
     
     public boolean authenticated = false;
-    public boolean shouldColor = true;
-    public boolean extraFormatting = false;
-    public boolean showVnum = false;
+    
+    /**
+     * List of possible configuration options, must be phrased so that false 
+     * is default.  Each item of configList contains {cmd, Name}.
+     */
+    public static final String[][] configList = {{"nocolor", "No Coloring"}, 
+    											 {"extraformatting", "Show Extra Formatting"},
+    											 {"autoloot", "Automatically Loot Corpses"},
+    											 {"autosac", "Automatically Sacrafice Corpses"}};
 
+    public Hashtable<String,Boolean> config = new Hashtable<String,Boolean>();
+    
+    public boolean getConfig(String cName) {
+    	for(String[] conf : configList) {
+    		if(cName.equals(conf[0])) {
+    			Boolean value = config.get(conf[0]);
+    			if(value == null) {
+    				// Config not in my configuration, oh well, FALSE!
+    				return false;
+    			} else {
+    				return value;
+    			}
+    		}
+    	}
+    	TrollAttack.error("Invalid configuration referenced, '" + cName + "'!");
+    	return false;
+    }
+    public void setConfig(String cName, Boolean value) {
+    	config.put(cName, value);
+    }
+    
     public double timePlayed = 0;
 
 
@@ -304,9 +333,15 @@ public class Player extends Being {
         attribs.add(Util.nCreate(doc, "dexterity", dexterity + ""));
         attribs.add(Util.nCreate(doc, "intelligence", intelligence + ""));
         attribs.add(Util.nCreate(doc, "wisdom", wisdom + ""));
-        attribs.add(Util.nCreate(doc, "shouldcolor", shouldColor + ""));
-        attribs.add(Util.nCreate(doc, "extraformatting", extraFormatting + ""));
-        attribs.add(Util.nCreate(doc, "showvnums", showVnum + ""));
+        
+        Node configuration = doc.createElement("configuration");
+        attribs.add(configuration);
+        for(String[] cName : Player.configList) {
+        	Node cfg = Util.nCreate(doc, 
+        							cName[0], 
+        							(config.get(cName[0]) != null ? config.get(cName[0]).toString() : "false"));
+        	configuration.appendChild(cfg);
+        }
         
 
         if (getArea() != null)
@@ -357,8 +392,8 @@ public class Player extends Being {
         return !(isFighting() || state > 0);
     }
 
-    public void kill() {
-        super.kill();
+    public Corpse kill() {
+        Corpse c = super.kill();
 
         setCurrentRoom(1);
         hitPoints = manaPoints = movePoints = 1;
@@ -374,8 +409,9 @@ public class Player extends Being {
         	
         }
         tell("Your spirit finds its way back the planet, and you find yourself again.");
-       busyDoing = "";
+       setPosition(0);
        getActualRoom().addBeing(this);
+       return c;
     }
 
     public void score() {

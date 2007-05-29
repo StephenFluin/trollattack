@@ -81,3 +81,8 @@ Upgrade to version .92
 01/23/07 - Rewrote fight code to handle red v. blue style fighting
 01/25/07 - Fixed non-authenticated logins booting real players.
 Upgrade to version .93
+02/04/07 - Fixed corpse gold-dropping issue.
+02/07/07 - Created new configuration system
+02/07/07 - Added positions and minPos.
+02/07/07 - Added autoloot and autosac.
+Upgrade to version .94

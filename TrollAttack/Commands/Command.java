@@ -27,7 +27,8 @@ public abstract class Command {
 	
 	
 	
-	boolean peaceful = false;
+	public int maxPosition;
+	
     public boolean needsPlayer = false;
 	public Command() {}
 	public String toString() {
@@ -35,20 +36,31 @@ public abstract class Command {
 	}
 	
 	/**
-	 * Creates a command that can only be used when the player is in a
-	 * peaceful state.
+	 * Creates a command that can be used at any time, except during death
+	 * (max position = sleeping = 4).
 	 * @param commandName The name of the command.
 	 */
-	public Command(String commandName) { this(commandName, true);}
+	public Command(String commandName) { this(commandName, 4);}
 	
-	public Command(String commandName, boolean mustBePeaceful) {name = commandName; peaceful = mustBePeaceful;}
-	public Command(String commandName, int minPosition) {
-	    name = commandName; 
+	/**
+	 * Creates a command that can only be used if the player is in 
+	 * position maxPos or less.
+	 * (See Being for master list)
+	 * 0 = Standing
+	 * 1 = Fighting
+	 * 2 = Sitting
+	 * 3 = Resting / Laying Down
+	 * 4 = Sleeping
+	 * 5 = Dead
+	 * @param commandName
+	 * @param maxPos
+	 */
+	public Command(String commandName, int maxPos) {
+		name = commandName; 
+		maxPosition = maxPos;
 	}
-	public boolean isPeaceful() {
-	    return peaceful;
-	}
-    public boolean equals(Command command) {
+
+	public boolean equals(Command command) {
         return command.name.compareToIgnoreCase(name) == 0;
     }
     

@@ -67,8 +67,49 @@ public class Being implements Cloneable {
     public boolean canTeach = false;
     
     private Class beingClass = null;
-    public String busyDoing = "";
 
+    /**
+     * Describes the position the being is currently in.
+     * 0	Ready for anything
+     * 1	Fighting
+     * 2	Sitting
+     * 3	Resting
+     * 4	Sleeping
+     * 5	Dead
+     */
+    private int position = 0;
+    public int getPosition() {
+    	if(isFighting()) {
+    		return 1;
+    	} else {
+    		return position;
+    	}
+    }
+    public void setPosition(int state) {
+    	position = state;
+    }
+    
+    public String getDoing() {
+        switch(position) {
+        case 0:
+        	return "standing";
+        case 1:
+        	return "fighting";
+        case 2:
+        	return "sitting";
+        case 3:
+        	return "resting";
+        case 4:
+        	return "sleeping";
+        case 5:
+        	return "dead";
+        default:
+        	return "doing something secret";
+        }
+
+    }
+    
+    
     Room actualRoom = null;
 
     private Hashtable<Ability, AbilityData> abilitiesData = new Hashtable<Ability, AbilityData>();
@@ -146,36 +187,6 @@ public class Being implements Cloneable {
     public void setCurrentRoom(Room r) {
         actualRoom = r;
         currentRoom = r.vnum;
-    }
-
-    
-    /**
-     * States: 0 Awake/Alert 1 Sitting 2 Lying down 3 Sleeping Should inverse
-     * this list, and add fighting as a state so we can have "minpos"
-     */
-    public int getState() {
-        return state;
-    }
-
-    public void setState(int newState) {
-        state = newState;
-    }
-
-    public String getDoing() {
-        if (isFighting()) {
-            return "fighting";
-        } else if (state == 0) {
-            return "standing";
-        } else if (state == 1) {
-            return "sitting";
-        } else if (state == 2) {
-            return "lying down";
-        } else if (state == 3) {
-            return "sleeping";
-        } else {
-            return "something secret";
-        }
-
     }
 
     public int[] getStatistics() {
@@ -820,8 +831,8 @@ public class Being implements Cloneable {
     public void setLastActive(int i) {
     }
 
-    public void kill() {
-    	busyDoing = "dead";
+    public Corpse kill() {
+    	position = 5;
     	removeAllEquipment();
         
         Corpse c = new Corpse(this);
@@ -831,14 +842,52 @@ public class Being implements Cloneable {
         while(beingItems.size() > 0) {
         	beingItems.remove(0);
         }
+        
+        if(gold > 0) {
+        	c.add(detachGoldItem(gold));
+        }
+        
         getActualRoom().addItem(c);
         save();
         myFight = null;
+        
+        for(Being b : followers) {
+        	b.setFollowing(null);
+        }
+        setFollowing(null);
+        followers = new Vector<Being>();
+        
         getActualRoom().removeBeing(this);
+        return c;
     }
 
     public void kill(Being b) {
-        kill();
+        Corpse c = kill();
+        String msg = "";
+        if(b instanceof Player && ((Player)b).getConfig("autoloot")) {
+        	String loots = "";
+        	for(Item i : c.contents) {
+        		b.addItem(i);
+        		if(msg.length() > 0) {
+        			msg += Util.wrapChar;
+        		}
+        		msg += "You loot " + i.getShort() + " from " + c.getShort() + ".";
+        	}
+        	b.interrupt(loots);
+        	c.contents = new Vector<Item>();
+        	b.roomSay("%1 loots " + c.getShort() + ".");
+        }
+        
+        
+        if(b instanceof Player && ((Player)b).getConfig("autosac")) {
+        	if(msg.length() > 0) {
+        		msg += Util.wrapChar;
+        	}
+        	msg += b.sacrifice(c);
+        }
+        if(msg.length() > 0 ) {
+        	b.interrupt(msg);
+        }
     }
 
     public void roomSay(String string) {
@@ -1226,7 +1275,6 @@ public class Being implements Cloneable {
         Vector<Exit> exitList = getActualRoom().getWanderableExits();
         Roll chance = new Roll("1d" + exitList.size());
         Exit randomExit = exitList.get(chance.roll() - 1);
-
         ch.handleCommand(randomExit.getDirectionName());
     }
 
@@ -1276,6 +1324,19 @@ public class Being implements Cloneable {
 
 	public void hurt(int i) {
 		hitPoints -= i;
+		
+	}
+	public String sacrifice(Item item) {
+		 if((item.getWeight() < (getCarryingMax() - getCarryingWeight())) || item instanceof Corpse) {
+        	getActualRoom().roomItems.remove(item);
+        } else {
+        	return Util.uppercaseFirst(item.getShort()) + " is too heavy, you can only sacrafice items you can pick up.";
+        }
+			
+		gold++;
+		roomSay(getShort() + " sacrifices " + item.getShort() + " to " + getShort() + "'s deity.");
+		increaseFavor((int)(Math.random() * 3 + 2));
+		return "You sacrifice " + item.getShort() + " to your deity and receive one gold coin.";
 		
 	}
 

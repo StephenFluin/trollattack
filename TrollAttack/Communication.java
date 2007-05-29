@@ -103,7 +103,6 @@ public abstract class Communication extends Thread {
         Player tmpPlayer = null;
         String name = "";
         String pass = "";
-        int attempts = 0;
         while (tmpPlayer == null) {
         	
             try {
@@ -194,7 +193,7 @@ public abstract class Communication extends Thread {
         if (shouldWrap) {
             string = wordwrap(string);
         }
-        if(player.shouldColor) {
+        if(!player.getConfig("nocolor")) {
         	string = color(string);
         } else {
         	string = decolor(string);

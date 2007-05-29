@@ -17,7 +17,7 @@ public class OffensiveSpell extends Spell {
     int strength;
     String success, victim;
     public OffensiveSpell(String name, int cost, int strength, String success, String victim) { 
-    	super( name, cost, false); 
+    	super( name, cost, 2); 
     	this.strength = strength;
     	this.success = success;
     	this.victim = victim;

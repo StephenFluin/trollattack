@@ -60,30 +60,19 @@ public class Fight extends Thread {
         }
         // When the fight is over, everyone who is left is a winner!
         Vector<Being> winners = (reds.size() > 0 ? reds : blues);
-        Vector<Being> losers = (reds.size() > 0 ? blueDeaths : redDeaths);
         
-        int loserWorth = 0;
-        for(Being b : losers) {
-        	loserWorth += (int)(b.getAverageHitDamage() * b.maxHitPoints);
-        }
         for(Being b : winners) {
-        	b.increaseExperience(loserWorth/winners.size());
-        	b.interrupt("You have gained " + Communication.CYAN + (loserWorth/winners.size()) + Communication.WHITE + " experience points from this kill.");
         	b.setFight(null);
         }
         
     }
 
-    Vector<Being> deceased = new Vector<Being>();
+    Vector<Being[]> deceased = new Vector<Being[]>();
     public void runRound() {
-    	/**
-    	 * @TODO
-    	 * NEEDS PRETTY PRINTING OF ROUND, EVERYTHING SHOULD COME AS 1 INTERRUPT whethe ryou are in the battle or not.
-    	 */
     	
     	String msg, roomMsg;
     	double damage;
-    	deceased = new Vector<Being>();
+    	deceased = new Vector<Being[]>();
     	for(Vector<Being> team : teams) {
     		Vector<Being> oSide = getOtherSide(team.get(0));
     		
@@ -98,9 +87,14 @@ public class Fight extends Thread {
     				victim.hurt((int)damage);
     				roomMsg = Communication.WHITE + "%1 " + getDamageString((int)damage) + " %2. [" + (int)damage + " damage]";
     				if(victim.hitPoints < 0) {
-    					deceased.add(victim);
+    					deceased.add(new Being[] {victim,b});
     					msg += Util.wrapChar + Communication.RED + "YOU KILLED " + victim.getShort();
     					roomMsg += Util.wrapChar + Communication.RED + "%1 KILLED %2";
+    					
+    			        int loserWorth = (int)(victim.getAverageHitDamage() * victim.maxHitPoints);
+			        	b.increaseExperience(loserWorth);
+			        	msg += Util.wrapChar + "You have gained " + Communication.CYAN + (loserWorth) + Communication.WHITE + " experience points from this kill.";
+    					
     				}
     				fightSay(msg, roomMsg, b, victim);
     			} else {
@@ -110,8 +104,9 @@ public class Fight extends Thread {
     	}
     	sayFlush();
     	//TrollAttack.debug("Finishing up the round, " + deceased.size() + " beings died.");
-    	for(Being b : deceased) {
-    		isNowDead(b);
+    	for(Being[] b : deceased) {
+    		isNowDead(b[0]);
+    		b[0].kill(b[1]);
     	}
     	
     }
@@ -229,7 +224,6 @@ public class Fight extends Thread {
 			blueDeaths.add(departed);
 			blues.remove(departed);
 		}
-		departed.kill();
 	}
 	
 	
@@ -256,7 +250,9 @@ public class Fight extends Thread {
 	
 	public void sayFlush() {
 		for(Entry<Being,String> entry : messages.entrySet()) {
-			entry.getKey().interrupt(Util.uppercaseFirst(entry.getValue()));
+			if(entry.getValue().length() > 0) {
+				entry.getKey().interrupt(Util.uppercaseFirst(entry.getValue()));
+			}
 		}
 		messages = new HashMap<Being,String>();
 	}
