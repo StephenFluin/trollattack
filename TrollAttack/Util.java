@@ -33,6 +33,13 @@ import TrollAttack.Items.Item;
 public class Util {
     static public String wrapChar = "\n\r";
 
+    /**
+     * Tests to see if s is in d.
+     * 
+     * @param s The string we are looking for.
+     * @param d The string we are looking in.
+     * @return Was s found in string d?
+     */
     static public boolean contains(String s, String d) {
         try {
             if (s.length() < d.length()) {
@@ -225,9 +232,9 @@ public class Util {
     }
 
     static public int intize(Being p, String s) {
-        Roll die = new Roll(s);
-        int result;
-        try {
+    	int result;
+    	try {
+    		Roll die = new Roll(s);
             result = die.roll();
         } catch (Exception e) {
             if (p != null) {
@@ -421,7 +428,11 @@ public class Util {
 	}
 
 	/**
-	 * Take in a string and interpret tabs to create a table.  It is currently assumed that the first row is the header row.
+	 * Take in a string and interpret tabs to create a table.  It is 
+	 * currently assumed that the first row is the header row.  Columns
+	 * should be separated by tabs, and rows should be separated by the
+	 * wrapChar.
+	 * 
 	 * @param result Tab formatted string
 	 * @return Table formatted string.
 	 */

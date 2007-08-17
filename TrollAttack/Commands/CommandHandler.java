@@ -80,6 +80,7 @@ public class CommandHandler {
 		registerCommand(new Buy("buy"));
 		registerCommand(new Configure("configure"));
 		registerCommand(new Score("score"));
+		registerCommand(new sList("slist"));
 		registerCommand(new Report("report"));
 		registerCommand(new Remove("remove"));
         registerCommand(new Follow("follow"));
@@ -99,6 +100,7 @@ public class CommandHandler {
 		registerCommand(new Open("open"));
 		registerCommand(new Close("close"));
 		registerCommand(new Who("who"));
+		registerCommand(new Whois("whois"));
         registerCommand(new Version("version"));
 		registerCommand(new Where("where"));
 		registerCommand(new Save("save"));
@@ -426,7 +428,7 @@ public class CommandHandler {
 		
 	}
 	class Slay extends Command {
-	    public Slay(String s) { super(s, 3); }
+	    public Slay(String s) { super(s, 5); }
 	    public boolean execute() {
 	        player.tell("Usage: slay <being>");
             return false;
@@ -467,10 +469,11 @@ public class CommandHandler {
 			    amount = -1;
 			} else {
 				try{
-					amount = Util.intize(parts[0]);
-					if(parts.length < 2) {
+					if(parts.length < 2 && parts[0].equals(new Integer(parts[0]).toString())) {
 						player.tell("Get " + amount + " what?");
 						return false;
+					} else {
+						amount = Util.intize(player, parts[0]);
 					}
 				} catch(NumberFormatException e) {
 					amount = 1;
@@ -1435,6 +1438,15 @@ public class CommandHandler {
             return false;
         }
     }
+    class sList extends Command {
+    	public sList(String s) { super(s); } 
+    	public boolean execute() {
+    		Class c = player.getBeingClass();
+    		c.getSkillList();
+    		player.tell(c.getSkillList());
+    		return true;
+    	}
+    }
 	class Puke extends Command {
 	    public Puke(String s) { super(s, 3); }
 	    public boolean execute() {
@@ -1468,6 +1480,23 @@ public class CommandHandler {
 	        
 	    }
 	    
+	}
+	class Whois extends Command {
+		public Whois(String s) { super(s); }
+		public boolean execute() {
+			player.tell("Usage: whois <player>");
+			return false;
+		}
+		public boolean execute(String s) {
+			for(Player p : TrollAttack.gamePlayers) {
+				if(p.getName().toLowerCase().startsWith(s.toLowerCase())) {
+					player.tell(Communication.GREEN + p.getName() + Util.wrapChar + "Level " + p.level + " " + p.getClassName());
+					return true;
+				}
+			}
+			player.tell("Player not found.");
+			return false;
+		}
 	}
     class Version extends Command {
         public Version(String s) { super(s); }
@@ -2065,7 +2094,7 @@ public class CommandHandler {
 	class InvokeItem extends Command {
 	    public InvokeItem(String s) { super(s); }
 	    public boolean execute() {
-	        player.tell("Usage: invoke <item vnum>");
+	        player.tell("Usage: iinvoke <item vnum>");
             return false;
 	    }
 	    public boolean execute(String s) {
@@ -2236,12 +2265,8 @@ public class CommandHandler {
         public boolean execute(String s) {
             for(Class beingClass : TrollAttack.gameClasses) {
                 if(beingClass.getName().toLowerCase().startsWith(s.toLowerCase())) {
-                    player.tell(Communication.GREEN + "Class: " + beingClass.getName());
-                    player.tell(Communication.WHITE + "Name\t\t\tMin.Level\tMax.Proficiency");
-                    for(Ability ability : beingClass.getAbilityData().keySet()) {
-                        player.tell(ability.name + "\t" + beingClass.getAbilityData().get(ability).level + "\t" +
-                                beingClass.getAbilityData().get(ability).maxProficiency);
-                    }
+            		player.tell(beingClass.getSkillList());
+
                     return true;
                 }
             }
@@ -2380,7 +2405,7 @@ public class CommandHandler {
         }
         boolean results = false;
         if(spellString.length() > 0 && spell != null) {
-            if(spell.maxPosition > player.getPosition()) {
+            if(spell.maxPosition >= player.getPosition()) {
                 player.tell("You can't cast that while " + player.getDoing() + "!");
             } else {
                 if(spell.getCost() > player.getManaPoints()) {

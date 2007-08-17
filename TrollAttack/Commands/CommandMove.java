@@ -57,7 +57,7 @@ public class CommandMove extends Command {
 		    }
 		    player.setCurrentRoom(results.getDestination());
 			previousRoom.removeBeing(player);
-			previousRoom.say(Communication.GREEN + Util.uppercaseFirst(player.getShort()) + " leaves to the " + name);
+			previousRoom.say(Communication.GREEN + Util.uppercaseFirst(player.getShort()) + " leaves " + name);
 			nextRoom.addBeing(player);
 			player.look();
             for(Being follower : player.followers) {

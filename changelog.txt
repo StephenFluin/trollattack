@@ -86,3 +86,7 @@ Upgrade to version .93
 02/07/07 - Added positions and minPos.
 02/07/07 - Added autoloot and autosac.
 Upgrade to version .94
+08/16/07 - Added slist and whois commands
+08/16/07 - Begun creation of player states/positions.
+Upgrade to version .95
+08/16/07 - Fixed rolling issue with words like "medallion".

@@ -35,10 +35,11 @@ public class Roll {
                 numberOfDice = 0;
             } else {
                 numberOfDice = new Integer(parts[0]).intValue();
-                if(numberOfDice == 0 && !(parts[0].startsWith("0"))) {
-                	throw(new NumberFormatException("Doesn't look like a valid number."));
+                
+                if(numberOfDice == 0 && !value.equals("0")) {
+                	throw(new NumberFormatException(parts[0] + " doesn't look like a valid number."));
                 } else {
-                	//TrollAttack.debug("Rolled a real exact zero.");
+                	TrollAttack.debug("Rolled a real exact zero." + numberOfDice + " dice from " + value);
                 }
             }
             sizeOfDice = 1;

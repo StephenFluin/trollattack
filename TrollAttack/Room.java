@@ -306,7 +306,8 @@ public class Room {
                 //TrollAttack.debug("Message after replaces: " + message);
                 if(players.length > 0 && person == players[0]) {
                     //Ignore this person entirely.
-                } else {
+                } else if(person.getPosition() != 4){
+                	// Only say to people who aren't sleeping.
                     person.interrupt(Util.uppercaseFirst(message));
                 }
             }

@@ -19,6 +19,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import TrollAttack.Communication;
 import TrollAttack.TrollAttack;
 import TrollAttack.Util;
 import TrollAttack.Commands.Ability;
@@ -167,6 +168,18 @@ public class Class {
     public String getFileName() {
         return getName() + ".class.xml";
     }
+	public String getSkillList() {
+        String result = "Class: " + getName() + Util.wrapChar;
+        String tableString = "Skill\tMin. Level\tMaximum Proficiency" + Util.wrapChar;
+        for(Ability ability : getAbilityData().keySet()) {
+            tableString += ability.name + "\t" + getAbilityData().get(ability).level + "\t" +
+                    getAbilityData().get(ability).maxProficiency + Util.wrapChar;
+        }
+        
+        result += Util.table(tableString);
+        
+		return result;
+	}
 }
 
 

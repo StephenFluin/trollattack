@@ -50,7 +50,7 @@ public class Being implements Cloneable {
     public int hitLevel;
 
 
-    public int currentRoom = 1, state = 0, hunger = 0, thirst = 0,
+    public int currentRoom = 1, hunger = 0, thirst = 0,
             practiceSessions;
 
     public int strength, intelligence, wisdom, dexterity, constitution, charisma,
@@ -68,6 +68,9 @@ public class Being implements Cloneable {
     
     private Class beingClass = null;
 
+
+    private int position = 0;
+    
     /**
      * Describes the position the being is currently in.
      * 0	Ready for anything
@@ -77,7 +80,6 @@ public class Being implements Cloneable {
      * 4	Sleeping
      * 5	Dead
      */
-    private int position = 0;
     public int getPosition() {
     	if(isFighting()) {
     		return 1;
@@ -173,6 +175,7 @@ public class Being implements Cloneable {
         return Area.test(currentRoom, TrollAttack.gameAreas);
     }
 
+
     public void setCurrentRoom(int r) {
         currentRoom = r;
         if (TrollAttack.gameRooms != null) {
@@ -260,6 +263,12 @@ public class Being implements Cloneable {
     public Class getBeingClass() {
         return beingClass;
     }
+   
+    /**
+     * Returns the name of the class for this being.
+     * (Example: "Wizard")
+     * @return Returns the name of the class.
+     */
     public String getClassName() {
         if(beingClass == null) {
             return "Unclassed";
@@ -1274,8 +1283,11 @@ public class Being implements Cloneable {
     public void wander() {
         Vector<Exit> exitList = getActualRoom().getWanderableExits();
         Roll chance = new Roll("1d" + exitList.size());
-        Exit randomExit = exitList.get(chance.roll() - 1);
-        ch.handleCommand(randomExit.getDirectionName());
+        //TrollAttack.debug("Exit Count:" + exitList.size() + " in room " + getActualRoom().toString());
+        if(exitList.size() > 0) {
+	        Exit randomExit = exitList.get(chance.roll() - 1);
+	        ch.handleCommand(randomExit.getDirectionName());
+        }
     }
 
 	public void sacAll() {

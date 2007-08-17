@@ -388,8 +388,11 @@ public class Player extends Being {
         return hd;
     }
 
+    /**
+     * Is the character not fighting and is standing still?
+     */
     public boolean isReady() {
-        return !(isFighting() || state > 0);
+        return (!isFighting() && getPosition() == 0);
     }
 
     public Corpse kill() {
