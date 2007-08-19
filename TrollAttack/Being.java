@@ -35,6 +35,9 @@ public class Being implements Cloneable {
     public int movePoints;
     public int maxMovePoints;
 
+    public int deathCount;
+    public int killCount;
+    
     public int experience;
     public int gold;
     public int weight;
@@ -82,11 +85,17 @@ public class Being implements Cloneable {
      */
     public int getPosition() {
     	if(isFighting()) {
-    		return 1;
+    		return Being.FIGHTING;
     	} else {
     		return position;
     	}
     }
+    public static int STANDING = 0;
+    public static int FIGHTING = 1;
+    public static int SITTING = 2;
+    public static int RESTING = 3;
+    public static int SLEEPING = 4;
+    public static int DEAD = 5;
     public void setPosition(int state) {
     	position = state;
     }
@@ -837,11 +846,12 @@ public class Being implements Cloneable {
         return false;
     }
 
-    public void setLastActive(int i) {
+    public void setLastActive(long i) {
     }
 
     public Corpse kill() {
     	position = 5;
+    	deathCount++;
     	removeAllEquipment();
         
         Corpse c = new Corpse(this);
@@ -851,9 +861,12 @@ public class Being implements Cloneable {
         while(beingItems.size() > 0) {
         	beingItems.remove(0);
         }
-        
+        int previousGold = gold;
         if(gold > 0) {
         	c.add(detachGoldItem(gold));
+        }
+        if(this instanceof Mobile) {
+        	gold = previousGold;
         }
         
         getActualRoom().addItem(c);
@@ -870,32 +883,32 @@ public class Being implements Cloneable {
         return c;
     }
 
-    public void kill(Being b) {
+    public void kill(Being murderer) {
         Corpse c = kill();
         String msg = "";
-        if(b instanceof Player && ((Player)b).getConfig("autoloot")) {
+        if(murderer instanceof Player && ((Player)murderer).getConfig("autoloot")) {
         	String loots = "";
         	for(Item i : c.contents) {
-        		b.addItem(i);
+        		murderer.addItem(i);
         		if(msg.length() > 0) {
         			msg += Util.wrapChar;
         		}
         		msg += "You loot " + i.getShort() + " from " + c.getShort() + ".";
         	}
-        	b.interrupt(loots);
+        	murderer.interrupt(loots);
         	c.contents = new Vector<Item>();
-        	b.roomSay("%1 loots " + c.getShort() + ".");
+        	murderer.roomSay("%1 loots " + c.getShort() + ".");
         }
         
         
-        if(b instanceof Player && ((Player)b).getConfig("autosac")) {
+        if(murderer instanceof Player && ((Player)murderer).getConfig("autosac")) {
         	if(msg.length() > 0) {
         		msg += Util.wrapChar;
         	}
-        	msg += b.sacrifice(c);
+        	msg += murderer.sacrifice(c);
         }
         if(msg.length() > 0 ) {
-        	b.interrupt(msg);
+        	murderer.interrupt(msg);
         }
     }
 
@@ -963,6 +976,10 @@ public class Being implements Cloneable {
         ch = new CommandHandler(this);
     }
 
+    /**
+     * Returns the area that belongs to a builder.
+     * @return
+     */
     public Area getArea() {
         return null;
     }
@@ -1332,6 +1349,10 @@ public class Being implements Cloneable {
 
 	public void setFight(Fight master) {
 		myFight = master;
+		setPosition(FIGHTING);
+		if(myFight == null) {
+			setPosition(STANDING);
+		}
 	}
 
 	public void hurt(int i) {

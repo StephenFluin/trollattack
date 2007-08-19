@@ -100,6 +100,7 @@ public class CommandHandler {
 		registerCommand(new Open("open"));
 		registerCommand(new Close("close"));
 		registerCommand(new Who("who"));
+		registerCommand(new Uptime("uptime"));
 		registerCommand(new Whois("whois"));
         registerCommand(new Version("version"));
 		registerCommand(new Where("where"));
@@ -434,14 +435,18 @@ public class CommandHandler {
             return false;
 	    }
 	    public boolean execute(String s) {
-	        Being mob = player.getActualRoom().getBeing( s, true, player );
+	        Being mob = player.getActualRoom().getBeing(s, player);
 	        if( mob == null) {
 				player.tell("You don't see that here.");
                 return false;
+			} else if( mob instanceof Player) {
+				player.tell("You can't slay a player.");
+				return false;
 			} else {
 			    player.tell("You slay " + mob.getShort() + " in cold blood.");
 			    Being[] pBroadcast = {player, mob};
 			    player.getActualRoom().say(Communication.RED + "%1 slays %2 in cold blood.", pBroadcast);
+			    player.getActualRoom().removeBeing(mob);
 			}
             return true;
 	    }
@@ -1498,7 +1503,15 @@ public class CommandHandler {
 			return false;
 		}
 	}
-    class Version extends Command {
+    class Uptime extends Command {
+    	public Uptime(String s) { super(s); }
+    	public boolean execute() {
+    		String uptime = (TrollAttack.getTime() / 60 / 60) + " hours";; 
+    		player.tell("The game has been running for " + uptime + ".");
+    		return true;
+    	}
+    }
+	class Version extends Command {
         public Version(String s) { super(s); }
         public boolean execute() {
             player.tell("Version: " + TrollAttack.version + ".");
@@ -1519,7 +1532,7 @@ public class CommandHandler {
 	    }
 	}
 	class Emote extends Command {
-	    public Emote(String s) { super(s, 4); }
+	    public Emote(String s) { super(s, Being.SLEEPING); }
 	    public boolean execute() { 
             player.tell("Emote what?"); 
             return false;
@@ -1536,7 +1549,7 @@ public class CommandHandler {
 	    }
 	}
 	class Password extends Command {
-	    public Password(String s) { super(s,0); }
+	    public Password(String s) { super(s); }
 	    public boolean execute() {
 	        player.tell("Usage: password <old password> <new password>");
             return false;
@@ -1554,7 +1567,7 @@ public class CommandHandler {
 	    }
 	}
 	class Save extends Command {
-	    public Save(String s) { super(s, 4); }
+	    public Save(String s) { super(s, Being.SLEEPING); }
 	    public boolean execute() {
 	        player.save();
 	        player.tell("You save your progress.");
@@ -1995,7 +2008,7 @@ public class CommandHandler {
 	        player.tell("Possible attributes:");
 	        player.tell("hp, maxhp, mana, maxmana, move, maxmove,");
 	        player.tell("name, short, long, gold, damagedice, hitdice,");
-	        player.tell("hitlevel, level, trainer, wanderer, reroll");
+	        player.tell("hitlevel, level, trainer, wanderer, reroll, aggressive");
 	        return false;
 	    }
 	    public boolean execute(String s) {
@@ -2405,7 +2418,7 @@ public class CommandHandler {
         }
         boolean results = false;
         if(spellString.length() > 0 && spell != null) {
-            if(spell.maxPosition >= player.getPosition()) {
+            if(spell.maxPosition < player.getPosition()) {
                 player.tell("You can't cast that while " + player.getDoing() + "!");
             } else {
                 if(spell.getCost() > player.getManaPoints()) {

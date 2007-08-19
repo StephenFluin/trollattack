@@ -90,3 +90,11 @@ Upgrade to version .94
 08/16/07 - Begun creation of player states/positions.
 Upgrade to version .95
 08/16/07 - Fixed rolling issue with words like "medallion".
+08/17/07 - Fixed room editing permissions.
+08/17/07 - Added additional bug handling, and protected room 0.
+Upgrade to version .96
+08/18/07 - Begun addition of synchronization to prevent concurrent modification errors.
+08/18/07 - Added Death and Kill Count
+08/18/07 - Added uptime command.
+08/18/07 - Fixed spellcasting maxpos
+Upgrade to version .97

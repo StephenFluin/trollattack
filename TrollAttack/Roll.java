@@ -39,7 +39,7 @@ public class Roll {
                 if(numberOfDice == 0 && !value.equals("0")) {
                 	throw(new NumberFormatException(parts[0] + " doesn't look like a valid number."));
                 } else {
-                	TrollAttack.debug("Rolled a real exact zero." + numberOfDice + " dice from " + value);
+                	//TrollAttack.debug("Rolled a real exact zero." + numberOfDice + " dice from " + value);
                 }
             }
             sizeOfDice = 1;

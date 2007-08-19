@@ -28,7 +28,7 @@ import TrollAttack.Classes.Class;
 
 
 public class TrollAttack {
-	public static String version = "0.95";
+	public static String version = "0.97";
 	
 	static Document document;
 
@@ -119,7 +119,6 @@ public class TrollAttack {
     	cal = new GregorianCalendar();
         System.out.println("(" + TrollAttack.cal.getTime().toString() + ") "  + string);
     }
-
     static public Player getPlayer(String s) {
         Player returnPlayer = null;
         for(Player p : gamePlayers) {
@@ -255,8 +254,7 @@ public class TrollAttack {
         io.stop();
     }*/
 
-    static public int getTime() {
-        ;
+    static public long getTime() {
         return backGround.getTime();
     }
 

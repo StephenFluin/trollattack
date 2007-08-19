@@ -55,10 +55,14 @@ public class CommandMove extends Command {
 		        }
 		        e.printStackTrace();
 		    }
-		    player.setCurrentRoom(results.getDestination());
-			previousRoom.removeBeing(player);
-			previousRoom.say(Communication.GREEN + Util.uppercaseFirst(player.getShort()) + " leaves " + name);
-			nextRoom.addBeing(player);
+		    synchronized(previousRoom.roomBeings) {
+			    player.setCurrentRoom(results.getDestination());
+				previousRoom.removeBeing(player);
+		    }
+		    previousRoom.say(Communication.GREEN + Util.uppercaseFirst(player.getShort()) + " leaves " + name);
+		    synchronized(nextRoom.roomBeings) {
+				nextRoom.addBeing(player);
+		    }
 			player.look();
             for(Being follower : player.followers) {
                 if(follower.getActualRoom() == previousRoom) {

@@ -30,6 +30,12 @@ public class Build {
         String[] parts = s.split(" ");
         s = parts[0];
         
+        // Make sure user has permission to edit this room
+        if(!player.canEdit(player.getCurrentRoom())) {
+        	player.tell("You don't have permission to edit this area.");
+        	return;
+        }
+        
         if(s.startsWith("now")) {
         	boolean noWander  = player.getActualRoom().getNoWander();
         	player.getActualRoom().setNoWander(!noWander);
@@ -107,11 +113,14 @@ public class Build {
             player.getActualRoom().description = command;
             player.tell("You change the description of the room.");
         } else if(s.startsWith("destroy")) {
-            player.getActualArea().areaRooms.remove(player.getActualRoom());
-            TrollAttack.gameRooms.remove(player.getActualRoom());
-            player.setCurrentRoom(1);
-            TrollAttack.getRoom(1).addBeing(player);
-            
+        	if(player.getCurrentRoom() <= 1) {
+        		player.tell("You can't delete room 1.");
+        	} else {
+	            player.getActualArea().areaRooms.remove(player.getActualRoom());
+	            TrollAttack.gameRooms.remove(player.getActualRoom());
+	            player.setCurrentRoom(1);
+	            TrollAttack.getRoom(1).addBeing(player);
+        	}
         }
     }
     public void editExit(String s, boolean reciprocol) {
@@ -429,6 +438,9 @@ public class Build {
         try {
            item = (Item)player.getActualRoom().getItem(parts[0]);
            item = TrollAttack.getItem(item.vnum);
+        } catch(NullPointerException e) {
+        	TrollAttack.error("The player or the player's current room didn't exist.(" + player.getCurrentRoom() + ")");
+        	e.printStackTrace();
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -590,7 +602,7 @@ public class Build {
                     player.tell("You can only change the 'wanderer' attribute of mobiles.");
                     return;
                 }
-            } else if(attr.equalsIgnoreCase("aggressive")) {
+            } else if(attr.startsWith("ag")) {
             	if(mobile instanceof Mobile) {
             		if(value.length() < 2) {
             			((Mobile)mobile).setAggressive(!((Mobile)mobile).isWanderer());

@@ -190,6 +190,9 @@ public class DataReader {
 						hash.get("intelligence") != null ? new Integer(hash.get("intelligence")).intValue() : 0,
 						hash.get("wisdom") != null ? new Integer(hash.get("wisdom")).intValue() : 0);
         
+        p.killCount = hash.get("killCount") != null ? new Integer(hash.get("killCount")) : 0;
+        p.deathCount = hash.get("deathCount") != null ? new Integer(hash.get("deathCount")) : 0;
+        
         /* Old Config stuff, can be deleted at will
         p.shouldColor = new Boolean(hash.get("shouldcolor")).booleanValue();
         p.extraFormatting = new Boolean(hash.get("extraformatting")).booleanValue();

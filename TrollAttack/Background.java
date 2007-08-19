@@ -13,7 +13,7 @@ package TrollAttack;
  * Preferences - Java - Code Style - Code Templates
  */
 public class Background extends Thread {
-    int time = 0;
+    long time = 0;
 
     // Order by most frequent to least frequent for organization.
     public void run() {
@@ -56,7 +56,7 @@ public class Background extends Thread {
         TrollAttack.message("Background shutting down.");
     }
 
-    public int getTime() {
+    public long getTime() {
         return time;
 
     }

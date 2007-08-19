@@ -158,7 +158,7 @@ public class Room {
         for (int i = 0; i < roomItems.size(); i++) {
             roomVnums[i] = new Integer(((Item) roomItems.get(i)).vnum);
         }
-        roomItems = new Vector();
+        roomItems = new Vector<Item>();
         for (int i = 0; i < roomVnums.length; i++) {
             roomItems.add(new Item(TrollAttack.getItem(roomVnums[i])));
         }
@@ -166,21 +166,21 @@ public class Room {
             Integer[] mobileVnums = new Integer[roomBeings.size()];
             Vector<Being> roomMobiles = new Vector<Being>();
             int i = 0;
-            for (Being tmp : roomBeings) {
-                if (tmp.isPlayer()) {
-                    roomMobiles.add(tmp);
-                } else {
-                    mobileVnums[i] = new Integer(((Mobile) tmp).vnum);
-                }
-            }
-            roomBeings = roomMobiles;
-            for (i = 0; i < mobileVnums.length; i++) {
-                if (mobileVnums[i] != null) {
-                    roomBeings.add((Mobile)TrollAttack
-                            .getMobile(mobileVnums[i]).clone());
-                }
-                //TrollAttack.message("Recreating mobile..");
-
+            synchronized(roomBeings) {
+	            for (Being tmp : roomBeings) {
+	                if (tmp.isPlayer()) {
+	                    roomMobiles.add(tmp);
+	                } else {
+	                    mobileVnums[i] = new Integer(((Mobile) tmp).vnum);
+	                }
+	            }
+	            roomBeings = roomMobiles;
+	            for (i = 0; i < mobileVnums.length; i++) {
+	                if (mobileVnums[i] != null) {
+	                    roomBeings.add((Mobile)TrollAttack
+	                            .getMobile(mobileVnums[i]).clone());
+	                }
+	            }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -298,19 +298,21 @@ public class Room {
      */
     public void say(String s, Being[] players) {
         try {
-            for (Being person : roomBeings) {
-                //TrollAttack.debug("Displaying mesage for: " + person.getShort());
-                String message = s;
-                message = Util.replaceBeings(message, players, person);
-
-                //TrollAttack.debug("Message after replaces: " + message);
-                if(players.length > 0 && person == players[0]) {
-                    //Ignore this person entirely.
-                } else if(person.getPosition() != 4){
-                	// Only say to people who aren't sleeping.
-                    person.interrupt(Util.uppercaseFirst(message));
-                }
-            }
+        	synchronized(roomBeings) {
+	            for (Being person : roomBeings) {
+	                //TrollAttack.debug("Displaying mesage for: " + person.getShort());
+	                String message = s;
+	                message = Util.replaceBeings(message, players, person);
+	
+	                //TrollAttack.debug("Message after replaces: " + message);
+	                if(players.length > 0 && person == players[0]) {
+	                    //Ignore this person entirely.
+	                } else if(person.getPosition() != 4){
+	                	// Only say to people who aren't sleeping.
+	                    person.interrupt(Util.uppercaseFirst(message));
+	                }
+	            }
+        	}
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -403,6 +405,7 @@ public class Room {
     
     /**
      * Returns the being that matches the given name who isn't the actor.
+     * If name is "self" actor is returned.
      * @param name The name of the being we are looking for.
      * @param actor The name of the actor.
      * @return
@@ -419,17 +422,22 @@ public class Room {
     }
 
     public Being removeBeing(Being being) {
-        for(Being currentBeing : roomBeings ) {
-            if (currentBeing == being) {
-                roomBeings.remove(being);
-                return being;
-            }
-        }
+        synchronized(roomBeings) {
+        	for(Being currentBeing : roomBeings ) {
+	            if (currentBeing == being) {
+	                roomBeings.remove(being);
+	                TrollAttack.debug("Removing Creature " + being.name + " from the room.");
+	                return being;
+	            }
+        	}
+    	}
         return null;
     }
 
     public void addBeing(Being being) {
-        roomBeings.add(being);
+        synchronized(roomBeings) {
+        	roomBeings.add(being);
+        }
     }
 
     /*

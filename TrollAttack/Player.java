@@ -41,7 +41,7 @@ public class Player extends Being {
 
     Communication communication = null;
 
-    private int lastActive = 0;
+    private long lastActive = 0;
 
     private boolean builder = false;
 
@@ -205,11 +205,11 @@ public class Player extends Being {
 
     public boolean canEdit(int vnum) {
         if ( ( level > 60
-                || (getActualArea().low <= vnum && getActualArea().high >= vnum) ) && vnum > 0) {
+                || (getArea().low <= vnum && getArea().high >= vnum) ) && vnum > 0) {
             return true;
         } else {
             tell("You don't have permissions to modify this area, your vnum range is "
-                    + getActualArea().low + "-" + getActualArea().high + "!");
+                    + getArea().low + "-" + getArea().high + "!");
             return false;
         }
     }
@@ -265,11 +265,11 @@ public class Player extends Being {
         }
     }
 
-    public void setLastActive(int time) {
+    public void setLastActive(long time) {
         lastActive = time;
     }
 
-    public int getIdleTime() {
+    public long getIdleTime() {
         return (TrollAttack.getTime() - lastActive);
     }
 
@@ -333,6 +333,9 @@ public class Player extends Being {
         attribs.add(Util.nCreate(doc, "dexterity", dexterity + ""));
         attribs.add(Util.nCreate(doc, "intelligence", intelligence + ""));
         attribs.add(Util.nCreate(doc, "wisdom", wisdom + ""));
+        attribs.add(Util.nCreate(doc, "killCount", killCount + ""));
+        attribs.add(Util.nCreate(doc, "deathCount", deathCount + ""));
+        
         
         Node configuration = doc.createElement("configuration");
         attribs.add(configuration);
@@ -397,6 +400,7 @@ public class Player extends Being {
 
     public Corpse kill() {
         Corpse c = super.kill();
+        c.disposalTime *= 5;
 
         setCurrentRoom(1);
         hitPoints = manaPoints = movePoints = 1;

@@ -9,6 +9,7 @@
 package TrollAttack.Items;
 
 import TrollAttack.Being;
+import TrollAttack.*;
 
 public class Corpse extends Container implements Disposable {
 	public int disposalTime = 0;
@@ -22,7 +23,7 @@ public class Corpse extends Container implements Disposable {
 		this(i.vnum, i.getWeight(), i.getCost(), i.getName(), i.getShort(), i.getLong());
 	}
 	public Corpse(Being b) {
-		this(0, 300, 0, "corpse", "the corpse of " + b.getShort(), "The corpse of " + b.getShort() + " lies here.");
+		this(0, 500, 0, "corpse", "the corpse of " + b.getShort(), "The corpse of " + b.getShort() + " lies here.");
 	}
 
 	public boolean isDone() {
@@ -31,6 +32,7 @@ public class Corpse extends Container implements Disposable {
 
 	public void decay() {
 		disposalTime--;
+		setWeight((int)(getWeight() * .9));
 		
 	}
 

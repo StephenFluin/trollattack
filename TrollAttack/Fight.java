@@ -1,5 +1,6 @@
 package TrollAttack;
 
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -55,7 +56,7 @@ public class Fight extends Thread {
             } catch (Exception e) {
                 TrollAttack.error("There was a problem sleeping for a second during a fight.");
             }
-            //TrollAttack.debug("Running a round, its currently " + reds.size() + " vs. " + blues.size());
+            TrollAttack.debug("Running a round, it's currently " + reds.size() + " vs. " + blues.size());
             runRound();
         }
         // When the fight is over, everyone who is left is a winner!
@@ -90,13 +91,20 @@ public class Fight extends Thread {
     					deceased.add(new Being[] {victim,b});
     					msg += Util.wrapChar + Communication.RED + "YOU KILLED " + victim.getShort();
     					roomMsg += Util.wrapChar + Communication.RED + "%1 KILLED %2";
+    					b.killCount++;
     					
     			        int loserWorth = (int)(victim.getAverageHitDamage() * victim.maxHitPoints);
 			        	b.increaseExperience(loserWorth);
 			        	msg += Util.wrapChar + "You have gained " + Communication.CYAN + (loserWorth) + Communication.WHITE + " experience points from this kill.";
     					
     				}
-    				fightSay(msg, roomMsg, b, victim);
+    				try {
+    					fightSay(msg, roomMsg, b, victim);
+    				} catch(ConcurrentModificationException e) {
+    					// This occured on 8/17/2007 while iterating through messages to participants
+    					e.printStackTrace();
+    					TrollAttack.debug("The list of room beings was modified while a fight was trying to send out messages.");
+    				}
     			} else {
     			}
     			
@@ -167,11 +175,13 @@ public class Fight extends Thread {
 				Fight f = being.getFight();
 				if(f.getSide(being) != f.getSide(being2)) {
 					// Nothing needs to change.
+					TrollAttack.debug("Two creatures on different sides attmpted to attack each other.");
 				} else {
-					throw new IllegalStateException();
+					TrollAttack.debug("Two creatures on the same side attempted to attack each other.");
 				}
 			} else {
 				//Combine two fights
+				TrollAttack.debug("Combining two fights.");
 				Fight master = being.getFight();
 				Fight slave = being2.getFight();
 				

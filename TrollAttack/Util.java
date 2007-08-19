@@ -266,6 +266,8 @@ public class Util {
             result += "Time Played:\t" + Math.round(mobile.getTimePlayed())
                     + " hours" + wrapChar;
         }
+        result += "Deaths:\t" + mobile.deathCount + Util.wrapChar;
+        result += "Kills:\t" + mobile.killCount + Util.wrapChar;
         result += "Hit Points:\t" + mobile.hitPoints + "/"
                 + mobile.maxHitPoints + wrapChar;
         result += "Mana Points:\t" + mobile.manaPoints + "/"
@@ -340,7 +342,11 @@ public class Util {
             "&Y                                                 " +         "&B|     /   ','    /    |     " + wrapChar +
             "&G     Written by &RStephen Fluin&Y                    " +     "&B\\___/'   '     |     |      " + wrapChar +
             "&Y                                                 " +         "&B  `,,'  |      /     `\\     " + wrapChar +
-            "&Y                                                 " +         "&B       /      |        ~\\   " + wrapChar;
+            "&Y                                                 " +         "&B       /      |        ~\\   " + wrapChar + wrapChar + 
+            "&CWelcome players, new and old!  The game has recently been underoing some " + wrapChar +
+            "improvments that will help the stability and playability of the game. We have"  + wrapChar +
+            "also recently picked up several new players and builders which should make the" + wrapChar +
+            "game more interesting." + wrapChar + wrapChar;
         //MOTD = Prompt.color(MOTD);
         //System.out.println(MOTD);
         return MOTD;
@@ -389,27 +395,7 @@ public class Util {
         
         return result;
     }
-
-    /* Thought unused (November 27th, 2006):
-    public static <T> T findIn (String name, Collection<T> list) {
-        for(T element : list) {
-            if(element.toString().toLowerCase().startsWith(name.toLowerCase())) {
-                return element;
-            }
-        }
-        return null;
-    }
-    public static <T> T findIn (String name, T[] list) {
-        for(T element : list) {
-            if(element.toString().toLowerCase().startsWith(name.toLowerCase())) {
-                return element;
-            }
-        }
-        return null;
-        
-    }
-*/
-    
+   
     
     public static String escapeColors(String s) {
         //TrollAttack.debug("Escaped string to: " + s.replaceAll("&", "&&"));
