@@ -118,9 +118,12 @@ public class DataReader {
         if (playerName.length() < 2) {
             return null;
         }
-        Document doc = Util.xmlize("Players/" + playerName + ".player.xml");
+        Document doc = Util.xmlize("Players/" + playerName.toLowerCase() + ".player.xml");
         if (doc == null) {
-            doc = Util.xmlize("Players/" + playerName + ".txt");
+            doc = Util.xmlize("Players/" + playerName.toLowerCase() + ".txt");
+        }
+        if (doc == null) {
+            doc = Util.xmlize("Players/" + playerName + ".player.xml");
             if (doc == null) {
                 return null;
             }

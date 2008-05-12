@@ -64,8 +64,19 @@ public class Util {
     // fileOut.writeBytes( player.getDocument() );
     static public void savePlayer(Player player) {
         try {
-            XMLPrint(player.toDocument(), "Players/" + player.getShort()
+            XMLPrint(player.toDocument(), "Players/" + player.getShort().toLowerCase()
                     + ".player.xml");
+            
+            if(!player.getShort().equals(player.getShort().toLowerCase())) {
+            	File newFile = new File("Players/" + player.getShort().toLowerCase() + ".player.xml");
+            	File oldFile = new File("Players/" + player.getShort() + ".player.xml");
+            	if(oldFile.isFile() && !oldFile.equals(newFile)) {
+            		TrollAttack.debug("We would delete the file because it is not the same as the old one.");
+            	} else {
+            		TrollAttack.debug("We aren't going to delete the old file because it is the same, or it didn't exist.");
+            	}
+            }
+            
         } catch (Exception e) {
             TrollAttack
                     .error("There was a problem writing the player's file, or create the player's file.");

@@ -98,3 +98,4 @@ Upgrade to version .96
 08/18/07 - Added uptime command.
 08/18/07 - Fixed spellcasting maxpos
 Upgrade to version .97
+09/15/07 - Fixed player name case mismatchings on linux.

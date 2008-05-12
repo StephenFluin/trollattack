@@ -917,7 +917,7 @@ public class CommandHandler {
 	    }
 	}
 	class Drink extends Command {
-	    public Drink(String s) { super(s, 2); }
+	    public Drink(String s) { super(s, Being.RESTING); }
 	    public boolean execute() { 
             player.tell("Drink what?");
             return false;

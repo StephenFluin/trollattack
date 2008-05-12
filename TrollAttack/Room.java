@@ -426,7 +426,7 @@ public class Room {
         	for(Being currentBeing : roomBeings ) {
 	            if (currentBeing == being) {
 	                roomBeings.remove(being);
-	                TrollAttack.debug("Removing Creature " + being.name + " from the room.");
+	                //TrollAttack.debug("Removing Creature " + being.name + " from the room.");
 	                return being;
 	            }
         	}
