@@ -99,3 +99,7 @@ Upgrade to version .96
 08/18/07 - Fixed spellcasting maxpos
 Upgrade to version .97
 09/15/07 - Fixed player name case mismatchings on linux.
+10/18/26 - Fixed a memory leak from logins that never completed.
+10/18/26 - Added a 5 minute login timeout and a limit of three failed passwords.
+10/18/26 - Builds and deploys run through Buildkite.
+Upgrade to version .98
