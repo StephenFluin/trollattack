@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Install a TrollAttack build and restart the game; roll back if it doesn't come up.
+# Installed as /usr/local/sbin/trollattack-deploy (root:root 755) by setup-joy.sh and
+# run through sudo by deploy.sh:
+#   trollattack-deploy <trollattack.jar> <commit sha>
+set -euo pipefail
+
+ROOT=/opt/trollattack
+SERVICE=trollattack.service
+KEEP=3
+JAR=${1:?jar path}
+COMMIT=${2:?commit sha}
+
+[[ "$COMMIT" =~ ^[0-9a-f]{7,40}$ ]] || { echo "Not a commit sha: $COMMIT" >&2; exit 2; }
+[[ -f "$JAR" ]] || { echo "No such file: $JAR" >&2; exit 2; }
+python3 - "$JAR" <<'PY'
+import sys, zipfile
+z = zipfile.ZipFile(sys.argv[1])
+assert z.testzip() is None, "corrupt jar"
+assert b"Main-Class: TrollAttack.TrollAttack" in z.read("META-INF/MANIFEST.MF"), "wrong Main-Class"
+PY
+
+RELEASE="$ROOT/releases/$(date -u +%Y%m%d%H%M%S)-${COMMIT:0:12}"
+install -d -m 755 "$RELEASE"
+install -m 644 "$JAR" "$RELEASE/trollattack.jar"
+PREVIOUS=$(readlink -f "$ROOT/current" 2>/dev/null || true)
+
+healthy() {
+    # The game greets every new connection with its MOTD banner.
+    for _ in $(seq 1 20); do
+        if timeout 3 bash -c 'exec 3<>/dev/tcp/127.0.0.1/4000 && head -c 200 <&3' 2>/dev/null | grep -aq Welcome; then
+            return 0
+        fi
+        sleep 1
+    done
+    return 1
+}
+
+ln -sfn "$RELEASE" "$ROOT/current"
+systemctl restart "$SERVICE"
+if healthy; then
+    echo "Deployed ${COMMIT:0:12} ($RELEASE)."
+    # Keep the newest $KEEP releases.
+    ls -1dt "$ROOT"/releases/*/ | tail -n +$((KEEP + 1)) | xargs -r rm -rf --
+    exit 0
+fi
+
+echo "^^^ +++"
+echo ":rotating_light: The game didn't answer on port 4000 after the restart."
+journalctl -u "$SERVICE" -n 40 --no-pager || true
+if [[ -n "$PREVIOUS" && -d "$PREVIOUS" ]]; then
+    echo "Rolling back to $PREVIOUS"
+    ln -sfn "$PREVIOUS" "$ROOT/current"
+    systemctl restart "$SERVICE"
+    healthy && echo "Rollback is healthy." || echo "Rollback is ALSO unhealthy; the game is down."
+fi
+exit 1

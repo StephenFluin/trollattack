@@ -1,0 +1,34 @@
+# /etc/systemd/system/trollattack.service (installed by setup-joy.sh).
+# Runs the current release from /opt/trollattack; game data (areas, classes, players)
+# lives in the working directory and survives deploys.
+[Unit]
+Description=TrollAttack MUD (telnet :4000)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=stephen
+Group=stephen
+WorkingDirectory=/home/stephen/TrollAttack/bin
+ExecStart=/usr/bin/java -Xms16m -Xmx96m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -jar /opt/trollattack/current/trollattack.jar
+StandardOutput=append:/home/stephen/TrollAttack/trollattack-execution-log.txt
+StandardError=journal
+Restart=on-failure
+RestartSec=10
+MemoryMax=200M
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/stephen/TrollAttack
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+[Install]
+WantedBy=multi-user.target

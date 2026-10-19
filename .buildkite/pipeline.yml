@@ -1,0 +1,22 @@
+# Pipeline "trollattack": build every push, deploy the default branch to joy.
+# Pipeline settings: steps = `buildkite-agent pipeline upload` (the default).
+# Both steps run on joy's agents (queue `joy`); the build is a small javac run
+# capped at 256 MB of heap (scripts/build.sh).
+steps:
+  - label: ":hammer: Build"
+    key: build
+    agents:
+      queue: joy
+    timeout_in_minutes: 10
+    command: scripts/build.sh
+    artifact_paths: dist/trollattack.jar
+
+  - label: ":rocket: Deploy to joy"
+    depends_on: build
+    if: build.branch == pipeline.default_branch
+    agents:
+      queue: joy
+    concurrency: 1
+    concurrency_group: trollattack/deploy
+    timeout_in_minutes: 5
+    command: deploy/deploy.sh
