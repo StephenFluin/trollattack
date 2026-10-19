@@ -103,3 +103,6 @@ Upgrade to version .97
 10/18/26 - Added a 5 minute login timeout and a limit of three failed passwords.
 10/18/26 - Builds and deploys run through Buildkite.
 Upgrade to version .98
+10/18/26 - Upgraded to Java 25.
+10/18/26 - Replaced code that newer versions of Java are removing.
+Upgrade to version .99
