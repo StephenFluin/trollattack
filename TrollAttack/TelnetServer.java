@@ -13,6 +13,7 @@ import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 public class TelnetServer extends Communication {
 	InputStream is;
@@ -22,6 +23,9 @@ public class TelnetServer extends Communication {
     ServerSocket serverSocket;
     Socket adminSocket;
     static int port = 4000;
+    // Unauthenticated connections are dropped after this long without input;
+    // logged-in players are handled by the idle punt instead.
+    static final int LOGIN_TIMEOUT_MS = 5 * 60 * 1000;
     static final char ESCAPE = '\033';
     static final char X = '\377';
     static final String TELOPT_ECHO =   X + "\001"; //01
@@ -71,6 +75,7 @@ public class TelnetServer extends Communication {
     public void waitForUser() {
         try {
         	adminSocket = serverSocket.accept();
+        	adminSocket.setSoTimeout(LOGIN_TIMEOUT_MS);
             TrollAttack.message("New connection attempt.");
             is = adminSocket.getInputStream();
             ins = new InputStreamReader(is);
@@ -90,7 +95,7 @@ public class TelnetServer extends Communication {
     public ServerSocket createNewSocket() {
         ServerSocket ss = null;
         try {
-            ss = new ServerSocket(++port, 1);
+            ss = new ServerSocket(++port, 50);
         } catch (BindException e) {
             ss = createNewSocket();
         } catch (Exception e) {
@@ -126,6 +131,9 @@ public class TelnetServer extends Communication {
         	// This is okay because it means that the connection was closed (stopping a java client from running).
         	//TrollAttack.debug("Socket exception on readline. Connection closed.");
         	return null;
+        } catch(SocketTimeoutException e) {
+        	TrollAttack.message("Connection timed out before logging in.");
+        	return null;
         } catch(IOException e) {
         	TrollAttack.error("IO Exception in telnet getLine, we don't know why.");
         	e.printStackTrace();
@@ -151,6 +159,16 @@ public class TelnetServer extends Communication {
         }
 
     }
+    protected void loginComplete() {
+        try {
+            if (adminSocket != null) {
+                adminSocket.setSoTimeout(0);
+            }
+        } catch (SocketException e) {
+            // Socket already gone; the read loop will notice.
+        }
+    }
+
     /**
      * Is order important in this function? Unknown.
      */

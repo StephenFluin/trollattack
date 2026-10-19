@@ -40,6 +40,28 @@ public abstract class Communication extends Thread {
     public abstract void waitForUser();
     public void run() {
     	TrollAttack.gameCommunications.add(this);
+        try {
+            runSession();
+        } finally {
+            // Always release the connection, however the session ended. Aborted
+            // logins (mostly port scanners) used to stay in gameCommunications forever.
+            TrollAttack.gameCommunications.remove(this);
+            try {
+                if (player != null && player.authenticated) {
+                    player.quit(true);
+                }
+            } catch (Exception e) {
+                TrollAttack.error("Cleanup after session failed: " + e.toString());
+            }
+            close();
+        }
+    }
+
+    /** Called once a user has logged in; lets a transport drop its login timeout. */
+    protected void loginComplete() {
+    }
+
+    private void runSession() {
         waitForUser();
         //TrollAttack.debug("Send and Receive methods have been registered, prompting for login.");
         String inputLine = "";
@@ -52,9 +74,9 @@ public abstract class Communication extends Thread {
             player = authenticate(player);
             if (player == null) {
                 // The player must have quit while logging in.
-            	close();
                 return;
             }
+            loginComplete();
             
             player.setLastActive(TrollAttack.getTime());
             player.setCommunication(this);
@@ -78,6 +100,7 @@ public abstract class Communication extends Thread {
                     if(inputLine == null) {
                     	player.quit(true);
                     	TrollAttack.message(Util.uppercaseFirst(player.getShort()) + " lost his/her connection.");
+                    	break;
                     }
                     player.handleCommand(inputLine);
                 } catch(NullPointerException e) {
@@ -90,9 +113,6 @@ public abstract class Communication extends Thread {
                     break;
                 }
             }
-            
-
-            TrollAttack.gameCommunications.remove(this);
         } catch (Exception e) {
             TrollAttack.error("Exception in Server: " + e.toString());
             e.printStackTrace();
@@ -103,6 +123,7 @@ public abstract class Communication extends Thread {
         Player tmpPlayer = null;
         String name = "";
         String pass = "";
+        int failures = 0;
         while (tmpPlayer == null) {
         	
             try {
@@ -132,6 +153,10 @@ public abstract class Communication extends Thread {
                     if (tmpPlayer == null || !tmpPlayer.checkPassword(pass)) {
                         tmpPlayer = null;
                         player.tell("Incorrect password or player not found.");
+                        if (++failures >= 3) {
+                            player.tell("Too many failed attempts.");
+                            return null;
+                        }
                     }
                     
                     // Checking to see if the character is already logged in.
