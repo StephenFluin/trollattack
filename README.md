@@ -4,7 +4,7 @@ A telnet MUD in Java, imitating SMAUG-style muds. (c) 2005 Stephen Fluin.
 
 ## Build and run locally
 
-Needs a JDK (8 or newer).
+Needs a JDK (25 or newer).
 
 ```
 scripts/build.sh     # compiles to dist/trollattack.jar

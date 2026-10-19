@@ -4,7 +4,11 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-apt-get install -y -qq openjdk-8-jdk-headless   # javac/jar for the build step
+apt-get install -y -qq openjdk-25-jdk-headless   # javac/jar for the build step
+# The build and trollattack.service use whatever /usr/bin/java{,c} point to.
+JDK=/usr/lib/jvm/java-25-openjdk-$(dpkg --print-architecture)
+update-alternatives --set java "$JDK/bin/java"
+update-alternatives --set javac "$JDK/bin/javac"
 install -m 755 -o root -g root trollattack-deploy /usr/local/sbin/trollattack-deploy
 install -d -m 755 /opt/trollattack /opt/trollattack/releases
 visudo -cf sudoers-buildkite
