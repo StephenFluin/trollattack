@@ -201,7 +201,7 @@ public class Build {
             if(Util.contains(s, "lockable")) {
                 Item key = null;
                 try {
-                    key = TrollAttack.getItem(new Integer(s.substring(s.indexOf("lockable"))));
+                    key = TrollAttack.getItem(Integer.valueOf(s.substring(s.indexOf("lockable"))));
                 } catch(Exception e) {
                     player.tell("Please be clearer about which key you want to use, locked <vnum>.");
                 }
@@ -305,7 +305,7 @@ public class Build {
     
     public void iStat(Item item) {
         player.tell( item.getShort() + "'s Information");
-        player.tell("Original:\t\t(" + (item == TrollAttack.getItem(new Integer(item.vnum)) ? "X" : " ") + ")");
+        player.tell("Original:\t\t(" + (item == TrollAttack.getItem(Integer.valueOf(item.vnum)) ? "X" : " ") + ")");
         player.tell("Name:\t\t" + item.getName());
         player.tell("Short Desc.:\t" + item.getShort());
         player.tell("Long Desc.:\t" + item.getLong());
@@ -458,7 +458,7 @@ public class Build {
             }
             int intValue = 0;
             try {
-               intValue  = new Integer(value).intValue();
+               intValue  = Integer.parseInt(value);
             } catch(Exception e) {
                 
             }
@@ -529,7 +529,7 @@ public class Build {
             }
             int intValue = 0;
             try {
-               intValue  = new Integer(value).intValue();
+               intValue  = Integer.parseInt(value);
             } catch(Exception e) {
                 
             }
@@ -589,14 +589,14 @@ public class Build {
                 if(value.length() < 4) {
                     mobile.canTeach = (!mobile.canTeach);
                 } else {
-                    mobile.canTeach = new Boolean(value).booleanValue();
+                    mobile.canTeach = Boolean.parseBoolean(value);
                 }
             } else if(attr.compareToIgnoreCase("wanderer") == 0) {
                 if(mobile.getClass() == Mobile.class) {
                     if(value.length() < 4) {
                         ((Mobile)mobile).setWanderer(!((Mobile)mobile).isWanderer());
                     } else {
-                        ((Mobile)mobile).setWanderer(new Boolean(value));
+                        ((Mobile)mobile).setWanderer(Boolean.valueOf(value));
                     }
                 } else {
                     player.tell("You can only change the 'wanderer' attribute of mobiles.");
@@ -607,7 +607,7 @@ public class Build {
             		if(value.length() < 2) {
             			((Mobile)mobile).setAggressive(!((Mobile)mobile).isWanderer());
             		} else {
-            			((Mobile)mobile).setAggressive(new Boolean(value));
+            			((Mobile)mobile).setAggressive(Boolean.valueOf(value));
             		}
             	} else {
             		player.tell("You can only change the 'aggressive' attribute of mobiles.");

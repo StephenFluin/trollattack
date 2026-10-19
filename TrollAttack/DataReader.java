@@ -162,48 +162,48 @@ public class DataReader {
         Player p = null;
         p = new Player(
 
-        new Integer(hash.get("gold")).intValue(), new Integer(
-                hash.get("hitPoints")).intValue(), new Integer(
-                hash.get("maxHitPoints")).intValue(), new Integer(
-                hash.get("manaPoints")).intValue(), new Integer(
-                hash.get("maxManaPoints")).intValue(), new Integer(
-                hash.get("movePoints")).intValue(), new Integer(
-                hash.get("maxMovePoints")).intValue(), new Integer(
-                hash.get("hitLevel")).intValue(), (String) hash
-                .get("hitSkill"), hash.get("hitDamage"), new Integer(
-                hash.get("level")).intValue(), new Integer(
-                hash.get("room")).intValue(), new Integer(
-                hash.get("experience")).intValue(), new Boolean(
-                hash.get("builder")).booleanValue(), (hash
+        Integer.parseInt(hash.get("gold")), Integer.parseInt(
+                hash.get("hitPoints")), Integer.parseInt(
+                hash.get("maxHitPoints")), Integer.parseInt(
+                hash.get("manaPoints")), Integer.parseInt(
+                hash.get("maxManaPoints")), Integer.parseInt(
+                hash.get("movePoints")), Integer.parseInt(
+                hash.get("maxMovePoints")), Integer.parseInt(
+                hash.get("hitLevel")), (String) hash
+                .get("hitSkill"), hash.get("hitDamage"), Integer.parseInt(
+                hash.get("level")), Integer.parseInt(
+                hash.get("room")), Integer.parseInt(
+                hash.get("experience")), Boolean.parseBoolean(
+                hash.get("builder")), (hash
                 .get("title") != null ? hash.get("title") : ""), (hash
                 .get("prompt") != null ? hash.get("prompt") : ""), (hash
-                .get("timePlayed") != null ? new Double( hash
-                .get("timePlayed")).doubleValue() : 0), Area.findArea(
+                .get("timePlayed") != null ? Double.parseDouble( hash
+                .get("timePlayed")) : 0), Area.findArea(
                 hash.get("area"), TrollAttack.gameAreas), Util
                 .intize(hash.get("hunger")), Util.intize(hash
                 .get("thirst")), hash.get("name"), hash
                 .get("password"), 
                 (hash.get("class") != null ? hash.get("class") : "" ) 
                 );
-        p.setFavor( hash.get("favor") != null ? new Integer(hash.get("favor")).intValue() : 0);
-        p.setStats(		hash.get("strength") != null ? new Integer(hash.get("strength")).intValue() : 0,
-        				hash.get("constitution") != null ? new Integer(hash.get("constitution")).intValue() : 0,
-        				hash.get("charisma") != null ? new Integer(hash.get("charisma")).intValue() : 0,
-						hash.get("dexterity") != null ? new Integer(hash.get("dexterity")).intValue() : 0,
-						hash.get("intelligence") != null ? new Integer(hash.get("intelligence")).intValue() : 0,
-						hash.get("wisdom") != null ? new Integer(hash.get("wisdom")).intValue() : 0);
+        p.setFavor( hash.get("favor") != null ? Integer.parseInt(hash.get("favor")) : 0);
+        p.setStats(		hash.get("strength") != null ? Integer.parseInt(hash.get("strength")) : 0,
+        				hash.get("constitution") != null ? Integer.parseInt(hash.get("constitution")) : 0,
+        				hash.get("charisma") != null ? Integer.parseInt(hash.get("charisma")) : 0,
+						hash.get("dexterity") != null ? Integer.parseInt(hash.get("dexterity")) : 0,
+						hash.get("intelligence") != null ? Integer.parseInt(hash.get("intelligence")) : 0,
+						hash.get("wisdom") != null ? Integer.parseInt(hash.get("wisdom")) : 0);
         
-        p.killCount = hash.get("killCount") != null ? new Integer(hash.get("killCount")) : 0;
-        p.deathCount = hash.get("deathCount") != null ? new Integer(hash.get("deathCount")) : 0;
+        p.killCount = hash.get("killCount") != null ? Integer.valueOf(hash.get("killCount")) : 0;
+        p.deathCount = hash.get("deathCount") != null ? Integer.valueOf(hash.get("deathCount")) : 0;
         
         /* Old Config stuff, can be deleted at will
-        p.shouldColor = new Boolean(hash.get("shouldcolor")).booleanValue();
-        p.extraFormatting = new Boolean(hash.get("extraformatting")).booleanValue();
-        p.showVnum = new Boolean(hash.get("showvnums")).booleanValue(); */
+        p.shouldColor = Boolean.parseBoolean(hash.get("shouldcolor"));
+        p.extraFormatting = Boolean.parseBoolean(hash.get("extraformatting"));
+        p.showVnum = Boolean.parseBoolean(hash.get("showvnums")); */
         
         Hashtable<String,String> conf = (Hashtable<String,String>)(hash.get("configuration") != null ? hash.get("configuration") : new Hashtable<String,String>());
         for(String key : conf.keySet()) {
-        	p.setConfig(key, new Boolean(conf.get(key)));
+        	p.setConfig(key, Boolean.valueOf(conf.get(key)));
         }
         
         
@@ -227,7 +227,7 @@ public class DataReader {
                 if(ability == null) {
                     TrollAttack.error("Non-existant ability found in pfile, '" + data.get("name") + "'.");
                 }
-                float proficiency = new Float(data.get("proficiency"));
+                float proficiency = Float.valueOf(data.get("proficiency"));
                 p.practice(ability, proficiency);
             }
         }
@@ -249,7 +249,7 @@ public class DataReader {
         items = linkedListify(tmpItems);
         Iterator itemIterator = items.iterator();
         while (itemIterator.hasNext()) {
-            Item newItem = TrollAttack.getItem(new Integer((String) itemIterator
+            Item newItem = TrollAttack.getItem(Integer.valueOf((String) itemIterator
                     .next()));
             p.wearItem((Item) newItem.clone(), false);
         }
@@ -270,9 +270,7 @@ public class DataReader {
             return areas;
         }
         for(Hashtable area : areaList) {
-            Area newArea = new Area(new Integer((String) area.get("low"))
-                    .intValue(), new Integer((String) area.get("high"))
-                    .intValue(), (String) area.get("filename"), (String) area
+            Area newArea = new Area(Integer.parseInt((String) area.get("low")), Integer.parseInt((String) area.get("high")), (String) area.get("filename"), (String) area
                     .get("name"), 8, (area.get("frozen") == null) ? false
                     : (((String) area.get("frozen"))
                             .compareToIgnoreCase("true") == 0 ? true : false));
@@ -294,16 +292,16 @@ public class DataReader {
         for(Hashtable item : itemList) {
             vnum = weight = cost = 0;
 
-            vnum = new Integer((String) item.get("vnum")).intValue();
+            vnum = Integer.parseInt((String) item.get("vnum"));
             if (item.get("cost") != null)
-                cost = new Integer((String) item.get("cost")).intValue();
+                cost = Integer.parseInt((String) item.get("cost"));
             if (item.get("short") != null)
                 shortDesc = (String) item.get("short");
             if (item.get("long") != null)
                 longDesc = (String) item.get("long");
 
             if (item.get("weight") != null)
-                weight = new Integer((String) item.get("weight")).intValue();
+                weight = Integer.parseInt((String) item.get("weight"));
             if (item.get("name") != null)
                 itemName = (String) item.get("name");
 
@@ -325,8 +323,7 @@ public class DataReader {
                 Armor newArmor = new Armor(vnum, weight, cost, itemName,
                         shortDesc, longDesc);
                 Hashtable arm = (Hashtable) item.get("typeData");
-                newArmor.setupArmor(new Integer((String) arm.get("armorClass"))
-                        .intValue(), (String) arm.get("wearLocation"));
+                newArmor.setupArmor(Integer.parseInt((String) arm.get("armorClass")), (String) arm.get("wearLocation"));
                 newItem = newArmor;
             } else if (type.compareToIgnoreCase(Food.getItemType()) == 0) {
                 Food newFood = new Food(vnum, weight, cost, itemName,
@@ -389,13 +386,13 @@ public class DataReader {
         // Cycle through each of the rooms in the linked list.
         for(Hashtable room : roomList) {
             exits = new Vector<Exit>();
-            vnum = new Integer((String) room.get("vnum")).intValue();
+            vnum = Integer.parseInt((String) room.get("vnum"));
             title = (String) room.get("title");
             description = (String) room.get("description");
             if(room.get("nowander") == null) {
             	noWander = false;
             } else {
-            	noWander = new Boolean(((String)room.get("nowander"))).booleanValue();
+            	noWander = Boolean.parseBoolean(((String)room.get("nowander")));
             }
 
             
@@ -407,7 +404,7 @@ public class DataReader {
             	if(h.get("item") != null) {
             		Vector<String> items = linkedListify(((Hashtable)room.get("shop")).get("item"));
                 	for(String s : items) {
-                		int i = new Integer(s).intValue();
+                		int i = Integer.parseInt(s);
                 		((Shop)newRoom).addShopItem(TrollAttack.getItem(i));
                 	}
             	}
@@ -420,21 +417,21 @@ public class DataReader {
             if(room.get("nofloor") == null) {
             	noFloor = 0;
             } else {
-            	noFloor = new Integer(((String)room.get("nofloor"))).intValue();
+            	noFloor = Integer.parseInt(((String)room.get("nofloor")));
             }
             newRoom.noFloor = noFloor;
             // 0 Means dry, 1 means water-air match, 2 means underwater
             if(room.get("water") == null) {
             	water = 0;
             } else {
-            	water = new Integer(((String)room.get("water"))).intValue();
+            	water = Integer.parseInt(((String)room.get("water")));
             }
             newRoom.water = water;
             
             if(room.get("push") != null) {
             	Hashtable<String, String> data = (Hashtable<String, String>)room.get("push");
             	int direction = Exit.getDirection(data.get("direction"));
-            	int wait = new Integer(data.get("wait")).intValue();
+            	int wait = Integer.parseInt(data.get("wait"));
             	String message = data.get("message");
             	Push push = new Push(direction, wait, message);
             	newRoom.push = push;
@@ -449,8 +446,7 @@ public class DataReader {
                     if (room.get(Exit.directionList[i]) instanceof Hashtable) {
                         Hashtable exitData = (Hashtable)room
                                 .get(Exit.directionList[i]);
-                        int ivnum = new Integer((String) exitData.get("vnum"))
-                                .intValue();
+                        int ivnum = Integer.parseInt((String) exitData.get("vnum"));
                         Exit thisExit = new Exit(ivnum, i);
                         thisExit.setRoom(newRoom);
                         if (exitData.get("door") != null) {
@@ -534,7 +530,7 @@ public class DataReader {
                     // This shouldn't happen.
                 }
 
-                resetMobile = TrollAttack.getMobile(new Integer((String) hash
+                resetMobile = TrollAttack.getMobile(Integer.valueOf((String) hash
                         .get("vnum")));
 
                 // The area of the mobile is frozen, so don't create resets.  Just 
@@ -554,7 +550,7 @@ public class DataReader {
                     tmpItems = hash.get("equipment");
                     mobileItems = linkedListify(tmpItems);
                     for(Object currentMobileItem : mobileItems) {
-                        Item newItem = TrollAttack.getItem(new Integer(
+                        Item newItem = TrollAttack.getItem(Integer.valueOf(
                                 (String) currentMobileItem));
                         resetMobile.wearItem((Item) newItem, false);
                     }
@@ -576,7 +572,7 @@ public class DataReader {
                     tmpItems = hash.get("equipment");
                     mobileItems = linkedListify(tmpItems);
                     for(Object currentMobileItem : mobileItems) {
-                        Item newItem = TrollAttack.getItem(new Integer(
+                        Item newItem = TrollAttack.getItem(Integer.valueOf(
                                 (String)currentMobileItem));
                         TrollAttack.gameResets.add(new Reset.WearReset(
                                 (Equipment) newItem.clone(), resetMobile, 1));
@@ -602,28 +598,27 @@ public class DataReader {
             hitLevel = 0;
             clicks = 8;
             //TrollAttack.message(mobile.toString());
-            vnum = new Integer(mobile.get("vnum")).intValue();
-            level = new Integer(mobile.get("level")).intValue();
-            hp = new Integer(mobile.get("hp")).intValue();
-            maxhp = new Integer(mobile.get("maxhp")).intValue();
-            mana = new Integer(mobile.get("mana")).intValue();
-            maxMana = new Integer(mobile.get("maxmana")).intValue();
-            move = new Integer(mobile.get("move")).intValue();
-            maxMove = new Integer(mobile.get("maxmove")).intValue();
+            vnum = Integer.parseInt(mobile.get("vnum"));
+            level = Integer.parseInt(mobile.get("level"));
+            hp = Integer.parseInt(mobile.get("hp"));
+            maxhp = Integer.parseInt(mobile.get("maxhp"));
+            mana = Integer.parseInt(mobile.get("mana"));
+            maxMana = Integer.parseInt(mobile.get("maxmana"));
+            move = Integer.parseInt(mobile.get("move"));
+            maxMove = Integer.parseInt(mobile.get("maxmove"));
             if (mobile.get("clicks") != null)
-                clicks = new Integer(mobile.get("clicks")).intValue();
+                clicks = Integer.parseInt(mobile.get("clicks"));
             if (mobile.get("respawn") != null)
-                clicks = new Integer(mobile.get("respawn")).intValue();
+                clicks = Integer.parseInt(mobile.get("respawn"));
             if (mobile.get("hitlevel") != null)
-                hitLevel = new Integer(mobile.get("hitlevel"))
-                        .intValue();
+                hitLevel = Integer.parseInt(mobile.get("hitlevel"));
             if (mobile.get("canTeach") != null)
-                canTeach = new Boolean(mobile
-                        .get("canTeach")).booleanValue();
+                canTeach = Boolean.parseBoolean(mobile
+                        .get("canTeach"));
             if (mobile.get("wander") != null)
-                wander = new Boolean(mobile.get("wander")).booleanValue();
+                wander = Boolean.parseBoolean(mobile.get("wander"));
             if (mobile.get("aggressive") != null)
-            	aggressive = new Boolean(mobile.get("aggressive")).booleanValue();
+            	aggressive = Boolean.parseBoolean(mobile.get("aggressive"));
             hitSkill = mobile.get("hitskill");
             hitDamage = mobile.get("hitdamage");
             shortDesc = mobile.get("short");
@@ -635,13 +630,13 @@ public class DataReader {
             newMobile.setAggressive(aggressive);
             newMobile.canTeach = canTeach;
             newMobile.setBeingClass( ( mobile.get("class") != null ? mobile.get("class") : "" ) );
-            newMobile.gold = (mobile.get("gold") != null ? new Integer(mobile.get("gold")).intValue() : 0);
-            newMobile.setStats(		mobile.get("strength") != null ? new Integer(mobile.get("strength")).intValue() : 0,
-    				mobile.get("constitution") != null ? new Integer(mobile.get("constitution")).intValue() : 0,
-    				mobile.get("charisma") != null ? new Integer(mobile.get("charisma")).intValue() : 0,
-					mobile.get("dexterity") != null ? new Integer(mobile.get("dexterity")).intValue() : 0,
-					mobile.get("intelligence") != null ? new Integer(mobile.get("intelligence")).intValue() : 0,
-					mobile.get("wisdom") != null ? new Integer(mobile.get("wisdom")).intValue() : 0);
+            newMobile.gold = (mobile.get("gold") != null ? Integer.parseInt(mobile.get("gold")) : 0);
+            newMobile.setStats(		mobile.get("strength") != null ? Integer.parseInt(mobile.get("strength")) : 0,
+    				mobile.get("constitution") != null ? Integer.parseInt(mobile.get("constitution")) : 0,
+    				mobile.get("charisma") != null ? Integer.parseInt(mobile.get("charisma")) : 0,
+					mobile.get("dexterity") != null ? Integer.parseInt(mobile.get("dexterity")) : 0,
+					mobile.get("intelligence") != null ? Integer.parseInt(mobile.get("intelligence")) : 0,
+					mobile.get("wisdom") != null ? Integer.parseInt(mobile.get("wisdom")) : 0);
             //System.out.println("Created: " + itemList[vnum].toString());
             mobiles.add(newMobile);
         }
@@ -660,7 +655,7 @@ public class DataReader {
         Hashtable<Ability, AbilityData> abilitiesData = new Hashtable<Ability, AbilityData>();
         for(Hashtable<String, String> abilityData : abilities) {
             Ability ability = TrollAttack.abilityHandler.find(abilityData.get("name"));
-            AbilityData data = new AbilityData(Util.intize(abilityData.get("level")), new Float(abilityData.get("maxProficiency")).floatValue());
+            AbilityData data = new AbilityData(Util.intize(abilityData.get("level")), Float.parseFloat(abilityData.get("maxProficiency")));
             abilitiesData.put(ability, data);
         }
         result = new Class(name);
@@ -689,7 +684,7 @@ public class DataReader {
     	java.lang.Class abilityType = null;
     	try{
     		abilityType = java.lang.Class.forName(type);
-    		result = (Ability)abilityType.newInstance();
+    		result = (Ability)abilityType.getDeclaredConstructor().newInstance();
     	} catch(Exception e) {
     		e.printStackTrace();
     		TrollAttack.error("Ability Type referenced that doesn't exist.");
@@ -716,7 +711,7 @@ public class DataReader {
         // newItem.toString());
         try {
             int vnum = Util.intize((String) newItem);
-            resultingItem = (Item)TrollAttack.getItem(new Integer(vnum)).clone();
+            resultingItem = (Item)TrollAttack.getItem(Integer.valueOf(vnum)).clone();
         } catch (ClassCastException e) {
         	
             // Was not a string (not directly a vnum, so we need to use the
@@ -727,7 +722,7 @@ public class DataReader {
             // get refilled when you save and quit.
             try{
             	Hashtable hash = (Hashtable) newItem;
-            	Integer vnum = new Integer((String) hash.get("vnum"));
+            	Integer vnum = Integer.valueOf((String) hash.get("vnum"));
                 if (vnum == null) {
                     TrollAttack
                             .error("An item in a players file did not have a vnum!");

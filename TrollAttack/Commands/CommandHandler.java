@@ -474,7 +474,7 @@ public class CommandHandler {
 			    amount = -1;
 			} else {
 				try{
-					if(parts.length < 2 && parts[0].equals(new Integer(parts[0]).toString())) {
+					if(parts.length < 2 && parts[0].equals(Integer.valueOf(parts[0]).toString())) {
 						player.tell("Get " + amount + " what?");
 						return false;
 					} else {
@@ -1173,7 +1173,7 @@ public class CommandHandler {
 			boolean result = false;
 			for(String[] conf : Player.configList) {
 				if(Util.contains(conf[0],parts[0])) {
-					p.setConfig(conf[0], new Boolean(parts[1]).booleanValue());
+					p.setConfig(conf[0], Boolean.parseBoolean(parts[1]));
 					result = true;
 				}
 			}
@@ -1341,11 +1341,11 @@ public class CommandHandler {
             }
             if(parts[0].compareToIgnoreCase("all") == 0) {
                 for(Ability ability : TrollAttack.abilityHandler.getList()) {    
-                    player.practice(ability, new Float(parts[1]), false);
+                    player.practice(ability, Float.valueOf(parts[1]), false);
                 }
             } else {
                 Ability ability = TrollAttack.abilityHandler.find(parts[0]);
-                player.practice(ability, new Float(parts[1]), false);
+                player.practice(ability, Float.valueOf(parts[1]), false);
             }
             player.rehash();
             return true;
@@ -1895,7 +1895,7 @@ public class CommandHandler {
 	        }
 	        Item newItem;
 	        try{
-	        	newItem = TrollAttack.getItem(new Integer(parts[0]).intValue());
+	        	newItem = TrollAttack.getItem(Integer.parseInt(parts[0]));
 	        } catch(NumberFormatException e) {
 	        	return execute();
 	        }
@@ -1904,7 +1904,7 @@ public class CommandHandler {
                 return false;
             }
 	        newItem = new Item(
-	               new Integer(parts[0]).intValue(),
+	               Integer.parseInt(parts[0]),
 	               1,
 	               1,
 	               keywords,
@@ -1926,13 +1926,13 @@ public class CommandHandler {
 	    public boolean execute(String s) {
 	        int vnum = Util.intize(player, s);
 	        if(player.canEdit(vnum)) {
-                Mobile newRoom = TrollAttack.getMobile(new Integer(s).intValue());
+                Mobile newRoom = TrollAttack.getMobile(Integer.parseInt(s));
                 if(newRoom != null) {
                     player.tell("That vnum is already in use, consult 'mlist' to see a list of mobiles that have already been created in this area.");
                     return false;
                 }
 		        newRoom = new Mobile(
-		               new Integer(s).intValue(),
+		               Integer.parseInt(s),
 		               1,"new mobile",
 		               1,1,1,1,1,1,1, "1d1", "1d1",1,
 		               "the new mobile",
@@ -2113,7 +2113,7 @@ public class CommandHandler {
 	    public boolean execute(String s) {
 	        Item newItem;
 	        try {
-	            newItem = TrollAttack.getItem(new Integer(s));
+	            newItem = TrollAttack.getItem(Integer.valueOf(s));
 	       
 		        if(newItem == null) {
 		            player.tell("That isn't an item yet!");
@@ -2137,7 +2137,7 @@ public class CommandHandler {
 	    public boolean execute(String s) {
 	        Mobile newMobile;
 	        try {
-	            newMobile = TrollAttack.getMobile(new Integer(s));
+	            newMobile = TrollAttack.getMobile(Integer.valueOf(s));
 	            if(newMobile == null) {
 		            player.tell("That isn't an mobile yet!");
                     return false;
@@ -2326,7 +2326,7 @@ public class CommandHandler {
                 }
                 Ability newAbility = TrollAttack.abilityHandler.find(parts[2]);
                 
-                setClass.updateAbility(newAbility , Util.intize(parts[3]),new Float(parts[4]).floatValue());
+                setClass.updateAbility(newAbility , Util.intize(parts[3]),Float.parseFloat(parts[4]));
                 player.tell("You add/update the ability '" + newAbility.name + "'.");
             } else if ("delete".startsWith(parts[1])) {
                 Ability result = setClass.deleteAbility(TrollAttack.abilityHandler.find(parts[2]));
@@ -2340,7 +2340,7 @@ public class CommandHandler {
                     return execute();
                 }
                 Ability newAbility = TrollAttack.abilityHandler.find(parts[2]);
-                setClass.updateAbility( newAbility ,Util.intize(parts[3]),new Float(parts[4]).floatValue());
+                setClass.updateAbility( newAbility ,Util.intize(parts[3]),Float.parseFloat(parts[4]));
                 player.tell("You add/update the ability '" + newAbility.name + "'.");
             }
             setClass.saveClass();

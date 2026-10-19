@@ -34,7 +34,7 @@ public class Roll {
             if (parts.length < 1) {
                 numberOfDice = 0;
             } else {
-                numberOfDice = new Integer(parts[0]).intValue();
+                numberOfDice = Integer.parseInt(parts[0]);
                 
                 if(numberOfDice == 0 && !value.equals("0")) {
                 	throw(new NumberFormatException(parts[0] + " doesn't look like a valid number."));
@@ -46,17 +46,17 @@ public class Roll {
             addition = 0;
         } else if (Util.contains(parts[1], ",")) {
             String[] tmpParts = parts[1].split(",");
-            numberOfDice = new Integer(parts[0]).intValue();
-            sizeOfDice = new Integer(tmpParts[0]).intValue();
-            addition = new Integer(tmpParts[1]).intValue();
+            numberOfDice = Integer.parseInt(parts[0]);
+            sizeOfDice = Integer.parseInt(tmpParts[0]);
+            addition = Integer.parseInt(tmpParts[1]);
         } else {
         	if(parts[0].compareTo("") == 0 || parts[1].compareTo("") == 0) {
         		throw(new NumberFormatException("Doesn't look like a valid number."));
         	}
             try {
                 
-            	numberOfDice = new Integer(parts[0]).intValue();
-                sizeOfDice = new Integer(parts[1]).intValue();
+            	numberOfDice = Integer.parseInt(parts[0]);
+                sizeOfDice = Integer.parseInt(parts[1]);
                 addition = 0;
             } catch (Exception e) {
                 // Bad number format, try and ignore.

@@ -266,7 +266,7 @@ public class Util {
         result += "Class:\t\t" + mobile.getClassName() + wrapChar;
         if (!mobile.isPlayer()) {
             result += "Original:\t\t("
-                    + (mobile == TrollAttack.getMobile(new Integer(
+                    + (mobile == TrollAttack.getMobile(Integer.valueOf(
                             ((Mobile) mobile).vnum)) ? "X" : " ") + ")"
                     + wrapChar;
             result += "Short Desc.:\t" + mobile.getShort() + wrapChar;
@@ -520,7 +520,7 @@ public class Util {
 		int skipItems = 0;
     	if(name.matches("^\\d\\..*$")) {
     		// We want to skip some items until we get to the desired item.
-    		skipItems = new Integer(name.substring(0,1)) - 1;
+    		skipItems = Integer.valueOf(name.substring(0,1)) - 1;
     		name = name.substring(2);
     	}
     	

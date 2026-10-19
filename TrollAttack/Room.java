@@ -156,7 +156,7 @@ public class Room {
         // Rewrite this to be more efficient and use resets.
         Integer[] roomVnums = new Integer[roomItems.size()];
         for (int i = 0; i < roomItems.size(); i++) {
-            roomVnums[i] = new Integer(((Item) roomItems.get(i)).vnum);
+            roomVnums[i] = Integer.valueOf(((Item) roomItems.get(i)).vnum);
         }
         roomItems = new Vector<Item>();
         for (int i = 0; i < roomVnums.length; i++) {
@@ -171,7 +171,7 @@ public class Room {
 	                if (tmp.isPlayer()) {
 	                    roomMobiles.add(tmp);
 	                } else {
-	                    mobileVnums[i] = new Integer(((Mobile) tmp).vnum);
+	                    mobileVnums[i] = Integer.valueOf(((Mobile) tmp).vnum);
 	                }
 	            }
 	            roomBeings = roomMobiles;

@@ -56,7 +56,7 @@ public class TelnetServer extends Communication {
         
     }
     public void shutdown() {
-    	TrollAttack.debug("Attempting to shutdown thread " + getId());
+    	TrollAttack.debug("Attempting to shutdown thread " + threadId());
     	//this.close();
         if(serverSocket != null) {
         	try {
@@ -69,7 +69,7 @@ public class TelnetServer extends Communication {
         } else {
         	TrollAttack.debug("There wasn't a server socket to shut down for some reason.");
         }
-        TrollAttack.debug("Shutdown complete (I think) on thread " + getId());
+        TrollAttack.debug("Shutdown complete (I think) on thread " + threadId());
     	
     }
     public void waitForUser() {

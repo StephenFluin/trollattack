@@ -88,7 +88,7 @@ public class DrinkContainer extends Item {
 	    return attributes;
 	}
 	public void setAttributesFromHash(Hashtable hash) {
-	    setVolume(new Integer((String)hash.get("volume")).intValue());
+	    setVolume(Integer.parseInt((String)hash.get("volume")));
 	}
 	
     public boolean setAttribute(String attr, String value) {
