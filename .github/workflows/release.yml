@@ -1,0 +1,67 @@
+# Publishes a GitHub release with the built jar whenever TrollAttack.version changes on
+# master: bump the version (and changelog.txt), push, and a release tagged v<version>
+# appears once the jar builds and the game answers on its telnet port.
+name: Release
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: |
+          version=$(sed -n 's/.*public static String version = "\(.*\)";.*/\1/p' TrollAttack/TrollAttack.java)
+          [ -n "$version" ] || { echo "No version found in TrollAttack.java" >&2; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if gh release view "v$version" >/dev/null 2>&1; then
+            echo "v$version is already released."
+            echo "released=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-java@v4
+        if: steps.version.outputs.released != 'true'
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Build
+        if: steps.version.outputs.released != 'true'
+        run: scripts/build.sh
+
+      - name: Smoke test
+        if: steps.version.outputs.released != 'true'
+        run: |
+          java -Xmx96m -jar dist/trollattack.jar > game.log 2>&1 &
+          for _ in $(seq 30); do
+            if timeout 5 bash -c 'exec 3<>/dev/tcp/127.0.0.1/4000 && cat <&3' 2>/dev/null | grep -q 'What is your name'; then
+              echo "The game answered on port 4000."
+              exit 0
+            fi
+            sleep 1
+          done
+          cat game.log
+          exit 1
+
+      - name: Publish release
+        if: steps.version.outputs.released != 'true'
+        run: |
+          gh release create "v${{ steps.version.outputs.version }}" dist/trollattack.jar \
+            --target "$GITHUB_SHA" \
+            --title "TrollAttack ${{ steps.version.outputs.version }}" \
+            --generate-notes

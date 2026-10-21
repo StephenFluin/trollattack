@@ -11,6 +11,13 @@ scripts/build.sh     # compiles to dist/trollattack.jar
 scripts/run.sh       # listens on telnet port 4000, using Areas/, Classes/ and Players/ here
 ```
 
+## Releases
+
+Bump `version` in `TrollAttack/TrollAttack.java` (and note it in `changelog.txt`), then push to
+`master`. GitHub Actions (`.github/workflows/release.yml`) builds the jar with Java 25, checks
+that the game answers on port 4000, and publishes a `v<version>` release with
+`trollattack.jar` attached. Pushes that don't change the version publish nothing.
+
 ## Deploys
 
 Buildkite (`.buildkite/pipeline.yml`) builds every push on joy and deploys the default
